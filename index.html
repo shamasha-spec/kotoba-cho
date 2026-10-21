@@ -1101,6 +1101,11 @@ main.wrap{padding-top:24px;padding-bottom:80px}
 .grank .xp-bar .xp{position:relative;overflow:hidden}
 .grank .xp-bar .xp::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);transform:translateX(-100%)}
 @media (prefers-reduced-motion: reduce){.seal.spin,.gr-seal.bounce{animation:none!important}}
+/* smoother seal bounce: no scaling, gravity-like easing */
+@keyframes sealDrop{0%{transform:translateY(-24px);opacity:0;animation-timing-function:cubic-bezier(.55,0,1,.45)}36%{transform:translateY(-3px);opacity:1;animation-timing-function:cubic-bezier(0,.55,.45,1)}56%{transform:translateY(-12px);animation-timing-function:cubic-bezier(.55,0,1,.45)}74%{transform:translateY(-3px);animation-timing-function:cubic-bezier(0,.55,.45,1)}87%{transform:translateY(-6px);animation-timing-function:cubic-bezier(.55,0,1,.45)}100%{transform:translateY(-3px)}}
+@keyframes grDrop{0%{transform:translateY(-21px);opacity:0;animation-timing-function:cubic-bezier(.55,0,1,.45)}36%{transform:translateY(0);opacity:1;animation-timing-function:cubic-bezier(0,.55,.45,1)}56%{transform:translateY(-9px);animation-timing-function:cubic-bezier(.55,0,1,.45)}74%{transform:translateY(0);animation-timing-function:cubic-bezier(0,.55,.45,1)}87%{transform:translateY(-3px);animation-timing-function:cubic-bezier(.55,0,1,.45)}100%{transform:translateY(0)}}
+.seal.spin{animation:sealDrop .95s linear both!important}
+.gr-seal.bounce{animation:grDrop .95s linear both}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="favicon.png">
