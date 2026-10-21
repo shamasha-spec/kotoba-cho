@@ -1108,7 +1108,14 @@ main.wrap{padding-top:24px;padding-bottom:80px}
     throw Object.assign(new Error("Claude’s answer wasn’t readable"),{code:"bad"});
   }
   var sample=async function(prompt,opts){ var j=await call({action:"ai",prompt:String(prompt)}); return {text:j.text||""}; };
-  sample.json=async function(prompt,opts){ var j=await call({action:"ai",prompt:String(prompt),json:true}); return parseJson(j.text); };
+  sample.json=async function(prompt,opts){
+    var j=await call({action:"ai",prompt:String(prompt),json:true,max:1500});
+    try{ return parseJson(j.text); }
+    catch(e){
+      var j2=await call({action:"ai",prompt:String(prompt)+"\n\nKeep every field short so the whole JSON fits. Return the complete JSON object only.",json:true,max:1500});
+      return parseJson(j2.text);
+    }
+  };
   var aiReady=null;
   function aiCheck(){ if(!aiReady) aiReady=call({action:"ai_status"}).then(function(j){return !!j.ai;}).catch(function(){return false;}); return aiReady; }
   window.claude={use:async function(n){
