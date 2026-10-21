@@ -1043,9 +1043,59 @@ main.wrap{padding-top:24px;padding-bottom:80px}
 .loadfail p{margin:0;color:var(--muted);font-size:.92rem;line-height:1.5}
 .loadfail .row{justify-content:center}
 .loadfail a.btn{text-decoration:none;display:inline-flex;align-items:center}
+/* new words from drills */
+.gd-typos,.gd-new{margin-top:12px;display:grid;gap:6px}
+.gd-typos s{color:var(--warn);text-decoration-thickness:1.5px}
+.gd-chips{display:flex;flex-wrap:wrap;gap:8px}
+.gd-chip{display:inline-flex;align-items:baseline;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;cursor:pointer;font-size:.88rem;transition:background .15s,border-color .15s,transform .1s}
+.gd-chip b{font-family:var(--serif);font-size:1.05rem}
+.gd-chip b ruby rt{font-size:.5em}
+.gd-chip span{color:var(--muted)}
+.gd-chip i{font-style:normal;font-weight:700;color:var(--ai)}
+.gd-chip[aria-pressed="true"]{border-color:var(--ai);background:var(--ai-soft)}
+.gd-chip.added{border-color:var(--matcha);background:var(--matcha-soft);cursor:default}
+.gd-chip.added i{color:var(--matcha)}
+.gd-chip:active{transform:scale(.96)}
+.gd-new>.btn{justify-self:start}
+.tab-badge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:5px;border-radius:9px;background:var(--rk-5);color:#fff;font-size:.68rem;font-weight:700;vertical-align:2px;animation:badgePop .45s cubic-bezier(.34,1.6,.6,1)}
+@keyframes badgePop{0%{transform:scale(0)}100%{transform:scale(1)}}
+.toast.act{pointer-events:auto}
+.toast-btn{margin-left:10px;border:0;background:var(--paper);color:var(--ink);border-radius:999px;padding:4px 12px;font:inherit;font-weight:700;cursor:pointer}
+.w.fresh{animation:freshGlow 2.6s ease-out 1}
+@keyframes freshGlow{0%,30%{background:color-mix(in srgb,var(--matcha) 22%,transparent)}100%{background:transparent}}
+@media (prefers-reduced-motion: reduce){.tab-badge,.w.fresh{animation:none}}
+/* ===== links become themed buttons ===== */
+.linkbtn{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:6px 14px;border-radius:999px;border:1px solid transparent;background:color-mix(in srgb,var(--ai) 7%,transparent);color:var(--ai);font:inherit;font-size:.88rem;font-weight:600;text-decoration:none;cursor:pointer;transition:background .15s,border-color .15s,color .15s,transform .1s;white-space:nowrap}
+.linkbtn:hover{background:var(--ai-soft);border-color:color-mix(in srgb,var(--ai) 35%,transparent)}
+.linkbtn:active{transform:scale(.96)}
+.linkbtn:disabled{opacity:.5;cursor:not-allowed}
+.linkbtn[data-act="discard"],.linkbtn[data-act="sh-del"],.linkbtn[data-act="g-delex"],.linkbtn[data-act="g-del"],.linkbtn[data-act="rmline"]{color:var(--warn);background:color-mix(in srgb,var(--warn) 8%,transparent)}
+.linkbtn[data-act="discard"]:hover,.linkbtn[data-act="sh-del"]:hover,.linkbtn[data-act="g-delex"]:hover,.linkbtn[data-act="g-del"]:hover,.linkbtn[data-act="rmline"]:hover{background:var(--warn-soft);border-color:color-mix(in srgb,var(--warn) 35%,transparent)}
+.linkbtn[data-act="gd-skip"]::after,.linkbtn[data-act="wb-redo"]::after{content:"→";transition:transform .2s}
+.linkbtn[data-act="gd-skip"]:hover::after,.linkbtn[data-act="wb-redo"]:hover::after{transform:translateX(3px)}
+.linkbtn[data-act="gd-quit"]::before,.linkbtn[data-act="g-excancel"]::before,.linkbtn[data-act="dismiss"]::before{content:"×";font-size:1.05em;line-height:1}
+.linkbtn[data-act="hc-retry"]::before,.linkbtn[data-act="gd-retry"]::before{content:"↻"}
+.linkbtn.wb-manual{min-height:30px;padding:4px 12px;font-size:.8rem;margin-top:8px}
+/* links inside messages and toasts */
+.msg a,.toast a,.hint a{display:inline-flex;align-items:center;gap:4px;margin-left:4px;padding:2px 10px;border-radius:999px;background:color-mix(in srgb,var(--ai) 12%,transparent);color:var(--ai);font-weight:600;text-decoration:none;font-size:.88em;transition:background .15s}
+.msg a::after,.hint a::after{content:"↗";font-size:.85em;opacity:.7}
+.msg a:hover,.hint a:hover{background:var(--ai-soft)}
+.toast a{background:var(--paper);color:var(--ink)}
+.toast a::after{content:"↗";font-size:.85em;opacity:.7}
+.toast.act{pointer-events:auto}
+.toast:has(a){pointer-events:auto}
+/* sync counts become chips */
+.sync-count{text-decoration:none;padding:2px 8px;border-radius:999px;background:color-mix(in srgb,var(--ai) 8%,transparent);transition:background .15s}
+.sync-count:hover{background:var(--ai-soft);color:var(--ai)}
+/* audit fixes */
+.mt-sh .f-word{white-space:nowrap;word-break:keep-all;max-width:none}
+@media (max-width:480px){.mt.wide .f-word{font-size:1.15rem}.mt.wide .f-word.s{font-size:.82rem}.mt.wide .f-word.xs{font-size:.64rem}}
+.hc-head .hc-who>span{white-space:normal}
+.hc-head .hc-expr{white-space:normal;flex-wrap:wrap;row-gap:0}
+@media (max-width:480px){.hc-head .hc-expr>span:last-child,.hc-head .hc-expr{font-size:.7rem}.hc-head{gap:6px}}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="theme-color" content="#F7F2E7">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1187,7 +1237,7 @@ main.wrap{padding-top:24px;padding-bottom:80px}
 <nav class="tabs" aria-label="Sections">
   <div class="wrap" role="tablist"><span class="tab-ind" id="tab-ind" aria-hidden="true"></span>
     <button class="tab" role="tab" data-tab="add"><b>Home</b><small lang="ja">ホーム</small></button>
-    <button class="tab" role="tab" data-tab="words"><b>Words</b><small lang="ja">単語</small></button>
+    <button class="tab" role="tab" data-tab="words"><b>Words<span class="tab-badge" id="words-badge" hidden></span></b><small lang="ja">単語</small></button>
     <button class="tab" role="tab" data-tab="review"><b>Review</b><small lang="ja">復習</small></button>
     <button class="tab" role="tab" data-tab="journal"><b>Journal</b><small lang="ja">日記</small></button>
     <button class="tab" role="tab" data-tab="grammar"><b>Grammar</b><small lang="ja">文法</small></button>
@@ -1448,7 +1498,7 @@ function renderTab(t){
   if(t==="words"&&S.homeAdd){ S.homeAdd=false; returnAddBox(); }
   if(t==="add") renderHome();
   if(t==="grammar") renderGrammar();
-  if(t==="words") renderWords();
+  if(t==="words"){ renderWords(); if(S.wordsBadge){ S.wordsBadge=0; wordsBadge(); } if(S.freshRows&&S.freshRows.length) setTimeout(function(){ S.freshRows=[]; },4000); }
   if(t==="review") renderReview();
   if(t==="journal") {renderComposer();renderEntries();}
 }
@@ -1568,7 +1618,7 @@ function renderWords(){
     var dl=[["Romaji",w.romaji],["Type",w.type],["Verb group",w.group&&w.group!=="N/A"?w.group:""],["Te-form",w.te],["Tags",w.tags],["Source",w.source],["Added",w.date],["Last reviewed",w.last],["Next review",w.next]]
       .filter(function(p){return p[1];}).map(function(p){return "<dt>"+p[0]+"</dt><dd>"+esc(p[1])+"</dd>";}).join("");
     var ex=w.exJp?'<div class="ex"><div lang="ja">'+sayBtn(w.exJp,"Play the example")+' '+esc(w.exJp)+'</div><div class="w-en">'+esc(w.exEn)+'</div></div>':"";
-    return '<li class="w"'+(open?" data-open":"")+' data-row="'+w.row+'"><button class="w-head" aria-expanded="'+!!open+'">'+
+    return '<li class="w'+((S.freshRows||[]).indexOf(w.row)>-1?' fresh':'')+'"'+(open?" data-open":"")+' data-row="'+w.row+'"><button class="w-head" aria-expanded="'+!!open+'">'+
       '<span class="w-jp" lang="ja">'+rubyWord(w.jp,w.kana)+'</span><span class="w-en">'+esc(w.en)+'</span>'+
       '<span class="stamp st-'+w.mastery+'" lang="ja" title="'+w.mastery+'" aria-label="'+w.mastery+'">'+STAMP[w.mastery]+'</span></button>'+
       '<div class="w-body">'+(TTS?'<div class="row" style="margin-bottom:8px">'+sayBtn(w.kana||w.jp,"Play the word")+'<span class="hint">'+recText(w)+'</span></div>':'<p class="hint">'+recText(w)+'</p>')+'<dl>'+dl+'</dl>'+ex+'<a class="sheetlink" href="'+rowLink(VOCAB_GID,w.row)+'" target="_blank" rel="noopener">'+ICO_SHEET+'<span>Open row '+w.row+' in sheet</span><span class="ext" aria-hidden="true">↗</span></a></div></li>';
@@ -2835,14 +2885,65 @@ async function drillStart(){
   if(!S.drill) return;
   S.drill.busy=false; renderGrammar();
 }
+/* ---------- new words found in drills ---------- */
+function inBank(jp,kana){ return S.words.some(function(w){ return w.jp===jp || (kana&&w.jp===kana) || (!KANJI_RE.test(jp)&&w.kana===jp); }); }
+function pickNewWords(list,it){
+  var pat=stripFuri((it&&it.p)||""), seen={};
+  return (Array.isArray(list)?list:[]).map(function(x){
+    return {jp:stripFuri(String((x&&x.jp)||"")).trim(),kana:String((x&&x.kana)||"").trim(),romaji:String((x&&x.romaji)||"").trim(),en:String((x&&x.en)||"").trim(),type:String((x&&x.type)||"").trim(),group:String((x&&x.group)||"").trim(),te:String((x&&x.te)||"").trim(),sel:true};
+  }).filter(function(w){ if(!w.jp||!w.en||seen[w.jp]||pat.indexOf(w.jp)>-1||inBank(w.jp,w.kana)) return false; seen[w.jp]=1; return true; }).slice(0,4);
+}
+function nwHtml(r){
+  var h="";
+  if(r.typos&&r.typos.length) h+='<div class="gd-typos"><span class="gp-lbl">Spelling</span>'+r.typos.map(function(t){return '<div lang="ja"><s>'+esc(t.wrote)+'</s> → <b>'+rubyText(t.meant)+'</b>'+(t.note?' <span class="hint">'+esc(t.note)+'</span>':'')+'</div>';}).join("")+'</div>';
+  if(r.newWords&&r.newWords.length){
+    var sel=r.newWords.filter(function(w){return w.sel&&!w.added;}).length, all=r.newWords.every(function(w){return w.added;});
+    h+='<div class="gd-new"><span class="gp-lbl">New words you used</span><div class="gd-chips">'+r.newWords.map(function(w,i){
+      return '<button class="gd-chip'+(w.added?' added':'')+'" data-act="gd-nw" data-i="'+i+'" aria-pressed="'+(w.sel||w.added)+'"'+(w.added?' disabled':'')+'><b lang="ja">'+rubyWord(w.jp,w.kana)+'</b><span>'+esc(w.en)+'</span><i aria-hidden="true">'+(w.added?'✓':w.sel?'＋':'')+'</i></button>';
+    }).join("")+'</div>'+(all?'<div class="hint">Added to your Vocab Bank.</div>':'<button class="btn small primary" data-act="gd-addnw"'+(sel?'':' disabled')+'>'+(sel?'Add '+sel+(sel===1?' word':' words')+' to Vocab Bank':'Tap a word to select it')+'</button>')+'</div>';
+  }
+  return h;
+}
+async function addWordsToBank(ws,ex){
+  if(!mcp||!S.loaded) throw Object.assign(new Error("Connect your sheet first."),{code:"not_granted"});
+  var r=await nextRow("Vocab Bank!B1:B1000"), n=0;
+  for(var i=0;i<ws.length;i++){
+    var w=ws[i]; if(inBank(w.jp,w.kana)){ w.added=true; continue; }
+    var verb=w.type==="Verb", adj=/Adjective/.test(w.type);
+    var row={date:today(),jp:w.jp,kana:w.kana,romaji:w.romaji,en:w.en,type:w.type,group:verb?w.group:(adj?"N/A":""),te:verb?w.te:"",exJp:ex.jp||"",exEn:ex.en||"",source:ex.source||"",tags:ex.tags||"",mastery:"New",last:"",next:""};
+    await updateValues("Vocab Bank!A"+r+":O"+r,[FIELDS.map(function(k){return k==="date"?row.date:cell(row[k]);})]);
+    row.row=r; S.words.push(row); S.freshRows=(S.freshRows||[]).concat(r); r++; n++; w.added=true;
+  }
+  return n;
+}
+function chime(){
+  if(S.voice==="off") return;
+  try{ var A=window.AudioContext||window.webkitAudioContext; if(!A) return; var c=chime.c||(chime.c=new A()); if(c.state==="suspended") c.resume(); var t=c.currentTime;
+    [880,1318.5].forEach(function(f,i){ var o=c.createOscillator(), g=c.createGain(), t0=t+i*0.12; o.type="sine"; o.frequency.value=f; g.gain.setValueAtTime(0.0001,t0); g.gain.exponentialRampToValueAtTime(0.07,t0+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t0+0.5); o.connect(g); g.connect(c.destination); o.start(t0); o.stop(t0+0.55); });
+  }catch(e){}
+}
+function wordsBadge(){ var b=$("#words-badge"); if(!b) return; var n=S.wordsBadge||0; b.hidden=!n; b.textContent=n; }
+function wordsAdded(n){
+  if(!n) return;
+  S.wordsBadge=(S.wordsBadge||0)+n; wordsBadge(); chime(); renderStatus();
+  var t=$("#toast"); toast('Added '+n+(n===1?' word':' words')+' to your Vocab Bank. <button class="toast-btn" type="button">See them</button>');
+  t.classList.add("act"); clearTimeout(toastTimer); toastTimer=setTimeout(function(){t.classList.remove("show","act");},6500);
+  t.querySelector(".toast-btn").onclick=function(){ t.classList.remove("show","act"); showFreshWords(); };
+}
+function showFreshWords(){
+  S.type="all"; var q=$("#q"), fm=$("#fm"); if(q) q.value=""; if(fm) fm.value="all";
+  if(S.drill&&S.drill.i<S.drill.items.length) toast("Your drill is saved. Come back to Grammar to keep going.");
+  setTab("words"); window.scrollTo({top:0,behavior:"smooth"});
+}
 async function drillCheck(){
   var D=S.drill, it=D.items[D.i], inp=$("#gd-ans"), ans=inp?inp.value.trim():"";
   if(!ans){ var m=$("#gd-msg"); if(m) msg(m,"err","Write a sentence first."); return; }
   D.ans=ans; D.busy=true; renderGrammar();
   try{
-    var d=await sample.json("You are a kind, direct Japanese tutor for a beginner who finished Genki 1. Grammar point: "+stripFuri(it.p)+" ("+it.m+").\nSituation given to the learner: "+it.prompt+"\nLearner's sentence: "+stripFuri(ans)+"\nJudge it. ok is true only if the sentence is grammatical, natural enough, fits the situation, and actually uses the pattern correctly. Small spelling slips in kana that a tutor would forgive can still be ok.\nReturn only JSON: {\"ok\": true or false, \"corrected\": the corrected sentence (or the original if fine) with the hiragana reading in half-width parentheses right after every kanji part, like 毎日(まいにち), \"english\": a natural translation, \"note\": one or two short plain-English sentences on the pattern use. No em dashes.}",{modelTier:"default"});
+    var d=await sample.json("You are a kind, direct Japanese tutor for a beginner who finished Genki 1. Grammar point: "+stripFuri(it.p)+" ("+it.m+").\nSituation given to the learner: "+it.prompt+"\nLearner's sentence: "+stripFuri(ans)+"\nJudge it. ok is true only if the sentence is grammatical, natural enough, fits the situation, and actually uses the pattern correctly. Small spelling slips in kana that a tutor would forgive can still be ok.\nReturn only JSON: {\"ok\": true or false, \"corrected\": the corrected sentence (or the original if fine) with the hiragana reading in half-width parentheses right after every kanji part, like 毎日(まいにち), \"english\": a natural translation, \"note\": one or two short plain-English sentences on the pattern use, \"words\": up to 4 content words (nouns, verbs, adjectives, adverbs, set expressions; skip particles, names, numbers and the grammar pattern itself) that appear in the learner's sentence, using the correct spelling, each as {\"jp\": dictionary form as normally written, \"kana\": reading in hiragana (katakana for loanwords), \"romaji\": Hepburn with long vowels doubled, \"en\": short meaning (verbs start with to), \"type\": one of Verb, Noun, i-Adjective, na-Adjective, Adverb, Expression, \"group\": for verbs Group 1 (u-verb), Group 2 (ru-verb) or Group 3 (irregular), else empty, \"te\": te-form for verbs, else empty}, \"typos\": misspelled words in the learner's sentence as [{\"wrote\": what they wrote, \"meant\": the correct word with readings in parentheses after kanji, \"note\": a few plain-English words}], or an empty list}. No em dashes.",{modelTier:"default"});
     if(!d||typeof d.ok!=="boolean") throw {code:"bad"};
-    D.res={ok:d.ok,corrected:d.corrected||ans,english:d.english||"",note:d.note||"",gain:(d.ok&&gxPeek(it.id).d<3)?15:0};
+    D.res={ok:d.ok,corrected:d.corrected||ans,english:d.english||"",note:d.note||"",gain:(d.ok&&gxPeek(it.id).d<3)?15:0,
+      newWords:pickNewWords(d.words,it), typos:(Array.isArray(d.typos)?d.typos:[]).filter(function(t){return t&&t.wrote&&t.meant&&stripFuri(t.wrote)!==stripFuri(t.meant);}).slice(0,3)};
     if(d.ok) D.good++;
     gPractised(it.id,d.ok);
   }catch(err){ D.res={err:aiErr(err)}; }
@@ -2871,6 +2972,7 @@ function drillHtml(){
     var r=D.res;
     body+='<div class="gd-you"><span class="gp-lbl">You wrote</span><div lang="ja">'+esc(D.ans)+'</div></div>'+
       '<div class="msg '+(r.ok?'ok':'info')+'" style="display:block"><b>'+(r.ok?'Transmuted.'+(r.gain?' +'+r.gain:''):'Not quite.')+'</b> '+(r.ok?'':'Suggested fix:')+'<div lang="ja" class="gp-ex">'+rubyText(r.corrected)+'</div>'+esc(r.english)+'<br>'+esc(r.note)+'</div>'+
+      nwHtml(r)+
       '<div class="row" style="margin-top:10px"><button class="btn primary" data-act="gd-next">'+(D.i+1<D.items.length?'Next':'Finish')+'</button></div>';
   }
   return '<div class="panel gdrill">'+head+body+'</div>';
@@ -2882,6 +2984,10 @@ function drillHtml(){
     if(act==="gd-start"){ e.preventDefault(); drillStart(); }
     else if(act==="gd-check"){ drillCheck(); }
     else if(act==="gd-retry"){ S.drill.res=null; renderGrammar(); }
+    else if(act==="gd-nw"){ var nw=S.drill&&S.drill.res&&S.drill.res.newWords[+a.dataset.i]; if(nw&&!nw.added){ nw.sel=!nw.sel; renderGrammar(); } }
+    else if(act==="gd-addnw"){ var R=S.drill.res, pick=R.newWords.filter(function(w){return w.sel&&!w.added;}); if(!pick.length) return; a.disabled=true; a.textContent="Adding…";
+      try{ var n=await addWordsToBank(pick,{jp:stripFuri(R.corrected||S.drill.ans||""),en:R.english||"",source:"Drill",tags:"drill"}); renderGrammar(); wordsAdded(n); }
+      catch(err){ toast(sheetErr(err,true)); a.disabled=false; a.textContent="Try again"; } }
     else if(act==="gd-skip"||act==="gd-next"){ S.drill.i++; S.drill.res=null; S.drill.ans=""; if(S.drill.i>=S.drill.items.length) checkRankUp(); renderGrammar(); }
     else if(act==="g-cover"){ var on=a.dataset.on==="1", l=a.dataset.l, nw=Date.now(); GENKI.forEach(function(p){ if(String(p.l)===l){ var xx=gx(p.id); if(on){xx.c=1; xx.t=xx.t||nw;} else delete xx.c; } }); saveGrammar(); checkRankUp(); renderGrammar(); }
     else if(act==="gd-quit"){ S.drill=null; checkRankUp(); renderGrammar(); renderHome(); }
