@@ -2730,7 +2730,7 @@ function gxPeek(id){ return (S.gram.xp&&S.gram.xp[id])||{d:0,w:0,e:0,t:0}; }
 function gScore(pt){
   var x=gxPeek(pt.id), uses=gUses(pt);
   var drill=Math.min(45,(x.d||0)*15), ex=(x.e||0)>=2?30:(x.e||0)===1?20:0, use=uses?25:0;
-  var raw=drill+ex+use; if(x.c) raw=Math.max(70,raw);
+  var raw=drill+ex+use; if(x.c||gStatus(pt.id)==="got") raw=Math.max(70,raw);
   var tarn=raw>=70&&x.t&&(Date.now()-x.t)>TARNISH_DAYS*DAY;
   return {raw:raw,cov:!!x.c,eff:tarn?Math.round(raw*0.75):raw,tarn:!!tarn,drill:x.d||0,ex:x.e||0,uses:uses,mastered:raw>=70&&!tarn};
 }
@@ -3227,15 +3227,26 @@ function mergeData(key,a,b){
   return a;
 }
 function sheetDb(){
-  var TAB="App Data", st={loaded:null,rows:{},next:2,broken:false,q:Promise.resolve()};
+  var TAB="App Data", st={loaded:null,rows:{},next:2,broken:false,q:Promise.resolve(),at:0};
+  var onRemote=function(key,obj){
+    if(key==="review-stats"){ S.stats=obj.w||{}; S.mstats=obj.m||{}; }
+    else if(key==="grammar"){ S.gram={st:obj.st||{},mine:obj.mine||{},custom:Array.isArray(obj.custom)?obj.custom:[],xp:obj.xp||{},cov3:!!obj.cov3}; }
+    else if(/^e-/.test(key)&&S.marks[key]){ S.marks[key]={hl:obj.hl||[],ink:obj.ink||{}}; }
+    setTimeout(function(){
+      if(S.tab==="grammar"&&!S.drill&&!S.gex) renderGrammar();
+      else if(S.tab==="review"&&!S.deck) renderReview();
+      else if(S.tab==="journal"&&/^e-/.test(key)) rerenderEntry(key);
+      else if(S.tab==="add") renderHome();
+    },0);
+  };
   var LOCAL={"review-stats":"kc-stats","grammar":"kc-grammar"};
   function lkey(k){return LOCAL[k]||("kc-marks-"+k);}
   function col(i){var s="";i=i+1;while(i>0){var m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=Math.floor((i-1)/26);}return s;}
   function load(){
-    if(!st.loaded) st.loaded=getValues(TAB+"!A1:Z1000").then(function(v){
-      v.forEach(function(r,i){ if(i===0||!r||!r[0]) return; var obj=null; try{obj=JSON.parse(r.slice(2).join(""));}catch(e){} st.rows[r[0]]={row:i+1,n:Math.max(1,r.length-2),data:obj}; st.next=Math.max(st.next,i+2); });
+    if(!st.loaded){ st.at=Date.now(); st.loaded=getValues(TAB+"!A1:Z1000").then(function(v){
+      v.forEach(function(r,i){ if(i===0||!r||!r[0]) return; var obj=null; try{obj=JSON.parse(r.slice(2).join(""));}catch(e){} st.rows[r[0]]={row:i+1,n:Math.max(1,r.length-2),data:obj,u:r[1]||""}; st.next=Math.max(st.next,i+2); });
       if(!v.length) st.next=2;
-    }).catch(function(){ st.broken=true; if(!st.warned){ st.warned=true; setTimeout(function(){toast("Add a tab named “App Data” to your sheet so your progress syncs. Saving on this device for now.");},1500);} });
+    }).catch(function(){ st.broken=true; if(!st.warned){ st.warned=true; setTimeout(function(){toast("Add a tab named “App Data” to your sheet so your progress syncs. Saving on this device for now.");},1500);} }); }
     return st.loaded;
   }
   async function legacy(key){
@@ -3246,15 +3257,23 @@ function sheetDb(){
   function warn(e){ if(!st.wwarn){ st.wwarn=true; toast("Couldn’t save progress to App Data: "+esc((e&&e.message)||"unknown error")); } throw e; }
   function write(key,obj){
     st.q=st.q.catch(function(){}).then(async function(){
+      var ex0=st.rows[key];
+      if(ex0){
+        try{
+          var fresh=await getValues(TAB+"!A"+ex0.row+":Z"+ex0.row), fr=fresh[0]||[];
+          if(fr[0]===key && (fr[1]||"")!==(ex0.u||"")){ var other=null; try{other=JSON.parse(fr.slice(2).join(""));}catch(e){} if(other){ obj=mergeData(key,obj,other); if(onRemote) onRemote(key,obj); } }
+        }catch(e){}
+      }
       var json=JSON.stringify(obj), chunks=[];
       for(var i=0;i<json.length;i+=40000) chunks.push(json.slice(i,i+40000));
       if(!chunks.length) chunks=["{}"];
       if(chunks.length>24) throw Object.assign(new Error("Too much data for one row"),{code:"quota_exceeded"});
       var ex=st.rows[key], r=ex?ex.row:st.next++, n=Math.max(chunks.length,ex?ex.n:0);
       while(chunks.length<n) chunks.push("");
-      var vals=["'"+key,"'"+new Date().toISOString()].concat(chunks.map(function(c){return c?"'"+c:"";}));
+      var stamp=new Date().toISOString();
+      var vals=["'"+key,"'"+stamp].concat(chunks.map(function(c){return c?"'"+c:"";}));
       await updateValues(TAB+"!A"+r+":"+col(vals.length-1)+r,[vals]);
-      st.rows[key]={row:r,n:n,data:obj};
+      st.rows[key]={row:r,n:n,data:obj,u:stamp};
     }).catch(warn);
     return st.q;
   }
@@ -3280,8 +3299,15 @@ function sheetDb(){
     if(st.broken) return;
     return write(key,body);
   }
-  return {collection:function(){return {doc:function(k){return {get:function(){return get(k);},set:function(b){return set(k,b);}};}};}};
+  return {reset:function(){ st.loaded=null; st.rows={}; st.broken=false; st.wwarn=false; }, age:function(){return Date.now()-st.at;},
+    collection:function(){return {doc:function(k){return {get:function(){return get(k);},set:function(b){return set(k,b);}};}};}};
 }
+document.addEventListener("visibilitychange",function(){
+  if(document.visibilityState!=="visible"||!db||!db.reset||db.age()<30000||S.deck||S.drill) return;
+  db.reset(); S.marks={};
+  Promise.all([loadStats(),loadGrammar()]).then(function(){ if(S.tab==="review") renderReview(); if(S.tab==="grammar") renderGrammar(); if(S.tab==="journal") renderEntries(); });
+  loadAll();
+});
 
 (async function init(){
   var c=window.claude;
