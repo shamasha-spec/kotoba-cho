@@ -1070,12 +1070,24 @@ main.wrap{padding-top:24px;padding-bottom:80px}
 (function(){
   var KEY="kc-conn";
   function conf(){try{return JSON.parse(localStorage.getItem(KEY)||"null");}catch(e){return null;}}
-  async function call(body,c){
+  var running=0, waiting=[];
+  function slot(){ return new Promise(function(res){ if(running<2){running++;res();} else waiting.push(res); }); }
+  function free(){ var n=waiting.shift(); if(n) n(); else running--; }
+  async function call(body,c){ await slot(); try{ return await call0(body,c); } finally{ free(); } }
+  async function call0(body,c){
     c=c||conf(); if(!c) throw Object.assign(new Error("Not set up yet."),{code:"not_granted"});
-    var r;
-    try{ r=await fetch(c.url,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(Object.assign({token:c.token},body))}); }
-    catch(e){ throw Object.assign(new Error("Couldn’t reach your script. Check your connection."),{code:"server_unavailable"}); }
-    var j; try{ j=await r.json(); }catch(e){ throw Object.assign(new Error("Your script sent back something unexpected. Check the web app URL."),{code:"tool_error"}); }
+    var j=null, snippet="", tries=0;
+    while(true){
+      var r, txt="";
+      try{ r=await fetch(c.url,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(Object.assign({token:c.token},body))}); txt=await r.text(); }
+      catch(e){ if(tries<2){ tries++; await new Promise(function(res){setTimeout(res,700*tries);}); continue; } throw Object.assign(new Error("Couldn’t reach your script. Check your connection."),{code:"server_unavailable"}); }
+      try{ j=JSON.parse(txt); break; }
+      catch(e){
+        snippet=txt.replace(/<style[\s\S]*?<\/style>|<script[\s\S]*?<\/script>/gi," ").replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim().slice(0,140);
+        if(tries<2){ tries++; await new Promise(function(res){setTimeout(res,900*tries);}); continue; }
+        throw Object.assign(new Error("Your script sent back a page instead of data"+(snippet?": “"+snippet+"”":"")+". Try again in a minute, or check the web app URL"),{code:"tool_error"});
+      }
+    }
     if(!j.ok){
       if(j.error==="unauthorized") throw Object.assign(new Error("Your token was rejected. Add #setup to the address to re-enter it"),{code:"tool_error"});
       throw Object.assign(new Error(j.error||"Unknown error"),{code:"tool_error"});
