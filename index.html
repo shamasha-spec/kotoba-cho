@@ -1038,6 +1038,11 @@ main.wrap{padding-top:24px;padding-bottom:80px}
 .hc-head .say{width:32px;height:32px}
 .hc-min .chev{display:inline-block;width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-135deg) translate(-1px,-1px)}
 .hc-who .hc-expr{font-size:.74rem}
+.loadfail{max-width:460px;margin:48px auto;text-align:center;display:grid;gap:10px;justify-items:center;padding:24px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+.loadfail b{font-size:1.1rem}
+.loadfail p{margin:0;color:var(--muted);font-size:.92rem;line-height:1.5}
+.loadfail .row{justify-content:center}
+.loadfail a.btn{text-decoration:none;display:inline-flex;align-items:center}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -1370,10 +1375,9 @@ async function loadAll(){
   if(!mcp) return;
   S.loading=true; S.error=null; renderStatus();
   try{
-    var v=await getValues("Vocab Bank!A1:O1000");
-    var j=await getValues("Journal!A1:J1001");
-    S.words=parseVocab(v); S.entries=parseJournal(j); S.loaded=true; S.lastSync=new Date();
-    try{ S.sheetG=parseGrammarTab(await getValues("Grammar!A1:G300")); }catch(e2){ S.sheetG=S.sheetG||[]; }
+    var got=await Promise.all([getValues("Vocab Bank!A1:O1000"),getValues("Journal!A1:J1001"),getValues("Grammar!A1:G300").catch(function(){return null;})]);
+    S.words=parseVocab(got[0]); S.entries=parseJournal(got[1]); S.loaded=true; S.lastSync=new Date();
+    if(got[2]) S.sheetG=parseGrammarTab(got[2]); else S.sheetG=S.sheetG||[];
   }catch(e){ S.error=e; }
   S.loading=false; renderAll();
 }
@@ -1791,8 +1795,7 @@ async function startReview(kindOverride,opts){
   var m=$("#deck-msg");
   var kind=kindOverride||(document.querySelector('input[name=deck]:checked')||{}).value||"due";
   S.deckChoice=kind;
-  msg(m,"info","Getting the latest from your sheet…");
-  await loadAll();
+  if(!S.lastSync||Date.now()-S.lastSync.getTime()>5*60*1000){ msg(m,"info","Getting the latest from your sheet…"); await loadAll(); }
   var cards=decks()[kind];
   if(!cards.length){S.deck=null;renderReview();msg($("#deck-msg"),"info",kind==="tricky"?"No tricky words yet. They show up after you miss a word in review.":"Nothing in this deck right now. Pick another one.");return;}
   var order=kind==="tricky"?cards.slice():shuffle(cards);
@@ -2372,7 +2375,11 @@ var LOADER_HTML='<div class="loader" role="status" aria-live="polite"><div class
 function renderHome(){
   var el=$("#home-tiles"); if(!el) return;
   var abox=$("#addbox"), parked=abox&&el.contains(abox); if(parked) document.body.appendChild(abox);
-  if(!S.loaded){el.innerHTML=S.noMcp?'<p class="empty">Connect your notebook to load your notebook.</p>':LOADER_HTML;return;}
+  if(!S.loaded){
+    if(S.noMcp) el.innerHTML='<div class="loadfail"><b>Not connected yet.</b><p>Add your script URL and token to open your notebook.</p><a class="btn primary" href="#setup">Connect</a></div>';
+    else if(S.error&&!S.loading) el.innerHTML='<div class="loadfail"><b>Couldn’t open your notebook.</b><p>'+sheetErr(S.error)+'</p><div class="row"><button class="btn primary" data-act="retry-load">Try again</button><a class="btn" href="#setup">Connection settings</a></div></div>';
+    else el.innerHTML=LOADER_HTML;
+    return;}
   var RI=rankInfo(), R=RANKS[RI.idx], NX=RANKS[RI.idx+1], inRank=RI.idx>=5?100:Math.round((RI.score-RI.idx*20)/20*100);
   var t=today(), due=S.words.filter(function(w){return !w.next||w.next<=t;});
   if(!S.previewW||S.words.indexOf(S.previewW)<0){var pool=due.length?due:S.words; S.previewW=pool[Math.floor(Math.random()*pool.length)]||null;}
@@ -2459,6 +2466,7 @@ function goReview(which){
 }
 document.addEventListener("pointerdown",function(e){S.lastPtr=e.pointerType;S.lastPtrAt=Date.now();},true);
 $("#home-tiles").addEventListener("click",function(e){
+  if(e.target.closest('[data-act="retry-load"]')){ $("#home-tiles").innerHTML=LOADER_HTML; loadAll(); return; }
   var mtile=e.target.closest(".mt");
   if(e.target.closest(".mt-addslot")) return;
   var wba=e.target.closest(".wb-add");
@@ -3194,12 +3202,94 @@ setTab("add");
 placeInd(indRect(S.tab)); if(document.fonts&&document.fonts.ready) document.fonts.ready.then(function(){placeInd(indRect(S.tab));});
 renderStatus();
 
+/* ---------- Phase 3: app data lives in the sheet's "App Data" tab ---------- */
+var LEG=null;
+function mergeData(key,a,b){
+  if(!a) return b; if(!b) return a;
+  function mx(x,y){return Math.max(+x||0,+y||0);}
+  var o;
+  if(key==="review-stats"){ o={w:{},m:{}};
+    [a,b].forEach(function(s){ ["w","m"].forEach(function(f){ var src=(s&&s[f])||{}; Object.keys(src).forEach(function(k){ var p=o[f][k]||[0,0], q=src[k]||[0,0]; o[f][k]=[mx(p[0],q[0]),mx(p[1],q[1])]; }); }); });
+    return o; }
+  if(key==="grammar"){ o={st:Object.assign({},b.st||{},a.st||{}),mine:{},custom:[],xp:{},cov3:!!(a.cov3||b.cov3)};
+    [a,b].forEach(function(s){
+      Object.keys(s.mine||{}).forEach(function(id){ var arr=o.mine[id]=o.mine[id]||[]; (s.mine[id]||[]).forEach(function(x){ if(!arr.some(function(y){return y.jp===x.jp;})) arr.push(x); }); });
+      (s.custom||[]).forEach(function(c){ if(!o.custom.some(function(y){return y.id===c.id;})) o.custom.push(c); });
+      Object.keys(s.xp||{}).forEach(function(id){ var p=o.xp[id]||{}, q=s.xp[id]||{}; o.xp[id]={d:mx(p.d,q.d),w:mx(p.w,q.w),e:mx(p.e,q.e),t:mx(p.t,q.t)}; if(p.c||q.c) o.xp[id].c=1; });
+    });
+    return o; }
+  if(/^e-/.test(key)){ o={hl:[],ink:{}};
+    [a,b].forEach(function(s){
+      (s.hl||[]).forEach(function(h){ if(!o.hl.some(function(y){return y.id===h.id;})) o.hl.push(h); });
+      Object.keys(s.ink||{}).forEach(function(li){ var arr=o.ink[li]=o.ink[li]||[], seen=arr.map(function(x){return JSON.stringify(x);}); (s.ink[li]||[]).forEach(function(stk){ var j=JSON.stringify(stk); if(seen.indexOf(j)<0){arr.push(stk);seen.push(j);} }); });
+    });
+    return o; }
+  return a;
+}
+function sheetDb(){
+  var TAB="App Data", st={loaded:null,rows:{},next:2,broken:false,q:Promise.resolve()};
+  var LOCAL={"review-stats":"kc-stats","grammar":"kc-grammar"};
+  function lkey(k){return LOCAL[k]||("kc-marks-"+k);}
+  function col(i){var s="";i=i+1;while(i>0){var m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=Math.floor((i-1)/26);}return s;}
+  function load(){
+    if(!st.loaded) st.loaded=getValues(TAB+"!A1:Z1000").then(function(v){
+      v.forEach(function(r,i){ if(i===0||!r||!r[0]) return; var obj=null; try{obj=JSON.parse(r.slice(2).join(""));}catch(e){} st.rows[r[0]]={row:i+1,n:Math.max(1,r.length-2),data:obj}; st.next=Math.max(st.next,i+2); });
+      if(!v.length) st.next=2;
+    }).catch(function(){ st.broken=true; if(!st.warned){ st.warned=true; setTimeout(function(){toast("Add a tab named “App Data” to your sheet so your progress syncs. Saving on this device for now.");},1500);} });
+    return st.loaded;
+  }
+  async function legacy(key){
+    try{ if(LEG&&LEG.db&&LEG.uid){ var s=await LEG.db.collection("data/users/"+LEG.uid).doc(key).get(); if(s.exists) return JSON.parse(JSON.stringify(s.data())); } }catch(e){}
+    return recall(lkey(key));
+  }
+  function snap(d){return {exists:!!d,data:function(){return d;}};}
+  function warn(e){ if(!st.wwarn){ st.wwarn=true; toast("Couldn’t save progress to App Data: "+esc((e&&e.message)||"unknown error")); } throw e; }
+  function write(key,obj){
+    st.q=st.q.catch(function(){}).then(async function(){
+      var json=JSON.stringify(obj), chunks=[];
+      for(var i=0;i<json.length;i+=40000) chunks.push(json.slice(i,i+40000));
+      if(!chunks.length) chunks=["{}"];
+      if(chunks.length>24) throw Object.assign(new Error("Too much data for one row"),{code:"quota_exceeded"});
+      var ex=st.rows[key], r=ex?ex.row:st.next++, n=Math.max(chunks.length,ex?ex.n:0);
+      while(chunks.length<n) chunks.push("");
+      var vals=["'"+key,"'"+new Date().toISOString()].concat(chunks.map(function(c){return c?"'"+c:"";}));
+      await updateValues(TAB+"!A"+r+":"+col(vals.length-1)+r,[vals]);
+      st.rows[key]={row:r,n:n,data:obj};
+    }).catch(warn);
+    return st.q;
+  }
+  async function get(key){
+    await load();
+    if(st.broken) return snap(await legacy(key));
+    var sheetData=st.rows[key]?st.rows[key].data:null, flag="kc-mig2-"+key;
+    if(!recall(flag)){
+      var l=await legacy(key);
+      if(l){
+        var merged=mergeData(key,sheetData,l);
+        if(JSON.stringify(merged)!==JSON.stringify(sheetData)) write(key,merged).then(function(){store(flag,1);}).catch(function(){});
+        else store(flag,1);
+        return snap(merged);
+      }
+      if(sheetData) store(flag,1);
+    }
+    return snap(sheetData);
+  }
+  async function set(key,body){
+    store(lkey(key),body);
+    await load();
+    if(st.broken) return;
+    return write(key,body);
+  }
+  return {collection:function(){return {doc:function(k){return {get:function(){return get(k);},set:function(b){return set(k,b);}};}};}};
+}
+
 (async function init(){
   var c=window.claude;
   if(!c||typeof c.use!=="function"){S.noMcp=true;document.body.classList.add("no-ai");renderAll();return;}
   var res=await Promise.all(["mcp","sample","db","user"].map(function(n){return c.use(n).catch(function(){return null;});}));
   mcp=res[0]; sample=res[1]; db=res[2];
   if(res[3]){ try{ uid=await res[3].id(); }catch(e){ uid=null; } }
+  if(mcp){ LEG={db:db,uid:uid}; db=sheetDb(); uid="sheet"; }
   loadStats();
   if(!sample){ document.body.classList.add("no-ai"); openAdd(true); }
   loadGrammar();
