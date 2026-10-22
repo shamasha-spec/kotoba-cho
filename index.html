@@ -1106,6 +1106,8 @@ main.wrap{padding-top:24px;padding-bottom:80px}
 @keyframes grDrop{0%{transform:translateY(-21px);opacity:0;animation-timing-function:cubic-bezier(.55,0,1,.45)}36%{transform:translateY(0);opacity:1;animation-timing-function:cubic-bezier(0,.55,.45,1)}56%{transform:translateY(-9px);animation-timing-function:cubic-bezier(.55,0,1,.45)}74%{transform:translateY(0);animation-timing-function:cubic-bezier(0,.55,.45,1)}87%{transform:translateY(-3px);animation-timing-function:cubic-bezier(.55,0,1,.45)}100%{transform:translateY(0)}}
 .seal.spin{animation:sealDrop .95s linear both!important}
 .gr-seal.bounce{animation:grDrop .95s linear both}
+.scrub-sum{background:color-mix(in srgb,#8B5A3C 10%,transparent);border-left:3px solid #8B5A3C;border-radius:0 10px 10px 0;padding:8px 12px}
+.scrub-sum>span[lang="ja"]{font-family:var(--serif);font-weight:700;color:#8B5A3C;margin-right:4px}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="favicon.png">
@@ -1115,18 +1117,30 @@ main.wrap{padding-top:24px;padding-bottom:80px}
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="言葉帳">
 <style>
-#kc-setup{position:fixed;inset:0;z-index:100;display:none;place-items:center;padding:20px;background:rgba(20,24,22,.55);backdrop-filter:blur(4px)}
+#kc-setup{position:fixed;inset:0;z-index:100;display:none;place-items:center;padding:24px;background:var(--paper,#f1f2ee)}
 #kc-setup.on{display:grid}
-#kc-setup .box{width:min(440px,100%);background:var(--surface,#fbfbf9);color:var(--ink,#1c2220);border-radius:18px;padding:22px;box-shadow:0 20px 50px -20px rgba(0,0,0,.5);font-family:"Zen Kaku Gothic New",system-ui,sans-serif}
-#kc-setup h2{margin:0 0 4px;font-size:1.25rem}
-#kc-setup p{margin:0 0 14px;color:var(--muted,#5c635d);font-size:.92rem;line-height:1.5}
-#kc-setup label{display:block;font-size:.85rem;font-weight:600;margin:10px 0 5px}
-#kc-setup input{width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:8px;border:1px solid var(--line,#d6d9d2);background:var(--paper,#f1f2ee);color:inherit;font:inherit}
-#kc-setup .row{display:flex;gap:10px;align-items:center;margin-top:16px;flex-wrap:wrap}
-#kc-setup button{min-height:44px;padding:10px 18px;border-radius:999px;border:1px solid var(--line,#d6d9d2);background:var(--surface,#fff);color:inherit;font:inherit;font-weight:600;cursor:pointer}
-#kc-setup button.go{background:var(--ai,#2c4870);border-color:var(--ai,#2c4870);color:#fff}
-#kc-setup .msg{margin-top:12px;font-size:.88rem;min-height:1.2em}
-#kc-setup .msg.err{color:#9a3a27}#kc-setup .msg.ok{color:#56752c}
+#kc-setup::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.6;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='24' viewBox='0 0 48 24'%3E%3Cg fill='none' stroke='%232C4870' stroke-opacity='.09' stroke-width='1'%3E%3Cpath d='M0 24a24 24 0 0 1 48 0M8 24a16 16 0 0 1 32 0M16 24a8 8 0 0 1 16 0'/%3E%3Cpath d='M-24 12a24 24 0 0 1 48 0M-16 12a16 16 0 0 1 32 0M-8 12a8 8 0 0 1 16 0M24 12a24 24 0 0 1 48 0M32 12a16 16 0 0 1 32 0M40 12a8 8 0 0 1 16 0'/%3E%3C/g%3E%3C/svg%3E");-webkit-mask-image:linear-gradient(0deg,#000,transparent 75%);mask-image:linear-gradient(0deg,#000,transparent 75%)}
+#kc-setup form{position:relative;width:min(360px,100%);display:grid;gap:14px;font-family:"Zen Kaku Gothic New",system-ui,sans-serif;color:var(--ink,#1c2220)}
+#kc-setup .kc-brand{display:grid;justify-items:center;gap:6px;margin-bottom:8px;text-align:center}
+#kc-setup .kc-brand svg{width:52px;height:65px;transform:rotate(-4deg);filter:drop-shadow(0 4px 6px rgba(0,0,0,.16))}
+#kc-setup .kc-brand h1{margin:0;font-family:"Shippori Mincho",serif;font-size:2.1rem;letter-spacing:.08em;color:var(--ai,#2c4870);line-height:1.1}
+#kc-setup .kc-brand p{margin:0;font-size:.92rem;color:var(--muted,#5c635d)}
+#kc-setup .kc-field{position:relative}
+#kc-setup label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+#kc-setup input{width:100%;box-sizing:border-box;min-height:50px;padding:12px 16px;border-radius:14px;border:1px solid var(--line,#d6d9d2);background:var(--surface,#fbfbf9);color:inherit;font:inherit;font-size:1rem;transition:border-color .2s,box-shadow .2s}
+#kc-setup input:focus{outline:none;border-color:var(--ai,#2c4870);box-shadow:0 0 0 3px color-mix(in srgb,var(--ai,#2c4870) 18%,transparent)}
+#kc-setup .kc-pass input{padding-right:52px}
+#kc-setup .kc-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:40px;height:40px;border:0;border-radius:10px;background:none;color:var(--muted,#5c635d);cursor:pointer;display:grid;place-items:center}
+#kc-setup .kc-eye:hover{color:var(--ai,#2c4870);background:color-mix(in srgb,var(--ai,#2c4870) 8%,transparent)}
+#kc-setup .kc-go{min-height:50px;border:0;border-radius:14px;background:var(--ai,#2c4870);color:var(--surface,#fff);font:inherit;font-weight:700;font-size:1rem;cursor:pointer;transition:filter .15s,transform .1s}
+#kc-setup .kc-go:hover{filter:brightness(1.08)}#kc-setup .kc-go:active{transform:scale(.98)}#kc-setup .kc-go:disabled{opacity:.6;cursor:wait}
+#kc-setup .kc-cancel{justify-self:center;border:0;background:none;color:var(--muted,#5c635d);font:inherit;font-size:.88rem;cursor:pointer;padding:6px 12px;border-radius:999px}
+#kc-setup .kc-cancel:hover{background:color-mix(in srgb,var(--ai,#2c4870) 8%,transparent);color:var(--ai,#2c4870)}
+#kc-setup .kc-msg{min-height:1.3em;text-align:center;font-size:.88rem;color:var(--muted,#5c635d)}
+#kc-setup .kc-msg.err{color:var(--warn,#9a3a27)}#kc-setup .kc-msg.ok{color:var(--matcha,#56752c)}
+#kc-setup form.shake{animation:kcShake .4s}
+@keyframes kcShake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+body.kc-locked{overflow:hidden}
 </style>
 <script>
 /* Standalone adapter: sends the notebook's sheet calls to Pete's Apps Script instead of Claude. */
@@ -1148,11 +1162,11 @@ main.wrap{padding-top:24px;padding-bottom:80px}
       catch(e){
         snippet=txt.replace(/<style[\s\S]*?<\/style>|<script[\s\S]*?<\/script>/gi," ").replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim().slice(0,140);
         if(tries<2){ tries++; await new Promise(function(res){setTimeout(res,900*tries);}); continue; }
-        throw Object.assign(new Error("Your script sent back a page instead of data"+(snippet?": “"+snippet+"”":"")+". Try again in a minute, or check the web app URL"),{code:"tool_error"});
+        throw Object.assign(new Error("Your script sent back a page instead of data"+(snippet?": “"+snippet+"”":"")+". Try again in a minute"),{code:"tool_error"});
       }
     }
     if(!j.ok){
-      if(j.error==="unauthorized") throw Object.assign(new Error("Your token was rejected. Add #setup to the address to re-enter it"),{code:"tool_error"});
+      if(j.error==="unauthorized") throw Object.assign(new Error("Please sign in again"),{code:"tool_error",signin:true});
       if(j.error==="rate_limited") throw Object.assign(new Error("Too many requests"),{code:"rate_limited"});
       if(j.error==="no-ai-key") throw Object.assign(new Error("No API key is set up in your script yet"),{code:"not_granted"});
       throw Object.assign(new Error(j.error||"Unknown error"),{code:"tool_error"});
@@ -1188,27 +1202,37 @@ main.wrap{padding-top:24px;padding-bottom:80px}
     return null;
   }};
 
+  function normId(v){ v=String(v||"").trim(); if(/^AKfy[\w-]{20,}$/.test(v)) return "https://script.google.com/macros/s/"+v+"/exec"; return v; }
   function showSetup(){
     var box=document.getElementById("kc-setup"); if(!box) return;
-    var c=conf()||{}; box.querySelector("#kc-url").value=c.url||""; box.querySelector("#kc-tok").value=c.token||"";
-    box.classList.add("on"); setTimeout(function(){box.querySelector(c.url?"#kc-tok":"#kc-url").focus();},50);
+    var c=conf()||{}; box.querySelector("#kc-url").value=c.url||""; box.querySelector("#kc-tok").value="";
+    box.querySelector("#kc-cancel").hidden=!conf(); box.querySelector("#kc-msg").textContent=""; box.querySelector("#kc-msg").className="kc-msg";
+    box.classList.add("on"); document.body.classList.add("kc-locked");
+    setTimeout(function(){box.querySelector(c.url?"#kc-tok":"#kc-url").focus();},60);
   }
+  function hideSetup(){ var d=document.getElementById("kc-setup"); d.classList.remove("on"); document.body.classList.remove("kc-locked"); if(location.hash==="#setup") history.replaceState(null,"",location.pathname); }
+  window.kcSignIn=showSetup;
   document.addEventListener("DOMContentLoaded",function(){
     var d=document.createElement("div"); d.id="kc-setup"; d.setAttribute("role","dialog"); d.setAttribute("aria-modal","true"); d.setAttribute("aria-labelledby","kc-setup-h");
-    d.innerHTML='<div class="box"><h2 id="kc-setup-h">Connect your notebook</h2><p>Paste the web app URL from your Apps Script deployment (it ends in /exec) and your app token. They stay on this device only.</p>'+
-      '<label for="kc-url">Web app URL</label><input id="kc-url" type="url" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec">'+
-      '<label for="kc-tok">App token</label><input id="kc-tok" type="password" autocomplete="off" placeholder="Your token from setupToken">'+
-      '<div class="row"><button class="go" id="kc-test">Test and connect</button><button id="kc-cancel">Cancel</button></div><div class="msg" id="kc-msg" role="status"></div></div>';
+    d.innerHTML='<form autocomplete="on" novalidate><div class="kc-brand"><svg viewBox="0 0 48 60" aria-hidden="true"><rect x="11" y="6" width="33" height="46" rx="3" fill="#D6D9D2"/><rect x="6" y="3" width="35" height="48" rx="4" fill="#2C4870"/><rect x="6" y="3" width="8" height="48" rx="3" fill="#1C2220" opacity=".28"/><g fill="#F7F2E7"><circle cx="10" cy="11" r="1.4"/><circle cx="10" cy="20" r="1.4"/><circle cx="10" cy="29" r="1.4"/><circle cx="10" cy="38" r="1.4"/><circle cx="10" cy="46" r="1.4"/></g><rect x="19" y="10" width="16" height="22" rx="1.5" fill="#F7F2E7"/><text x="27" y="26.5" text-anchor="middle" font-family="Shippori Mincho,serif" font-weight="700" font-size="13" fill="#2C4870">言</text><path d="M31 51v8l3.5-2.6L38 59v-8z" fill="#B3362F"/></svg><h1 id="kc-setup-h" lang="ja">言葉帳</h1><p>Sign in to continue</p></div>'+
+      '<div class="kc-field"><label for="kc-url">Notebook ID</label><input id="kc-url" name="username" type="text" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Notebook ID"></div>'+
+      '<div class="kc-field kc-pass"><label for="kc-tok">Passkey</label><input id="kc-tok" name="password" type="password" autocomplete="current-password" placeholder="Passkey"><button type="button" class="kc-eye" id="kc-eye" aria-label="Show passkey" aria-pressed="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div>'+
+      '<button type="submit" class="kc-go" id="kc-test">Sign in</button><div class="kc-msg" id="kc-msg" role="status" aria-live="polite"></div>'+
+      '<button type="button" class="kc-cancel" id="kc-cancel">Cancel</button></form>';
     document.body.appendChild(d);
-    d.querySelector("#kc-cancel").onclick=function(){ d.classList.remove("on"); if(location.hash==="#setup") history.replaceState(null,"",location.pathname); };
-    d.querySelector("#kc-test").onclick=async function(){
-      var url=d.querySelector("#kc-url").value.trim(), tok=d.querySelector("#kc-tok").value.trim(), m=d.querySelector("#kc-msg");
-      if(!/^https:\/\/script\.google\.com\/.+\/exec$/.test(url)){ m.className="msg err"; m.textContent="The URL should start with https://script.google.com and end with /exec."; return; }
-      if(!tok){ m.className="msg err"; m.textContent="Paste your token too."; return; }
-      m.className="msg"; m.textContent="Testing…"; this.disabled=true;
-      try{ await call({action:"ping"},{url:url,token:tok}); localStorage.setItem(KEY,JSON.stringify({url:url,token:tok})); m.className="msg ok"; m.textContent="Connected. Opening your notebook…"; setTimeout(function(){ location.href=location.pathname; },600); }
-      catch(e){ m.className="msg err"; m.textContent=e.message; this.disabled=false; }
-    };
+    var form=d.querySelector("form"), tok=d.querySelector("#kc-tok"), eye=d.querySelector("#kc-eye");
+    eye.onclick=function(){ var show=tok.type==="password"; tok.type=show?"text":"password"; eye.setAttribute("aria-pressed",String(show)); eye.setAttribute("aria-label",show?"Hide passkey":"Show passkey"); tok.focus(); };
+    d.querySelector("#kc-cancel").onclick=hideSetup;
+    form.addEventListener("submit",async function(ev){
+      ev.preventDefault();
+      var url=normId(d.querySelector("#kc-url").value), t=tok.value.trim(), m=d.querySelector("#kc-msg"), btn=d.querySelector("#kc-test");
+      function fail(txt){ m.className="kc-msg err"; m.textContent=txt; form.classList.remove("shake"); void form.offsetWidth; form.classList.add("shake"); btn.disabled=false; btn.textContent="Sign in"; }
+      if(!url||!t){ fail("Enter your Notebook ID and passkey."); return; }
+      if(!/^https:\/\/script\.google\.com\/.+\/exec$/.test(url)){ fail("Those details didn’t work."); return; }
+      m.className="kc-msg"; m.textContent=""; btn.disabled=true; btn.textContent="Signing in…";
+      try{ await call({action:"ping"},{url:url,token:t}); localStorage.setItem(KEY,JSON.stringify({url:url,token:t})); m.className="kc-msg ok"; m.textContent="Welcome back"; tok.type="password"; setTimeout(function(){ location.href=location.pathname; },500); }
+      catch(e){ fail(e&&e.code==="server_unavailable"?"Can’t reach your notebook right now. Try again in a moment.":"Those details didn’t work."); }
+    });
     if(!conf()||location.hash==="#setup") showSetup();
   });
   window.addEventListener("hashchange",function(){ if(location.hash==="#setup") showSetup(); });
@@ -1488,7 +1512,7 @@ function renderStatus(){
   var el=$("#status"), cls, body;
   var btns='<button class="iconbtn'+(S.loading?' spin':'')+'" data-act="refresh" aria-label="Sync with your sheet" title="Sync with your sheet"'+(S.loading||S.noMcp?' disabled':'')+'>'+ICO_REFRESH+'</button>'+
     '<a class="iconbtn" href="'+SHEET_URL+'" target="_blank" rel="noopener" aria-label="Open Google Sheet" title="Open Google Sheet">'+ICO_SHEET+'</a>';
-  if(S.noMcp){cls="err";body='<div class="sync-main">Not connected</div><div class="sync-sub">Not connected yet. Add #setup to the address.</div>';}
+  if(S.noMcp){cls="err";body='<div class="sync-main">Not connected</div><div class="sync-sub">Not signed in.</div>';}
   else if(S.error){cls="err";body='<div class="sync-main">Sync problem</div><div class="sync-sub">Tap refresh to retry</div>';}
   else if(S.loaded){
     cls=S.loading?"busy":"ok";
@@ -1682,8 +1706,10 @@ function saveStats(){
     if(db&&uid){ try{ await db.collection("data/users/"+uid).doc("review-stats").set(body); }catch(e){} }
   },800);
 }
-function rec(w){var r=S.stats[wkey(w)]; return r?{good:r[0]||0,miss:r[1]||0}:{good:0,miss:0};}
-function recText(w){var r=rec(w), n=r.good+r.miss; if(!n) return "Not reviewed in the app yet"; return "Got it "+r.good+" of "+n+" times";}
+function rec(w){var r=S.stats[wkey(w)]; return r?{good:r[0]||0,miss:r[1]||0,streak:r[2]||0}:{good:0,miss:0,streak:0};}
+var SCRUB=2;
+function isStain(w){var r=rec(w); return r.miss>0 && r.streak<SCRUB;}
+function recText(w){var r=rec(w), n=r.good+r.miss; if(!n) return "Not reviewed in the app yet"; var t="Got it "+r.good+" of "+n+" times"; if(isStain(w)){var left=SCRUB-r.streak; t+=", "+left+" more right in a row to scrub it clean";} return t;}
 function trickiness(w){var r=rec(w), n=r.good+r.miss; return n?(r.miss+1)/(n+2):0;}
 
 /* ---------- REVIEW ---------- */
@@ -1710,7 +1736,7 @@ function decks(){
   var due=S.words.filter(function(w){return !w.next || w.next<=t;});
   var fresh=S.words.filter(function(w){return w.mastery==="New";});
   var recent=S.words.slice().sort(function(a,b){return b.row-a.row;}).slice(0,20);
-  var tricky=S.words.filter(function(w){return rec(w).miss>0;}).sort(function(a,b){return trickiness(b)-trickiness(a);}).slice(0,20);
+  var tricky=S.words.filter(isStain).sort(function(a,b){return trickiness(b)-trickiness(a);}).slice(0,20);
   return {due:due,tricky:tricky,fresh:fresh,recent:recent,all:S.words};
 }
 var DECK_LABEL={all:"Random words (least reviewed first)",due:"Due for review",tricky:"Tricky words (you miss these most)",fresh:"New words",recent:"Last 20 added"};
@@ -1789,7 +1815,9 @@ function renderReview(){
   }
   var D=S.deck;
   if(D.i>=D.cards.length){
+    var stillStub=D.cards.filter(function(c){return c.type!=="sent"&&isStain(c);}).length, scr=D.scrubbed||[];
     el.innerHTML='<div class="panel"><h2>Done</h2><p>'+D.cards.length+' cards. Got it: '+D.good+'. Again: '+D.again+'.</p>'+
+      ((scr.length||stillStub)?'<p class="scrub-sum"><span lang="ja">茶渋</span> '+(scr.length?'Scrubbed '+scr.length+(scr.length===1?' word':' words')+' clean: <b lang="ja">'+scr.map(esc).join("、")+'</b>. ':'')+(stillStub?stillStub+(stillStub===1?' word':' words')+' still stubborn.':'No stains left in this session.')+'</p>':'')+
       (D.err?'<div class="msg err">'+D.err+'</div>':'<p class="hint">'+(D.pending?"Saving the last answers…":"All answers are saved to your sheet.")+'</p>')+
       '<div class="row"><button class="btn primary" data-act="restart">Pick another deck</button></div></div>';
     return;
@@ -1882,11 +1910,11 @@ function skillsHtml(){
       '<div class="sk-sub">'+(n?(a[0]+' right of '+n+(n===1?' answer':' answers')):x.start)+'</div><div class="sk-why">'+x.why+'</div></div>';
   }).join("");
   var stub=0, clean=0;
-  S.words.forEach(function(w){var r=rec(w); if(!r.miss) return; if(r.miss>=r.good) stub++; else clean++;});
+  S.words.forEach(function(w){var r=rec(w); if(!r.miss) return; if(isStain(w)) stub++; else clean++;});
   var stains='<div class="skill stains"><div class="sk-top"><span class="sk-k" lang="ja"><ruby>茶渋<rt>ちゃしぶ</rt></ruby></span><span class="sk-pct">'+stub+'</span></div>'+
     '<div class="sk-name">Tea Stains <span>Tricky words</span></div>'+
     '<div class="sk-sub">'+(stub||clean?stub+' still stubborn, '+clean+' scrubbed clean':'No stains yet. Words you miss land here.')+'</div>'+
-    '<div class="sk-why">Words you miss as often as you get right. Get one right more often and it’s scrubbed clean.</div>'+
+    '<div class="sk-why">Words you’ve missed. Get one right twice in a row and it’s scrubbed clean. Miss it again and the stain comes back.</div>'+
     (stub?'<button class="btn small primary" data-act="scrub" style="margin-top:8px">Scrub them</button>':'')+'</div>';
   return '<div class="lv-label" style="margin-top:10px">Skills</div><div class="skills">'+cards+stains+'</div>';
 }
@@ -1924,7 +1952,12 @@ function grade(ok){
   var stage=ok?NEXT_STAGE[w.mastery]:"Learning";
   var next=addDays(ok?INTERVAL[stage]:1);
   w.mastery=stage; w.last=today(); w.next=next;
-  var r=S.stats[wkey(w)]||[0,0]; if(ok) r[0]++; else r[1]++; S.stats[wkey(w)]=r;
+  var wasStain=isStain(w);
+  var r=S.stats[wkey(w)]||[0,0,0]; if(ok){ r[0]++; r[2]=(r[2]||0)+1; } else { r[1]++; r[2]=0; } S.stats[wkey(w)]=r;
+  if(wasStain&&ok){
+    if(!isStain(w)){ D.scrubbed=(D.scrubbed||[]).concat(w.jp); toast('<span lang="ja">'+esc(w.jp)+'</span> scrubbed clean ✨'); }
+    else toast('<span lang="ja">'+esc(w.jp)+'</span>: '+(SCRUB-rec(w).streak)+' more right in a row to scrub it clean');
+  }
   S.mstats=S.mstats||{}; var ms=S.mstats[D.front]||[0,0]; if(ok) ms[0]++; else ms[1]++; S.mstats[D.front]=ms; saveStats();
   if(ok) D.good++; else D.again++;
   if(!D.stop) writeReview(w,stage,next);
@@ -2475,8 +2508,8 @@ function renderHome(){
   var el=$("#home-tiles"); if(!el) return;
   var abox=$("#addbox"), parked=abox&&el.contains(abox); if(parked) document.body.appendChild(abox);
   if(!S.loaded){
-    if(S.noMcp) el.innerHTML='<div class="loadfail"><b>Not connected yet.</b><p>Add your script URL and token to open your notebook.</p><a class="btn primary" href="#setup">Connect</a></div>';
-    else if(S.error&&!S.loading) el.innerHTML='<div class="loadfail"><b>Couldn’t open your notebook.</b><p>'+sheetErr(S.error)+'</p><div class="row"><button class="btn primary" data-act="retry-load">Try again</button><a class="btn" href="#setup">Connection settings</a></div></div>';
+    if(S.noMcp) el.innerHTML='<div class="loadfail"><b>Not signed in.</b><p>Sign in to open your notebook.</p><a class="btn primary" href="#setup">Sign in</a></div>';
+    else if(S.error&&!S.loading) el.innerHTML='<div class="loadfail"><b>Couldn’t open your notebook.</b><p>'+sheetErr(S.error)+'</p><div class="row"><button class="btn primary" data-act="retry-load">Try again</button><a class="btn" href="#setup">Sign in again</a></div></div>';
     else el.innerHTML=LOADER_HTML;
     return;}
   var RI=rankInfo(), R=RANKS[RI.idx], NX=RANKS[RI.idx+1], inRank=RI.idx>=5?100:Math.round((RI.score-RI.idx*20)/20*100);
@@ -2617,7 +2650,7 @@ $("#home-tiles").addEventListener("keydown",function(e){ if((e.key==="Enter"||e.
 S.bannerAdd=false; S.bannerQ=""; S.bannerStep="input";
 function wotdPick(){
   if(!S.words.length) return null;
-  var tricky=S.words.filter(function(w){return rec(w).miss>0;}).sort(function(a,b){return trickiness(b)-trickiness(a);}).slice(0,10);
+  var tricky=S.words.filter(isStain).sort(function(a,b){return trickiness(b)-trickiness(a);}).slice(0,10);
   var pool=tricky.length?tricky:S.words.filter(function(w){return w.mastery!=="Mastered";}); if(!pool.length) pool=S.words;
   var n=parseInt(hash("wotd"+today()),36)%pool.length;
   return {w:pool[n],tricky:tricky.length>0};
@@ -3388,7 +3421,7 @@ function mergeData(key,a,b){
   function mx(x,y){return Math.max(+x||0,+y||0);}
   var o;
   if(key==="review-stats"){ o={w:{},m:{}};
-    [a,b].forEach(function(s){ ["w","m"].forEach(function(f){ var src=(s&&s[f])||{}; Object.keys(src).forEach(function(k){ var p=o[f][k]||[0,0], q=src[k]||[0,0]; o[f][k]=[mx(p[0],q[0]),mx(p[1],q[1])]; }); }); });
+    [a,b].forEach(function(s){ ["w","m"].forEach(function(f){ var src=(s&&s[f])||{}; Object.keys(src).forEach(function(k){ var p=o[f][k]||[0,0], q=src[k]||[0,0]; var newer=((p[0]||0)+(p[1]||0))>=((q[0]||0)+(q[1]||0))?p:q; o[f][k]=[mx(p[0],q[0]),mx(p[1],q[1]),+(newer[2]||0)]; }); }); });
     return o; }
   if(key==="grammar"){ o={st:Object.assign({},b.st||{},a.st||{}),mine:{},custom:[],xp:{},cov3:!!(a.cov3||b.cov3)};
     [a,b].forEach(function(s){
