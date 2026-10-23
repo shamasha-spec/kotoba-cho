@@ -1213,6 +1213,39 @@ main.wrap{padding-top:24px;padding-bottom:80px}
   .mt-row>.mt .mt-lab{position:static!important;margin-top:auto;padding-top:14px;justify-items:end;text-align:right}
   .mtiles .mt-row>.mt .mt-lab small{-webkit-line-clamp:2}
 }
+/* 茶聖 theme: gold and matcha while you hold the top rank */
+:root.kc-sage{--ai:#3E6B35;--ai-soft:#E4EDD7;--sage-gold:#B8902F}
+:root.kc-sage[data-theme="dark"]{--ai:#B9D48C;--ai-soft:#26321D;--sage-gold:#E3C26A}
+@media (prefers-color-scheme: dark){:root.kc-sage:not([data-theme="light"]):not([data-theme="reading"]){--ai:#B9D48C;--ai-soft:#26321D;--sage-gold:#E3C26A}}
+.kc-sage .top::after{background:linear-gradient(90deg,var(--ai) 0 28%,var(--sage-gold) 28% 33%,transparent 33%)}
+.kc-sage .tab-ind{background:linear-gradient(90deg,var(--ai),var(--sage-gold))}
+.kc-sage .mt[data-go="rank"]{border-color:color-mix(in srgb,var(--sage-gold) 55%,var(--line));box-shadow:0 10px 24px -18px var(--sage-gold)}
+.kc-sage .panel.level{border-color:color-mix(in srgb,var(--sage-gold) 60%,var(--line))}
+.sage-cel{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:24px;background:rgba(20,24,18,.35);opacity:0;transition:opacity .4s}
+.sage-cel.in{opacity:1}
+.sage-card{display:grid;justify-items:center;gap:8px;max-width:320px;text-align:center;padding:28px 26px 24px;border-radius:22px;background:var(--surface);border:1px solid var(--sage-gold,#B8902F);box-shadow:0 30px 60px -20px rgba(0,0,0,.4);transform:translateY(16px) scale(.96);transition:transform .55s cubic-bezier(.34,1.4,.6,1)}
+.sage-cel.in .sage-card{transform:none}
+.sage-seal{width:84px;height:84px;border-radius:50%;display:grid;place-items:center;font-family:var(--serif);font-weight:700;font-size:1.5rem;color:var(--sage-gold,#B8902F);border:3px double var(--sage-gold,#B8902F);background:color-mix(in srgb,var(--sage-gold,#B8902F) 10%,var(--surface))}
+.sage-card b{font-size:1.25rem}.sage-card span{font-size:.9rem;color:var(--muted)}
+@media (prefers-reduced-motion: reduce){.sage-cel,.sage-card{transition:none}}
+/* journal: listen to a whole entry */
+.playbtn{flex:none;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--ai);border-radius:999px;padding:6px 12px;min-height:36px;font-size:.85rem;font-weight:500;cursor:pointer;transition:background .15s,border-color .15s,transform .1s}
+.playbtn:hover,.playbtn.on{border-color:var(--ai);background:var(--ai-soft)}
+.playbtn:active{transform:scale(.95)}
+@media (hover:none){.playbtn span{display:none}.playbtn{padding:6px 9px}}
+.jline{transition:background .25s,box-shadow .25s}
+.jline.playing{background:color-mix(in srgb,var(--ai) 9%,transparent);box-shadow:inset 3px 0 0 var(--ai);border-radius:8px}
+.jline.your-turn{background:color-mix(in srgb,var(--matcha) 12%,transparent);box-shadow:inset 3px 0 0 var(--matcha)}
+body.kc-playing .dock-tools,body.kc-playing .dock-hint,body.kc-playing .selchip{display:none!important}
+.dock-player{display:grid;gap:6px;padding:2px 2px}
+.dock-player[hidden]{display:none}
+.pl-now{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:0 8px;font-size:.82rem;min-width:0}
+.pl-now b{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.pl-now b rt{font-size:.5em}
+.pl-now span{flex:none;opacity:.75}.pl-now em{font-style:normal;color:var(--matcha-soft);opacity:1;font-weight:700}
+.pl-ctl{display:flex;align-items:center;gap:2px;flex-wrap:wrap}
+.pl-ctl .pl-main{background:var(--paper);color:var(--ink);border-radius:50%;width:44px;height:44px;padding:0;justify-content:center}
+@media (max-width:430px){.pl-ctl .tbtn[data-act="pl-shadow"] span,.pl-ctl .tbtn[data-act="pl-loop"] span{display:none}}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="favicon.png">
@@ -1535,6 +1568,7 @@ body.kc-locked{overflow:hidden}
       <button class="btn small primary" data-act="hl-apply">Highlight</button>
       <button class="btn small" data-act="hl-note">Highlight and add note</button>
     </div>
+    <div class="dock-player" id="dock-player" role="toolbar" aria-label="Entry player" hidden></div>
     <div class="dock-tools" role="toolbar" aria-label="Annotation tools">
       <button class="tbtn" data-tool="read" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V12"/><path d="M11 11.5v-2a1.5 1.5 0 0 1 3 0V12"/><path d="M14 10.5a1.5 1.5 0 0 1 3 0V12"/><path d="M17 11.5a1.5 1.5 0 0 1 3 0V16a6 6 0 0 1-6 6h-1.5a6 6 0 0 1-4.6-2.2L5 16.5a1.6 1.6 0 0 1 2.4-2.1L8 15"/></svg>Read</button>
       <button class="tbtn" data-tool="highlight" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m9 11-6 6v3h9l3-3"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/></svg>Highlight</button>
@@ -1705,6 +1739,7 @@ function renderTab(t){
 function setTab(t,opts){
   opts=opts||{};
   if(window.KC_LEARNER&&(t==="journal"||t==="grammar")) t="add";
+  if(t!=="journal"&&S.play) playStop();
   S.tab=t; store("kc-tab",t);
   document.querySelectorAll(".tab").forEach(function(b){b.setAttribute("aria-selected",String(b.dataset.tab===t));});
   var order=["add","words","review","journal","grammar"], from=order.indexOf(S.prevTab), to=order.indexOf(t);
@@ -1861,7 +1896,7 @@ function speak(text){
 }
 var SPK='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
 function sayBtn(text,label){ if(!TTS) return ""; return '<button class="say" data-act="say" data-say="'+esc(text)+'" aria-label="'+esc(label||"Play audio")+'" title="'+esc(label||"Play audio")+'">'+SPK+'</button>'; }
-document.addEventListener("click",function(e){ var b=e.target.closest('[data-act="say"]'); if(b){ e.stopPropagation(); speak(b.dataset.say); } },true);
+document.addEventListener("click",function(e){ var b=e.target.closest('[data-act="say"]'); if(b){ e.stopPropagation(); if(S.play) playStop(); speak(b.dataset.say); } },true);
 
 /* ---------- REVIEW STATS ---------- */
 S.stats={}; var statsTimer;
@@ -1870,7 +1905,7 @@ async function loadStats(){
   var data=null;
   try{ if(db&&uid){var snap=await db.collection("data/users/"+uid).doc("review-stats").get(); if(snap.exists) data=JSON.parse(JSON.stringify(snap.data()));} }catch(e){}
   if(!data) data=recall("kc-stats");
-  S.stats=(data&&data.w)||{}; S.mstats=(data&&data.m)||{}; renderHome();
+  S.stats=(data&&data.w)||{}; S.mstats=(data&&data.m)||{}; S.statsReady=true; renderHome();
 }
 function saveStats(){
   clearTimeout(statsTimer);
@@ -1897,12 +1932,30 @@ var RANKS=[
   {k:"茶聖",r:"ちゃせい",en:"Tea Sage",d:"Every word mastered. Rikyu would approve."}
 ];
 var WEIGHT={New:0,Learning:1,Reviewing:2,Mastered:3};
+/* Rank-up news, checked from Home and Review. Waits until words and review stats have both loaded, so a half-loaded screen never fakes a rank-up. */
+function rankUpCheck(RI){
+  if(!S.loaded||!S.statsReady) return;
+  var prev=recall("kc-rank"), R=RANKS[RI.idx];
+  if(prev!==null && RI.idx>prev) setTimeout(function(){ if(RI.idx===5) sageCelebrate(); else toast("Rank up! You’re now "+R.k+", "+R.en+"."); },300);
+  store("kc-rank",RI.idx);
+}
+/* 茶聖 reached: a short celebration card. The gold and matcha theme stays on while you hold the rank. */
+function sageCelebrate(){
+  var d=document.createElement("div"); d.className="sage-cel"; d.setAttribute("role","status");
+  d.innerHTML='<div class="sage-card"><div class="sage-seal" lang="ja">茶聖</div><b><ruby>茶聖<rt>ちゃせい</rt></ruby> Tea Sage</b><span>Every word you know, mastered. A gold and matcha theme is yours while you hold it.</span></div>';
+  document.body.appendChild(d); requestAnimationFrame(function(){ d.classList.add("in"); });
+  function bye(){ d.classList.remove("in"); setTimeout(function(){ d.remove(); },450); }
+  d.addEventListener("click",bye); setTimeout(bye,4200);
+}
+/* Rank rules (Oct 2026): a word only counts once it has been reviewed 3 times, and 茶聖 starts at 95%, so one slip doesn't knock you off the top. */
+var RANK_MIN_SEEN=3, RANK_BOUNDS=[0,20,40,60,80,95,100];
 function rankInfo(){
-  var total=S.words.length, pts=0;
-  S.words.forEach(function(w){var r=rec(w); if(r.good+r.miss) pts+=WEIGHT[w.mastery]||0;});
+  var total=0, pts=0;
+  S.words.forEach(function(w){var r=rec(w); if(r.good+r.miss>=RANK_MIN_SEEN){ total++; pts+=WEIGHT[w.mastery]||0; }});
   var score=total?pts/(3*total)*100:0;
-  var idx=score>=100?5:Math.min(4,Math.floor(score/20));
-  return {score:score,idx:idx};
+  var idx=score>=RANK_BOUNDS[5]?5:Math.min(4,Math.floor(score/20));
+  document.documentElement.classList.toggle("kc-sage",idx===5);
+  return {score:score,idx:idx,lo:RANK_BOUNDS[idx],hi:RANK_BOUNDS[idx+1]};
 }
 S.size=recall("kc-size")||"10"; S.front=recall("kc-front")||"jp"; S.furi=recall("kc-furi")||"flip"; S.voice=recall("kc-voice")||"tap"; S.rate=recall("kc-rate")||"normal";
 function decks(){
@@ -1950,15 +2003,13 @@ function levelHtml(){
   else if(acc>=60) read="Solid. A handful of words need more practice. Try the Tricky words deck.";
   else read="Building. Short daily sessions and the Tricky words deck will help most.";
   var seg=["New","Learning","Reviewing","Mastered"].map(function(k){return st[k]?'<i class="lv-'+k+'" style="flex:'+st[k]+'" title="'+k+': '+st[k]+'"></i>':'';}).join("");
-  var RI=rankInfo(), R=RANKS[RI.idx], NX=RANKS[RI.idx+1], inRank=RI.idx>=5?100:Math.round((RI.score-RI.idx*20)/20*100);
-  var prevRank=recall("kc-rank");
-  if(prevRank!==null && RI.idx>prevRank) setTimeout(function(){toast("Rank up! You’re now "+R.k+", "+R.en+".");},300);
-  store("kc-rank",RI.idx);
+  var RI=rankInfo(), R=RANKS[RI.idx], NX=RANKS[RI.idx+1], inRank=RI.idx>=5?100:Math.round((RI.score-RI.lo)/(RI.hi-RI.lo)*100);
+  rankUpCheck(RI);
   var badge='<summary class="lv-sum"><div class="badge-row"><div class="seal" lang="ja" aria-hidden="true">'+R.k+'</div><div class="badge-txt">'+
     '<div class="rank-name" lang="ja"><ruby>'+R.k+'<rt>'+R.r+'</rt></ruby> <span lang="en">'+R.en+'</span></div>'+
     '<div class="rank-sub">'+R.d+'</div>'+
     '<div class="xp-wrap"><div class="xp-bar"><i class="xp" data-w="'+inRank+'" style="width:'+inRank+'%"></i></div><span class="xp-num">'+inRank+'%</span></div>'+
-    (NX?'<div class="rank-sub">'+Math.max(1,Math.ceil((RI.idx+1)*20-RI.score))+'% more to '+NX.k+', '+NX.en+'</div>':'<div class="rank-sub">Top rank reached</div>')+
+    (NX?'<div class="rank-sub">'+Math.max(1,Math.ceil(RI.hi-RI.score))+'% more to '+NX.k+', '+NX.en+'</div>':'<div class="rank-sub">Top rank reached</div>')+
     '</div></div></summary><div class="lv-body">'+
     '<div class="ladder" aria-label="Ranks">'+RANKS.map(function(x,i){return '<span class="rung'+(i<=RI.idx?' got':'')+(i===RI.idx?' now':'')+'" style="--rk:var(--rk-'+i+')" lang="ja" title="'+x.en+(i<=RI.idx?'':' (locked)')+'">'+x.k+'</span>';}).join('<i></i>')+'</div>'+skillsHtml();
   return '<details class="panel level" style="--rk:var(--rk-'+RI.idx+');--rb:var(--cv-r'+RI.idx+')"'+(S.levelOpen?' open':'')+'>'+badge+
@@ -2349,6 +2400,7 @@ function bodyHtml(en){
     '<div class="jlines">'+en.lines.map(lineHtmlPast).join("")+'</div>'+
     '<a class="sheetlink" href="'+rowLink(JOURNAL_GID,en.row)+'" target="_blank" rel="noopener">'+ICO_SHEET+'<span>Open in sheet</span><span class="ext" aria-hidden="true">↗</span></a>';
 }
+var ICO_PLAY='<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.4-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>';
 var QZ='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="14" height="16" rx="2"/><path d="M7 3h12a2 2 0 0 1 2 2v13"/><path d="M8.5 11a1.8 1.8 0 1 1 2.6 1.6c-.6.3-1.1.8-1.1 1.4M10 17h.01"/></svg>';
 function renderEntries(){
   var el=$("#entries");
@@ -2356,11 +2408,11 @@ function renderEntries(){
   if(!S.entries.length){el.innerHTML='<p class="empty">No entries yet. Write your first one above.</p>';updateDock();return;}
   el.innerHTML=S.entries.map(function(en){
     var key=entryKey(en), open=S.openEntry[key];
-    return '<div class="entry"'+(open?" data-open":"")+' data-key="'+key+'"><div class="entry-row"><div class="swipe-act" aria-hidden="true">'+QZ+'<span>Quiz</span></div><div class="entry-slide"><button class="entry-head" aria-expanded="'+!!open+'"><b lang="ja">'+rubyText(en.title||"Untitled")+'</b><span>'+esc(en.date)+', '+en.lines.length+(en.lines.length===1?" sentence":" sentences")+'</span></button><button class="quizbtn" data-act="quiz" data-key="'+key+'" aria-label="Quiz me on this entry" title="Quiz me on this entry">'+QZ+'<span>Quiz</span></button></div></div>'+
+    return '<div class="entry"'+(open?" data-open":"")+' data-key="'+key+'"><div class="entry-row"><div class="swipe-act" aria-hidden="true">'+QZ+'<span>Quiz</span></div><div class="entry-slide"><button class="entry-head" aria-expanded="'+!!open+'"><b lang="ja">'+rubyText(en.title||"Untitled")+'</b><span>'+esc(en.date)+', '+en.lines.length+(en.lines.length===1?" sentence":" sentences")+'</span></button>'+(TTS?'<button class="playbtn" data-act="play-entry" data-key="'+key+'" aria-label="Listen to the whole entry" title="Listen to the whole entry">'+ICO_PLAY+'<span>Listen</span></button>':'')+'<button class="quizbtn" data-act="quiz" data-key="'+key+'" aria-label="Quiz me on this entry" title="Quiz me on this entry">'+QZ+'<span>Quiz</span></button></div></div>'+
       '<div class="entry-body">'+(open?bodyHtml(en):'')+'</div></div>';
   }).join("");
   el.querySelectorAll(".entry[data-open]").forEach(function(b){decorate(b);});
-  updateDock();
+  updateDock(); if(S.play){ playMark(); renderPlayer(); }
 }
 function rerenderEntry(key){
   var box=document.querySelector('.entry[data-key="'+key+'"]'), en=entryByKey(key);
@@ -2518,17 +2570,99 @@ $("#dock").addEventListener("input",function(e){
 });
 entriesEl.addEventListener("click",function(e){
   var qz=e.target.closest('[data-act="quiz"]'); if(qz){startEntryReview(qz.dataset.key);return;}
+  var pb=e.target.closest('[data-act="play-entry"]'); if(pb){ if(S.play&&S.play.key===pb.dataset.key) playToggle(); else playStart(pb.dataset.key); return; }
   if(Date.now()-(S.entrySwipedAt||0)<400) return;
   var head=e.target.closest(".entry-head");
   if(head){
     var box=head.closest(".entry"), key=box.dataset.key; S.openEntry[key]=!S.openEntry[key];
     if(S.openEntry[key]){box.setAttribute("data-open","");box.querySelector(".entry-body").innerHTML=bodyHtml(entryByKey(key));decorate(box);}
-    else{box.removeAttribute("data-open");box.querySelector(".entry-body").innerHTML="";}
+    else{box.removeAttribute("data-open");box.querySelector(".entry-body").innerHTML=""; if(S.play&&S.play.key===key) playStop();}
     head.setAttribute("aria-expanded",String(!!S.openEntry[key])); updateDock(); return;
   }
   if(S.tool==="pen"||S.tool==="erase") return;
   var hit=e.target.closest("[data-hid]"); var sel=window.getSelection();
   if(hit && (!sel||sel.isCollapsed)){ openSheet(hit.closest(".entry").dataset.key,hit.dataset.hid); }
+});
+
+/* ---------- listen to a whole entry (Oct 2026) ----------
+   Reads each sentence in order with the chosen voice and speed, lights up the current line,
+   and puts player controls in the bottom toolbar. Shadowing leaves a gap after each line for you to repeat it. */
+S.play=null; S.playShadow=!!recall("kc-play-shadow"); S.playLoop=!!recall("kc-play-loop");
+var playU=null;
+function playLineText(l){ var t=stripFuri(String(l&&l.jp||"")).trim(); return t.replace(new RegExp("^(Me|"+CHAT_NAME+")[：:]\\s*"),"").trim(); }
+function playStart(key){
+  var en=entryByKey(key); if(!en||!TTS) return;
+  playStop(true);
+  var list=[]; en.lines.forEach(function(l,i){ if(playLineText(l)) list.push(i); });
+  if(!list.length){ toast("Nothing to read in this entry."); return; }
+  if(!S.openEntry[key]){ var box=document.querySelector('.entry[data-key="'+key+'"]'), head=box&&box.querySelector(".entry-head"); if(head) head.click(); }
+  S.play={key:key,list:list,idx:0,paused:false,timer:null};
+  playStep();
+}
+function playStep(){
+  var p=S.play; if(!p) return;
+  clearTimeout(p.timer);
+  if(p.idx>=p.list.length){ if(S.playLoop) p.idx=0; else { playStop(); return; } }
+  var en=entryByKey(p.key); if(!en){ playStop(); return; }
+  var li=p.list[p.idx], text=playLineText(en.lines[li]);
+  p.turn=false; playMark(true); renderPlayer();
+  try{ speechSynthesis.cancel(); }catch(e){}
+  var t=text; if(!/[。！？!?、．.]$/.test(t)) t+="。";
+  var u=new SpeechSynthesisUtterance(t); u.lang="ja-JP"; if(voiceJa) u.voice=voiceJa; u.rate=S.rate==="slow"?0.65:0.95;
+  var t0=0; u.onstart=function(){ t0=Date.now(); };
+  u.onend=u.onerror=function(){
+    if(playU!==u||S.play!==p||p.paused) return;
+    var took=t0?Date.now()-t0:1500;
+    var gap=S.playShadow?Math.max(1500,Math.round(took*1.15)+500):650;
+    if(S.playShadow){ p.turn=true; playMark(); renderPlayer(); }
+    p.timer=setTimeout(function(){ if(S.play!==p||p.paused) return; p.idx++; playStep(); },gap);
+  };
+  playU=u; setTimeout(function(){ if(playU===u&&S.play===p&&!p.paused){ try{ speechSynthesis.resume(); }catch(e){} speechSynthesis.speak(u); } },60);
+}
+function playMark(scroll){
+  document.querySelectorAll(".jline.playing,.jline.your-turn").forEach(function(x){ x.classList.remove("playing","your-turn"); });
+  var p=S.play; if(!p) return;
+  var line=document.querySelector('.entry[data-key="'+p.key+'"] .jline[data-li="'+p.list[p.idx]+'"]'); if(!line) return;
+  line.classList.add("playing"); if(p.turn) line.classList.add("your-turn");
+  if(scroll){ var r=line.getBoundingClientRect(); if(r.top<90||r.bottom>window.innerHeight-150) line.scrollIntoView({block:"center",behavior:"smooth"}); }
+}
+function playToggle(){
+  var p=S.play; if(!p) return;
+  if(p.paused){ p.paused=false; playStep(); }
+  else { p.paused=true; clearTimeout(p.timer); playU=null; try{ speechSynthesis.cancel(); }catch(e){} p.turn=false; playMark(); renderPlayer(); }
+}
+function playSkip(d){ var p=S.play; if(!p) return; p.idx=Math.max(0,Math.min(p.list.length-1,p.idx+d)); p.paused=false; playStep(); }
+function playStop(quiet){
+  var p=S.play; if(p) clearTimeout(p.timer);
+  S.play=null; playU=null; if(TTS){ try{ speechSynthesis.cancel(); }catch(e){} }
+  playMark(); if(!quiet) renderPlayer();
+}
+var ICO_PAUSE='<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
+var ICO_PREV='<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M6 5h2v14H6zM20 6.2v11.6a.8.8 0 0 1-1.2.7L9.8 12.7a.8.8 0 0 1 0-1.4l9-5.8a.8.8 0 0 1 1.2.7z"/></svg>';
+var ICO_NEXT='<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M16 5h2v14h-2zM4 6.2v11.6a.8.8 0 0 0 1.2.7l9-5.8a.8.8 0 0 0 0-1.4l-9-5.8A.8.8 0 0 0 4 6.2z"/></svg>';
+var ICO_STOP='<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
+var ICO_LOOP='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 2l3 3-3 3"/><path d="M4 11V9a4 4 0 0 1 4-4h12"/><path d="M7 22l-3-3 3-3"/><path d="M20 13v2a4 4 0 0 1-4 4H4"/></svg>';
+var ICO_SHADOW='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';
+function renderPlayer(){
+  var p=S.play, box=$("#dock-player"); document.body.classList.toggle("kc-playing",!!p);
+  document.querySelectorAll('[data-act="play-entry"]').forEach(function(b){ var on=!!p&&p.key===b.dataset.key&&!p.paused; b.classList.toggle("on",!!p&&p.key===b.dataset.key); b.innerHTML=(on?ICO_PAUSE:ICO_PLAY)+'<span>'+(on?'Pause':'Listen')+'</span>'; b.setAttribute("aria-label",on?"Pause":"Listen to the whole entry"); });
+  if(!box) return;
+  if(!p){ box.hidden=true; box.innerHTML=""; return; }
+  var en=entryByKey(p.key)||{};
+  box.hidden=false;
+  box.innerHTML='<div class="pl-now"><b lang="ja">'+rubyText(String(en.title||"").split(/\s[(（]/)[0])+'</b><span>'+(p.turn?'<em>Your turn, say it</em>':p.paused?'Paused':'Sentence')+' '+(p.idx+1)+' of '+p.list.length+'</span></div>'+
+    '<div class="pl-ctl"><button class="tbtn" data-act="pl-prev" aria-label="Previous sentence">'+ICO_PREV+'</button>'+
+    '<button class="tbtn pl-main" data-act="pl-toggle" aria-label="'+(p.paused?'Play':'Pause')+'">'+(p.paused?ICO_PLAY:ICO_PAUSE)+'</button>'+
+    '<button class="tbtn" data-act="pl-next" aria-label="Next sentence">'+ICO_NEXT+'</button>'+
+    '<button class="tbtn" data-act="pl-stop" aria-label="Stop">'+ICO_STOP+'</button><span class="dock-sep"></span>'+
+    '<button class="tbtn" data-act="pl-shadow" aria-pressed="'+S.playShadow+'" title="Shadowing: a pause after each line for you to repeat it">'+ICO_SHADOW+'<span>Shadow</span></button>'+
+    '<button class="tbtn" data-act="pl-loop" aria-pressed="'+S.playLoop+'" title="Loop the entry">'+ICO_LOOP+'<span>Loop</span></button></div>';
+}
+document.addEventListener("click",function(e){
+  var a=e.target.closest("#dock-player [data-act]"); if(!a) return; var act=a.dataset.act;
+  if(act==="pl-toggle") playToggle(); else if(act==="pl-prev") playSkip(-1); else if(act==="pl-next") playSkip(1); else if(act==="pl-stop") playStop();
+  else if(act==="pl-shadow"){ S.playShadow=!S.playShadow; store("kc-play-shadow",S.playShadow); renderPlayer(); }
+  else if(act==="pl-loop"){ S.playLoop=!S.playLoop; store("kc-play-loop",S.playLoop); renderPlayer(); }
 });
 
 /* dock */
@@ -2686,7 +2820,8 @@ function renderHome(){
     else if(S.error&&!S.loading) el.innerHTML='<div class="loadfail"><b>Couldn’t open your notebook.</b><p>'+sheetErr(S.error)+'</p><div class="row"><button class="btn primary" data-act="retry-load">Try again</button><a class="btn" href="#setup">Sign in again</a></div></div>';
     else el.innerHTML=LOADER_HTML;
     return;}
-  var RI=rankInfo(), R=RANKS[RI.idx], NX=RANKS[RI.idx+1], inRank=RI.idx>=5?100:Math.round((RI.score-RI.idx*20)/20*100);
+  var RI=rankInfo(), R=RANKS[RI.idx], NX=RANKS[RI.idx+1], inRank=RI.idx>=5?100:Math.round((RI.score-RI.lo)/(RI.hi-RI.lo)*100);
+  rankUpCheck(RI);
   var t=today(), due=S.words.filter(function(w){return !w.next||w.next<=t;});
   if(!S.previewW||S.words.indexOf(S.previewW)<0){var pool=due.length?due:S.words; S.previewW=pool[Math.floor(Math.random()*pool.length)]||null;}
   var w=S.previewW, size=S.size==="all"?"all":S.size, last=S.entries[0];
@@ -2713,7 +2848,7 @@ function renderHome(){
     '<div class="mt-addslot'+(S.homeAdd?' on':'')+'" id="home-addslot"></div><div class="mt-row">'+
     mt({go:"rank",c:"var(--cv-r"+RI.idx+")",jp:"段位",en:"Mastery",mark:R.k.slice(-1),
       face:'<span class="f-seal" lang="ja">'+R.k+'</span>',
-      sub:R.en+', '+(NX?Math.max(1,Math.ceil((RI.idx+1)*20-RI.score))+'% to next':'top rank')})+
+      sub:R.en+', '+(NX?Math.max(1,Math.ceil(RI.hi-RI.score))+'% to next':'top rank')})+
     mt({go:"cards",c:"var(--d-ai)",jp:"札",en:"Flashcards",mark:"札",
       face:'<span class="f-num">'+due.length+'</span><span class="f-cap">due</span>',
       sub:w?'Try <span lang="ja">'+esc(w.jp)+'</span>':'No words yet'})+
