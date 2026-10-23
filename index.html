@@ -1129,6 +1129,17 @@ main.wrap{padding-top:24px;padding-bottom:80px}
 .mtiles .mt.wide .mt-add:hover{background:var(--sun)}
 .greet-date [lang="ja"]{background:var(--sun-soft);padding:1px 8px;border-radius:999px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--sun) 70%,transparent)}
 @media (max-width:420px){.mt.wide .wb{overflow:hidden}.mt.wide .wb-wotd .wb-word{max-width:100%}.mt.wide .wb-wotd .wb-jp{font-size:clamp(1.25rem,6.2vw,1.9rem);max-width:calc(100% - 36px)}}
+/* pills stay put: each has its own fixed spot. An open pill grows left over its neighbour instead of pushing it.
+   Sync sits rightmost, Appearance to its left. */
+.pills{width:96px;height:44px}
+.pills>.pill{position:absolute;top:0;right:0}
+.pills>#theme-pill{right:52px}
+.pills>.pill.open{z-index:2}
+.pills.both-open>#theme-pill{right:0;top:50px}
+/* sign out sits last, next to the dot, set apart by a thin line */
+.pill-body [data-act="signout"]{margin-left:6px;position:relative}
+.pill-body [data-act="signout"]::before{content:"";position:absolute;left:-6px;top:8px;bottom:8px;width:1px;background:var(--line)}
+.pill-body [data-act="signout"]:hover{color:var(--warn)}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="favicon.png">
@@ -2497,7 +2508,7 @@ function sizePill(p){
 }
 function openPill(p,open){
   if(!open && p._pinned){ p._pinned=false; savePins(); }
-  document.querySelectorAll(".pill").forEach(function(o){ if(o!==p && o.classList.contains("open") && !o._pinned){o.classList.remove("open");o.querySelector(".pill-face").setAttribute("aria-expanded","false");sizePill(o);} });
+  if(open) document.querySelectorAll(".pill").forEach(function(o){ if(o!==p && o.classList.contains("open") && !o._pinned){o.classList.remove("open");o.querySelector(".pill-face").setAttribute("aria-expanded","false");sizePill(o);} });
   p.classList.toggle("open",open); p.querySelector(".pill-face").setAttribute("aria-expanded",String(open)); sizePill(p);
   $(".pills").classList.toggle("theme-open",$("#theme-pill").classList.contains("open"));
   $(".pills").classList.toggle("both-open",$("#theme-pill").classList.contains("open")&&$("#sync-pill").classList.contains("open"));
