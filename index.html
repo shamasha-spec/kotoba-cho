@@ -1180,6 +1180,12 @@ main.wrap{padding-top:24px;padding-bottom:80px}
 .startbox>.row:has(+ .msg:empty:last-child){margin-bottom:20px}
 /* ---------- phone home (Oct 2026) ---------- */
 .mt-row{display:contents}
+/* アンちゃん closed for the day: a small button brings the chat back */
+.hchat.chip{background:none;border:0;box-shadow:none;padding:0;margin:0 0 12px;overflow:visible}
+.hc-reopen{display:inline-flex;align-items:center;gap:8px;padding:5px 14px 5px 5px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font:inherit;font-size:.85rem;cursor:pointer;transition:border-color .2s,background .2s}
+.hc-reopen:hover{border-color:var(--ai);background:var(--ai-soft)}
+.hc-reopen .hc-av{width:30px;height:30px;flex:none}
+.hc-reopen span:last-child{color:var(--muted)}
 /* practice sets: room above the cards so a hop isn't cut off */
 .shelf{padding-top:14px;margin-top:-10px}
 @media (max-width:520px){
@@ -1200,11 +1206,8 @@ main.wrap{padding-top:24px;padding-bottom:80px}
   .mtiles .mt.wide .mt-stack{transition:opacity .25s}
   .mtiles .mt.wide.adding .mt-stack{opacity:0;pointer-events:none}
   .mtiles .mt.wide .mt-add{z-index:3}
-  /* the other tiles slide side to side, like Practice sets */
-  .mt-row{grid-column:1/-1;display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 20px;margin:-10px -20px 0;padding:14px 20px 8px;scrollbar-width:none;overscroll-behavior-x:contain}
-  .mt-row::-webkit-scrollbar{display:none}
-  .mt-row>.mt{flex:0 0 calc((100% - 24px)/2.25);scroll-snap-align:start;min-height:0!important;display:flex;flex-direction:column;padding:14px 14px 12px}
-  .kc-learner .mt-row>.mt{flex-basis:calc((100% - 12px)/2)}
+  /* the other tiles: all on screen, two per row */
+  .mt-row>.mt{min-height:0!important;display:flex;flex-direction:column;padding:14px 14px 12px}
   /* picture on top, words below: never overlapping */
   .mt-row>.mt .mt-stack{position:relative!important;left:auto!important;top:auto!important;width:76px!important;height:76px!important;flex:none}
   .mt-row>.mt .mt-lab{position:static!important;margin-top:auto;padding-top:14px;justify-items:end;text-align:right}
@@ -3342,7 +3345,8 @@ async function chatToJournal(){
 }
 function chatHtml(){
   if(!sample||!S.loaded) return "";
-  var c=chatToday(); if(c.dismissed) return "";
+  var c=chatToday();
+  if(c.dismissed) return '<section class="hchat chip" aria-label="'+CHAT_NAME+'"><button class="hc-reopen" data-act="hc-reopen" title="Open today’s chat"><span class="hc-av" aria-hidden="true">'+HAV+'</span><b lang="ja">'+CHAT_NAME+'</b><span>'+(c.msgs.length?'Today’s chat':'Say hi')+'</span></button></section>';
   var intro=c.intro; 
   var rows=c.msgs.map(function(m,i){
     if(m.me) return '<div class="hc-row me"><div class="hc-b me" lang="ja">'+esc(m.text)+'</div>'+
@@ -3355,7 +3359,7 @@ function chatHtml(){
   var foot='';
   if(c.err) foot+='<div class="msg err" style="display:block">'+c.err+' <button class="linkbtn" data-act="hc-retry">Try again</button></div>';
   if(!c.done&&c.msgs.length) foot+='<div class="hc-input"><input type="text" id="hc-in" lang="ja" autocomplete="off" placeholder="Reply to '+CHAT_NAME+'…" value="'+esc(S.chatDraft)+'"'+(S.chatBusy?' disabled':'')+'><button class="btn primary" data-act="hc-send"'+(S.chatBusy?' disabled':'')+' aria-label="Send">Send</button></div><div class="hc-hint">Turn '+Math.min(c.turn+1,CHAT_TURNS)+' of '+CHAT_TURNS+' · tap '+CHAT_NAME+'’s message for English</div>';
-  if(c.done) foot+='<div class="row hc-done">'+(c.saved?'<span class="hint">Saved to your Journal tab.</span>':'<button class="btn primary small" data-act="hc-save">Save to journal</button>')+'<button class="btn ghost small" data-act="hc-close">Close until tomorrow</button></div>';
+  if(c.done) foot+='<div class="row hc-done">'+(c.saved?'<span class="hint">Saved to your Journal tab.</span>':'<button class="btn primary small" data-act="hc-save">Save to journal</button>')+'<button class="btn ghost small" data-act="hc-close">Close</button></div>';
   var themMsgs=c.msgs.filter(function(m){return !m.me;}), lastThem=themMsgs[themMsgs.length-1];
   var unread=Math.max(0,themMsgs.length-(c.seen||0));
   if(!S.chatUI){
@@ -3391,6 +3395,7 @@ function renderChat(){
     else if(act==="hc-retry"){ var c=S.chat; c.err=""; if(!c.msgs.length) chatOpen(); else renderChat(); }
     else if(act==="hc-save"){ chatToJournal(); }
     else if(act==="hc-close"){ S.chat.dismissed=true; chatSave(); renderChat(); }
+    else if(act==="hc-reopen"){ S.chat.dismissed=false; S.chatUI=true; chatSave(); renderChat(); }
     else if(act==="hc-toggle"){ chatToggle(); }
   },true);
   h.addEventListener("input",function(e){ if(e.target.id==="hc-in") S.chatDraft=e.target.value; });
