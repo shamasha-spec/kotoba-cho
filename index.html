@@ -1183,19 +1183,23 @@ main.wrap{padding-top:24px;padding-bottom:80px}
 /* practice sets: room above the cards so a hop isn't cut off */
 .shelf{padding-top:14px;margin-top:-10px}
 @media (max-width:520px){
-  /* Word of the day: the word gets the full card width. Picture and + sit on top, label at the bottom. Text flows, so big system fonts can't overlap. */
-  .mtiles .mt.wide{display:flex;flex-direction:column;min-height:0!important;padding:70px 16px 14px}
-  .mtiles .mt.wide .mt-stack{width:50px!important;height:50px!important;left:16px!important;top:14px!important}
-  .mtiles .mt.wide .wb{position:static!important;height:auto!important;overflow:visible!important}
-  .mtiles .mt.wide .wb-cap{position:absolute;top:26px;left:78px;right:70px;justify-content:center;font-size:.66rem!important;flex-wrap:wrap;row-gap:0}
+  /* Word of the day, like the laptop: card picture on the left, the word beside it, label along the bottom. Grid flow, so big system fonts can't overlap. */
+  .mtiles .mt.wide{display:grid!important;grid-template-columns:92px minmax(0,1fr);grid-template-rows:auto 1fr auto;column-gap:10px;padding:16px 16px 14px!important;min-height:250px!important}
+  .mtiles .mt.wide .mt-stack{position:relative!important;left:auto!important;top:auto!important;width:84px!important;height:84px!important;grid-column:1;grid-row:1/3;align-self:center}
+  .mtiles .mt.wide .wb{position:static!important;height:auto!important;overflow:visible!important;grid-column:2;grid-row:1/3;align-self:center;padding-top:22px}
+  .mtiles .mt.wide .wb-cap{position:static!important;justify-content:center;margin-bottom:4px;font-size:.66rem!important;flex-wrap:wrap;row-gap:0}
   .mtiles .mt.wide .wb-cap [lang="ja"]{font-size:.86rem!important}
-  .mtiles .mt.wide .wb-wotd .wb-jp{font-size:clamp(2rem,10vw,2.5rem)!important;line-height:1.4}
+  .mtiles .mt.wide .wb-wotd .wb-jp{font-size:clamp(2.2rem,11vw,2.7rem)!important;line-height:1.4}
   .mtiles .mt.wide .wb-wotd .wb-mean{font-size:.98rem!important;line-height:1.35;margin-top:2px}
   .mtiles .mt.wide .wb-wotd .say{width:34px;height:34px}
-  .mtiles .mt.wide .mt-lab{position:static!important;display:block;text-align:right;margin-top:14px;padding-top:10px;border-top:1px dashed color-mix(in srgb,var(--sun) 70%,var(--line))}
+  .mtiles .mt.wide .mt-lab{grid-column:1/-1;grid-row:3;position:static!important;display:block;text-align:right;margin-top:14px;padding-top:10px;border-top:1px dashed color-mix(in srgb,var(--sun) 70%,var(--line))}
   .mtiles .mt.wide .mt-lab [lang="ja"],.mtiles .mt.wide .mt-lab b{display:inline;font-size:.95rem;margin-left:6px}
   .mtiles .mt.wide .mt-lab small{display:block;-webkit-line-clamp:1}
-  .mtiles .mt.wide .f-word{font-size:.8rem!important}
+  .mtiles .mt.wide .f-word{font-size:1rem!important}
+  .mtiles .mt.wide.adding .wb{grid-column:1/-1;padding-top:40px}
+  .mtiles .mt.wide .mt-stack{transition:opacity .25s}
+  .mtiles .mt.wide.adding .mt-stack{opacity:0;pointer-events:none}
+  .mtiles .mt.wide .mt-add{z-index:3}
   /* the other tiles slide side to side, like Practice sets */
   .mt-row{grid-column:1/-1;display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 20px;margin:-10px -20px 0;padding:14px 20px 8px;scrollbar-width:none;overscroll-behavior-x:contain}
   .mt-row::-webkit-scrollbar{display:none}
