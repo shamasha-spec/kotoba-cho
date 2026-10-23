@@ -1140,6 +1140,34 @@ main.wrap{padding-top:24px;padding-bottom:80px}
 .pill-body [data-act="signout"]{margin-left:6px;position:relative}
 .pill-body [data-act="signout"]::before{content:"";position:absolute;left:-6px;top:8px;bottom:8px;width:1px;background:var(--line)}
 .pill-body [data-act="signout"]:hover{color:var(--warn)}
+/* brand colours stay true to the logo in every theme */
+:root{--logo:#2C4870;--logo-shade:#1C2220;--logo-page:#F7F2E7;--logo-back:#D6D9D2;--logo-ribbon:#B3362F}
+.ld-b3 .front,.ld-b3 .back{background:var(--logo)}
+.ld-b3 .front i{color:var(--logo);background:var(--logo-page)}
+.ld-b3 .front::after{background:var(--logo-ribbon)}
+.ld-b3 .back{background:color-mix(in srgb,var(--logo) 80%,#000)}
+.ld-b3 .spine{background-color:color-mix(in srgb,var(--logo) 70%,#000);background-image:radial-gradient(circle,var(--logo-page) 0 1.3px,transparent 1.8px)}
+.ld-b3 .edge{background:repeating-linear-gradient(90deg,var(--logo-page) 0 2px,color-mix(in srgb,var(--logo-page) 82%,#000) 2px 3px)}
+:root[data-theme="dark"] .logo{filter:drop-shadow(0 0 1px rgba(255,255,255,.22))}
+:root[data-theme="dark"] .ld-b3 .front{box-shadow:inset 6px 0 0 rgba(0,0,0,.18),inset 0 0 0 1px rgba(255,255,255,.22)}
+:root[data-theme="dark"] .ld-b3 .back,:root[data-theme="dark"] .ld-b3 .spine{box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]):not([data-theme="reading"]) .logo{filter:drop-shadow(0 0 1px rgba(255,255,255,.22))}
+  :root:not([data-theme="light"]):not([data-theme="reading"]) .ld-b3 .front{box-shadow:inset 6px 0 0 rgba(0,0,0,.18),inset 0 0 0 1px rgba(255,255,255,.22)}
+  :root:not([data-theme="light"]):not([data-theme="reading"]) .ld-b3 .back,:root:not([data-theme="light"]):not([data-theme="reading"]) .ld-b3 .spine{box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}}
+/* word of the day: a slim highlighter stroke under the word, softer in dark mode */
+:root{--wotd-hl:color-mix(in srgb,var(--sun) 85%,transparent)}
+:root[data-theme="dark"]{--wotd-hl:color-mix(in srgb,var(--sun-ink) 28%,transparent)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]):not([data-theme="reading"]){--wotd-hl:color-mix(in srgb,var(--sun-ink) 28%,transparent)}}
+.wb-wotd .wb-jp{background:linear-gradient(transparent 72%,var(--wotd-hl) 72%,var(--wotd-hl) 90%,transparent 90%);padding:0 6px}
+.wb-mean span{display:inline!important;margin:0!important}
+.wb-dot{font-style:normal;color:var(--muted);margin:0 7px}
+/* sign-in greeting */
+#kc-setup .kc-brand p{display:grid;gap:2px}
+#kc-setup .kc-hello{font-family:"Shippori Mincho",serif;font-size:1.15rem;color:var(--ink,#1c2220)}
+/* when sync opens, appearance tucks in behind it, then slides back out */
+.pills>#theme-pill{transition:width .55s cubic-bezier(.34,1.42,.6,1),box-shadow .3s,border-color .3s,transform .42s cubic-bezier(.22,.9,.24,1) .12s,opacity .28s ease .16s}
+.pills:not(.both-open)>#sync-pill.open~#theme-pill{transform:translateX(52px) scale(.7);opacity:0;pointer-events:none;transition:width .55s cubic-bezier(.34,1.42,.6,1),box-shadow .3s,border-color .3s,transform .36s cubic-bezier(.4,0,.6,1),opacity .22s ease .08s}
+@media (prefers-reduced-motion: reduce){.pills>#theme-pill,.pills:not(.both-open)>#sync-pill.open~#theme-pill{transition:none}}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="favicon.png">
@@ -1264,6 +1292,7 @@ body.kc-locked{overflow:hidden}
     }
     localStorage.setItem("kc-lastuser",user);
   }
+  function kcHello(){ var h=new Date().getHours(); return h>=4&&h<11?"おはよう！":h<18?"こんにちは！":"こんばんは！"; }
   window.kcSignIn=showSetup;
   window.kcSignOut=async function(){
     try{ await call({action:"logout"}); }catch(e){}
@@ -1271,7 +1300,7 @@ body.kc-locked{overflow:hidden}
   };
   document.addEventListener("DOMContentLoaded",function(){
     var d=document.createElement("div"); d.id="kc-setup"; d.setAttribute("role","dialog"); d.setAttribute("aria-modal","true"); d.setAttribute("aria-labelledby","kc-setup-h");
-    d.innerHTML='<form autocomplete="on" novalidate><div class="kc-brand"><svg viewBox="0 0 48 60" aria-hidden="true"><rect x="11" y="6" width="33" height="46" rx="3" fill="#D6D9D2"/><rect x="6" y="3" width="35" height="48" rx="4" fill="#2C4870"/><rect x="6" y="3" width="8" height="48" rx="3" fill="#1C2220" opacity=".28"/><g fill="#F7F2E7"><circle cx="10" cy="11" r="1.4"/><circle cx="10" cy="20" r="1.4"/><circle cx="10" cy="29" r="1.4"/><circle cx="10" cy="38" r="1.4"/><circle cx="10" cy="46" r="1.4"/></g><rect x="19" y="10" width="16" height="22" rx="1.5" fill="#F7F2E7"/><text x="27" y="26.5" text-anchor="middle" font-family="Shippori Mincho,serif" font-weight="700" font-size="13" fill="#2C4870">言</text><path d="M31 51v8l3.5-2.6L38 59v-8z" fill="#B3362F"/></svg><h1 id="kc-setup-h" lang="ja">言葉帳</h1><p>Sign in to continue</p></div>'+
+    d.innerHTML='<form autocomplete="on" novalidate><div class="kc-brand"><svg viewBox="0 0 48 60" aria-hidden="true"><rect x="11" y="6" width="33" height="46" rx="3" fill="#D6D9D2"/><rect x="6" y="3" width="35" height="48" rx="4" fill="#2C4870"/><rect x="6" y="3" width="8" height="48" rx="3" fill="#1C2220" opacity=".28"/><g fill="#F7F2E7"><circle cx="10" cy="11" r="1.4"/><circle cx="10" cy="20" r="1.4"/><circle cx="10" cy="29" r="1.4"/><circle cx="10" cy="38" r="1.4"/><circle cx="10" cy="46" r="1.4"/></g><rect x="19" y="10" width="16" height="22" rx="1.5" fill="#F7F2E7"/><text x="27" y="26.5" text-anchor="middle" font-family="Shippori Mincho,serif" font-weight="700" font-size="13" fill="#2C4870">言</text><path d="M31 51v8l3.5-2.6L38 59v-8z" fill="#B3362F"/></svg><h1 id="kc-setup-h" lang="ja">言葉帳</h1><p><b class="kc-hello" lang="ja">'+kcHello()+'</b>Sign in to continue</p></div>'+
       '<div class="kc-field"><label for="kc-url">Username</label><input id="kc-url" name="username" type="text" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Username"></div>'+
       '<div class="kc-field kc-pass"><label for="kc-tok">Password</label><input id="kc-tok" name="password" type="password" autocomplete="current-password" placeholder="Password"><button type="button" class="kc-eye" id="kc-eye" aria-label="Show password" aria-pressed="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div>'+
       '<button type="submit" class="kc-go" id="kc-test">Sign in</button><div class="kc-msg" id="kc-msg" role="status" aria-live="polite"></div>'+
@@ -1289,7 +1318,7 @@ body.kc-locked{overflow:hidden}
       try{
         var j=await call({action:"login",user:user,password:t},{token:""});
         switchUser(j.me.user,j.me.role);
-        localStorage.setItem(KEY,JSON.stringify({v:2,token:j.token,me:j.me})); m.className="kc-msg ok"; m.textContent="Welcome back, "+j.me.name; tok.type="password"; setTimeout(function(){ location.href=location.pathname; },500);
+        localStorage.setItem(KEY,JSON.stringify({v:2,token:j.token,me:j.me})); m.className="kc-msg ok"; m.innerHTML='<span lang="ja">おかえり、</span>'+j.me.name.replace(/[<>&"]/g,"")+'！ Welcome back'; tok.type="password"; setTimeout(function(){ location.href=location.pathname; },500);
       }
       catch(e){ fail(e&&e.code==="server_unavailable"?"Can’t reach your notebook right now. Try again in a moment.":e&&e.code==="locked"?"Too many tries. Wait 15 minutes, then try again.":"That username or password didn’t work."); }
     });
@@ -1304,13 +1333,13 @@ body.kc-locked{overflow:hidden}
 <header class="top"><div class="wrap">
   <div class="brand">
     <div class="brand-mark"><svg class="logo" viewBox="0 0 48 60" aria-hidden="true">
-      <rect x="11" y="6" width="33" height="46" rx="3" fill="var(--line)"/>
-      <rect x="6" y="3" width="35" height="48" rx="4" fill="var(--ai)"/>
-      <rect x="6" y="3" width="8" height="48" rx="3" fill="var(--ink)" opacity=".28"/>
-      <g fill="var(--paper)"><circle cx="10" cy="11" r="1.4"/><circle cx="10" cy="20" r="1.4"/><circle cx="10" cy="29" r="1.4"/><circle cx="10" cy="38" r="1.4"/><circle cx="10" cy="46" r="1.4"/></g>
-      <rect x="19" y="10" width="16" height="22" rx="1.5" fill="var(--paper)"/>
-      <text x="27" y="26.5" text-anchor="middle" font-family="Shippori Mincho, Hiragino Mincho ProN, Yu Mincho, serif" font-weight="700" font-size="13" fill="var(--ai)">言</text>
-      <path d="M31 51v8l3.5-2.6L38 59v-8z" fill="var(--rk-5)"/>
+      <rect x="11" y="6" width="33" height="46" rx="3" fill="var(--logo-back)"/>
+      <rect x="6" y="3" width="35" height="48" rx="4" fill="var(--logo)"/>
+      <rect x="6" y="3" width="8" height="48" rx="3" fill="var(--logo-shade)" opacity=".28"/>
+      <g fill="var(--logo-page)"><circle cx="10" cy="11" r="1.4"/><circle cx="10" cy="20" r="1.4"/><circle cx="10" cy="29" r="1.4"/><circle cx="10" cy="38" r="1.4"/><circle cx="10" cy="46" r="1.4"/></g>
+      <rect x="19" y="10" width="16" height="22" rx="1.5" fill="var(--logo-page)"/>
+      <text x="27" y="26.5" text-anchor="middle" font-family="Shippori Mincho, Hiragino Mincho ProN, Yu Mincho, serif" font-weight="700" font-size="13" fill="var(--logo)">言</text>
+      <path d="M31 51v8l3.5-2.6L38 59v-8z" fill="var(--logo-ribbon)"/>
     </svg>
     <h1 lang="ja"><ruby>言葉<rt>ことば</rt></ruby><ruby>帳<rt>ちょう</rt></ruby></h1></div>
     <div class="pills">
@@ -2735,7 +2764,7 @@ function wotdHtml(){
   var w=p.w;
   return '<div class="wb-wotd"><div class="wb-cap"><span lang="ja">今日の言葉</span>Word of the day</div>'+
     '<div class="wb-word"><span class="wb-jp" lang="ja">'+rubyWord(w.jp,w.kana)+'</span>'+sayBtn(w.kana||w.jp,"Hear "+w.jp)+'</div>'+
-    '<div class="wb-mean">'+esc(w.en)+(w.romaji?' <span>'+esc(w.romaji)+'</span>':'')+'</div></div>';
+    '<div class="wb-mean">'+(w.romaji?'<span>'+esc(w.romaji)+'</span><i class="wb-dot" aria-hidden="true">·</i>':'')+esc(w.en)+'</div></div>';
 }
 function bannerAddHtml(){
   if(S.bannerStep==="preview"){
