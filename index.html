@@ -1211,6 +1211,21 @@ main.wrap{padding-top:24px;padding-bottom:80px}
 #kc-setup form.shake{animation:kcShake .4s}
 @keyframes kcShake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
 body.kc-locked{overflow:hidden}
+/* sign-in card on laptops and tablets; phones stay full screen */
+@media (min-width:700px) and (min-height:540px){
+  #kc-setup form{width:min(400px,100%);background:var(--surface,#fbfbf9);border:1px solid var(--line,#d6d9d2);border-radius:22px;padding:36px 36px 26px;box-shadow:0 28px 60px -28px rgba(0,0,0,.28),0 2px 6px rgba(0,0,0,.04)}
+}
+/* おかえり moment */
+#kc-setup form>*{transition:opacity .24s ease,transform .24s ease}
+#kc-setup form.kc-leaving>*:not(.kc-brand):not(.kc-okaeri),#kc-setup form.kc-leaving .kc-brand p{opacity:0;transform:translateY(6px)}
+#kc-setup form.kc-done{align-content:center}
+#kc-setup form.kc-done>*:not(.kc-brand):not(.kc-okaeri),#kc-setup form.kc-done .kc-brand p{display:none}
+#kc-setup .kc-okaeri{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;padding:6px 0 10px;text-align:center;
+  font-family:"Shippori Mincho",serif;font-weight:700;font-size:clamp(1.6rem,6vw,2.1rem);color:var(--ink,#1c2220);opacity:0;transform:translateY(12px);transition:opacity .45s ease,transform .55s cubic-bezier(.22,.9,.24,1)}
+#kc-setup .kc-okaeri.in{opacity:1;transform:none}
+#kc-setup .kc-okaeri .kc-emo{font-size:.9em;display:inline-block;transform:scale(.4) rotate(-20deg);transition:transform .5s cubic-bezier(.34,1.56,.64,1) .25s}
+#kc-setup .kc-okaeri.in .kc-emo{transform:none}
+@media (prefers-reduced-motion: reduce){#kc-setup form>*,#kc-setup .kc-okaeri,#kc-setup .kc-okaeri .kc-emo{transition:none}}
 /* Phase 5: learner accounts see Home, Words and Review only */
 .kc-learner .tab[data-tab="journal"],.kc-learner .tab[data-tab="grammar"],.kc-learner #v-journal,.kc-learner #v-grammar,
 .kc-learner .mt[data-go="journal"],.kc-learner .mt[data-go="grammar"],.kc-learner #hchat-slot,
@@ -1302,6 +1317,16 @@ body.kc-locked{overflow:hidden}
     }
     localStorage.setItem("kc-lastuser",user);
   }
+  /* おかえり moment: the form fades away and a big greeting rises under the logo. Three emojis take turns, one per sign-in. */
+  var OKAERI_EMOJI=["🍵","🌸","🎐"];
+  function okaeri(form,me){
+    var i=0; try{ i=(+localStorage.getItem("kc-okaeri")||0)%OKAERI_EMOJI.length; localStorage.setItem("kc-okaeri",String(i+1)); }catch(e){}
+    var nm=String((me&&(me.nameJa||me.name))||"").replace(/[<>&"]/g,"");
+    var box=document.createElement("div"); box.className="kc-okaeri"; box.setAttribute("role","status");
+    box.innerHTML='<span lang="ja">おかえり、'+nm+'</span><span class="kc-emo" aria-hidden="true">'+OKAERI_EMOJI[i]+'</span>';
+    form.style.minHeight=form.offsetHeight+"px"; form.classList.add("kc-leaving");
+    setTimeout(function(){ form.classList.add("kc-done"); form.appendChild(box); requestAnimationFrame(function(){ requestAnimationFrame(function(){ box.classList.add("in"); }); }); },260);
+  }
   function kcHello(){ var h=new Date().getHours(); return h>=4&&h<11?"おはよう！":h<18?"こんにちは！":"こんばんは！"; }
   window.kcSignIn=showSetup;
   window.kcSignOut=async function(){
@@ -1328,7 +1353,8 @@ body.kc-locked{overflow:hidden}
       try{
         var j=await call({action:"login",user:user,password:t},{token:""});
         switchUser(j.me.user,j.me.role);
-        localStorage.setItem(KEY,JSON.stringify({v:2,token:j.token,me:j.me})); m.className="kc-msg ok"; m.innerHTML='<span lang="ja">おかえり、</span>'+j.me.name.replace(/[<>&"]/g,"")+'！ Welcome back'; tok.type="password"; setTimeout(function(){ location.href=location.pathname; },500);
+        localStorage.setItem(KEY,JSON.stringify({v:2,token:j.token,me:j.me})); m.className="kc-msg"; m.textContent=""; tok.type="password";
+        okaeri(form,j.me); setTimeout(function(){ location.href=location.pathname; },1700);
       }
       catch(e){ fail(e&&e.code==="server_unavailable"?"Can’t reach your notebook right now. Try again in a moment.":e&&e.code==="locked"?"Too many tries. Wait 15 minutes, then try again.":"That username or password didn’t work."); }
     });
@@ -2936,7 +2962,7 @@ var GTOPIC={1:"New Friends",2:"Shopping",3:"Making a Date",4:"The First Date",5:
   html=rankHtml()+html;
   html+=GADD_HTML();
   if(!show.length) html+='<p class="empty">'+(f==="rf"?"Nothing marked to reinforce. Tap Reinforce on any point you want to practise.":f==="got"?"No points marked Got it yet.":f==="mine"?"You haven’t added any points yet. Use Add a grammar point above.":"No grammar points.")+'</p>';
-  var SECS=[["genki","","げんき",""],["preply","Preply","プレプリー","From the Preply section of the Grammar tab in your sheet. Add rows there and sync."],["mine","Mine","じぶん","From the My Grammar section of the Grammar tab in your sheet, plus any points you add in the app."]];
+  var SECS=[["genki","Genki","げんき",""],["preply","Preply","プレプリー","From the Preply section of the Grammar tab in your sheet. Add rows there and sync."],["mine","Mine","じぶん","From the My Grammar section of the Grammar tab in your sheet, plus any points you add in the app."]];
   SECS.forEach(function(sd){
     var sec=sd[0], keys=order.filter(function(k){return GSEC(k)===sec;});
     if(!keys.length) return;
