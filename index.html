@@ -1178,6 +1178,34 @@ main.wrap{padding-top:24px;padding-bottom:80px}
 .gl-name .gl-topic{font-family:inherit;color:var(--ink);font-weight:400;margin-left:2px}
 /* review: keep a gap under Start review when there's no message below it */
 .startbox>.row:has(+ .msg:empty:last-child){margin-bottom:20px}
+/* ---------- phone home (Oct 2026) ---------- */
+.mt-row{display:contents}
+/* practice sets: room above the cards so a hop isn't cut off */
+.shelf{padding-top:14px;margin-top:-10px}
+@media (max-width:520px){
+  /* Word of the day: the word gets the full card width. Picture and + sit on top, label at the bottom. Text flows, so big system fonts can't overlap. */
+  .mtiles .mt.wide{display:flex;flex-direction:column;min-height:0!important;padding:70px 16px 14px}
+  .mtiles .mt.wide .mt-stack{width:50px!important;height:50px!important;left:16px!important;top:14px!important}
+  .mtiles .mt.wide .wb{position:static!important;height:auto!important;overflow:visible!important}
+  .mtiles .mt.wide .wb-cap{position:absolute;top:26px;left:78px;right:70px;justify-content:center;font-size:.66rem!important;flex-wrap:wrap;row-gap:0}
+  .mtiles .mt.wide .wb-cap [lang="ja"]{font-size:.86rem!important}
+  .mtiles .mt.wide .wb-wotd .wb-jp{font-size:clamp(2rem,10vw,2.5rem)!important;line-height:1.4}
+  .mtiles .mt.wide .wb-wotd .wb-mean{font-size:.98rem!important;line-height:1.35;margin-top:2px}
+  .mtiles .mt.wide .wb-wotd .say{width:34px;height:34px}
+  .mtiles .mt.wide .mt-lab{position:static!important;display:block;text-align:right;margin-top:14px;padding-top:10px;border-top:1px dashed color-mix(in srgb,var(--sun) 70%,var(--line))}
+  .mtiles .mt.wide .mt-lab [lang="ja"],.mtiles .mt.wide .mt-lab b{display:inline;font-size:.95rem;margin-left:6px}
+  .mtiles .mt.wide .mt-lab small{display:block;-webkit-line-clamp:1}
+  .mtiles .mt.wide .f-word{font-size:.8rem!important}
+  /* the other tiles slide side to side, like Practice sets */
+  .mt-row{grid-column:1/-1;display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 20px;margin:-10px -20px 0;padding:14px 20px 8px;scrollbar-width:none;overscroll-behavior-x:contain}
+  .mt-row::-webkit-scrollbar{display:none}
+  .mt-row>.mt{flex:0 0 calc((100% - 24px)/2.25);scroll-snap-align:start;min-height:0!important;display:flex;flex-direction:column;padding:14px 14px 12px}
+  .kc-learner .mt-row>.mt{flex-basis:calc((100% - 12px)/2)}
+  /* picture on top, words below: never overlapping */
+  .mt-row>.mt .mt-stack{position:relative!important;left:auto!important;top:auto!important;width:76px!important;height:76px!important;flex:none}
+  .mt-row>.mt .mt-lab{position:static!important;margin-top:auto;padding-top:14px;justify-items:end;text-align:right}
+  .mtiles .mt-row>.mt .mt-lab small{-webkit-line-clamp:2}
+}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="favicon.png">
@@ -2675,7 +2703,7 @@ function renderHome(){
       sub:S.words.length+(S.words.length===1?' word':' words')+(newest?', newest: '+esc(newest.en):''),
       extra:'<button class="mt-add'+(S.bannerAdd?' on':'')+'" data-act="addword" data-tip="'+(S.bannerAdd?'Close':'Add a word')+'" aria-expanded="'+!!S.bannerAdd+'"><span class="mt-add-ico" aria-hidden="true">＋</span><span class="mt-add-txt">'+(S.bannerAdd?'Close':'Add a word')+'</span></button>'+
         '<div class="wb" data-state="'+(S.bannerAdd?'add':'wotd')+'">'+wotdHtml()+'<div class="wb-add">'+bannerAddHtml()+'</div></div>'})+
-    '<div class="mt-addslot'+(S.homeAdd?' on':'')+'" id="home-addslot"></div>'+
+    '<div class="mt-addslot'+(S.homeAdd?' on':'')+'" id="home-addslot"></div><div class="mt-row">'+
     mt({go:"rank",c:"var(--cv-r"+RI.idx+")",jp:"段位",en:"Mastery",mark:R.k.slice(-1),
       face:'<span class="f-seal" lang="ja">'+R.k+'</span>',
       sub:R.en+', '+(NX?Math.max(1,Math.ceil((RI.idx+1)*20-RI.score))+'% to next':'top rank')})+
@@ -2688,7 +2716,7 @@ function renderHome(){
     mt({go:"grammar",c:"var(--d-enji)",jp:"文法",en:"Grammar",mark:"文",
       face:'<span class="f-num">'+got+'</span><span class="f-cap">of '+pts.length+'</span>',
       sub:next?'Next <span lang="ja">'+rubyText(next.p)+'</span>':'All marked'})+
-    '</div>';
+    '</div></div>';
   var PLAY='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.4-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>';
   var dk=decks();
   var mixes=[
@@ -3444,7 +3472,7 @@ gEl.addEventListener("click",async function(e){
 /* ---------- swipe between tabs (follows the finger) ---------- */
 (function(){
   var TABS=window.KC_LEARNER?["add","words","review"]:["add","words","review","journal","grammar"];
-  var BLOCK="select,.card,.dock,.ladder,.sheet,.theme-pick,.shelf";
+  var BLOCK="select,.card,.dock,.ladder,.sheet,.theme-pick,.shelf,.mt-row";
   var mainEl=$("main"), nav=$("nav.tabs");
   var g=null, raf=0, EASE="cubic-bezier(.22,.8,.24,1)";
   function cleanup(){
