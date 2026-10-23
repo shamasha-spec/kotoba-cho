@@ -1172,6 +1172,12 @@ main.wrap{padding-top:24px;padding-bottom:80px}
 .pills>#theme-pill{transition:width .55s cubic-bezier(.34,1.42,.6,1),box-shadow .3s,border-color .3s,transform .42s cubic-bezier(.22,.9,.24,1) .12s,opacity .28s ease .16s}
 .pills:not(.both-open)>#sync-pill.open~#theme-pill{transform:translateX(52px) scale(.7);opacity:0;pointer-events:none;transition:width .55s cubic-bezier(.34,1.42,.6,1),box-shadow .3s,border-color .3s,transform .36s cubic-bezier(.4,0,.6,1),opacity .22s ease .08s}
 @media (prefers-reduced-motion: reduce){.pills>#theme-pill,.pills:not(.both-open)>#sync-pill.open~#theme-pill{transition:none}}
+/* grammar: "Lesson 1" bold, theme in normal text */
+.gsec.gsec-ja span{font-size:1.15rem;font-weight:700;color:var(--t-grammar);margin:0}
+.gl-name span[lang="ja"]{white-space:nowrap}
+.gl-name .gl-topic{font-family:inherit;color:var(--ink);font-weight:400;margin-left:2px}
+/* review: keep a gap under Start review when there's no message below it */
+.startbox>.row:has(+ .msg:empty:last-child){margin-bottom:20px}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="favicon.png">
@@ -2921,7 +2927,7 @@ function renderGrammar(){
   var GRANK=function(k){return k==="mine"?3000:k==="my"?2500:k==="pp"?2000:k==="gx"?1000:+k;};
   order.sort(function(a,b){ return GRANK(a)-GRANK(b); });
   var GSEC=function(k){return (k==="mine"||k==="my")?"mine":k==="pp"?"preply":"genki";};
-  var GNAME=function(k){return k==="mine"?'Added in the app <span lang="ja">自分の</span>':k==="my"?'From your sheet <span lang="ja">シート</span>':k==="gx"?'More Genki points <span lang="ja">その他</span>':k==="pp"?'Preply lessons <span lang="ja">レッスン</span>':'Lesson '+k+(GTOPIC[k]?' ('+GTOPIC[k]+')':'')+' <span lang="ja">第'+k+'課</span>';};
+  var GNAME=function(k){return k==="mine"?'Added in the app <span lang="ja">自分の</span>':k==="my"?'From your sheet <span lang="ja">シート</span>':k==="gx"?'More Genki points <span lang="ja">その他</span>':k==="pp"?'Preply lessons <span lang="ja">レッスン</span>':'Lesson '+k+(GTOPIC[k]?' <span class="gl-topic">'+GTOPIC[k]+'</span>':'')+' <span lang="ja">第'+k+'課</span>';};
 /* Genki 1 lesson themes, shown next to each lesson number */
 var GTOPIC={1:"New Friends",2:"Shopping",3:"Making a Date",4:"The First Date",5:"A Trip to Okinawa",6:"A Day in Robert's Life",7:"Family Picture",8:"Barbecue",9:"Kabuki",10:"Winter Vacation Plans",11:"After the Vacation",12:"Feeling Ill"};
   var GALL=function(k){return k==="mine"?(S.gram.custom||[]):(k==="gx"||k==="pp"||k==="my")?(S.sheetG||[]).filter(function(p){return p.l===k;}):GENKI.filter(function(p){return String(p.l)===k;});};
@@ -2930,7 +2936,7 @@ var GTOPIC={1:"New Friends",2:"Shopping",3:"Making a Date",4:"The First Date",5:
   html=rankHtml()+html;
   html+=GADD_HTML();
   if(!show.length) html+='<p class="empty">'+(f==="rf"?"Nothing marked to reinforce. Tap Reinforce on any point you want to practise.":f==="got"?"No points marked Got it yet.":f==="mine"?"You haven’t added any points yet. Use Add a grammar point above.":"No grammar points.")+'</p>';
-  var SECS=[["genki","Genki","げんき",""],["preply","Preply","プレプリー","From the Preply section of the Grammar tab in your sheet. Add rows there and sync."],["mine","Mine","じぶん","From the My Grammar section of the Grammar tab in your sheet, plus any points you add in the app."]];
+  var SECS=[["genki","","げんき",""],["preply","Preply","プレプリー","From the Preply section of the Grammar tab in your sheet. Add rows there and sync."],["mine","Mine","じぶん","From the My Grammar section of the Grammar tab in your sheet, plus any points you add in the app."]];
   SECS.forEach(function(sd){
     var sec=sd[0], keys=order.filter(function(k){return GSEC(k)===sec;});
     if(!keys.length) return;
@@ -2950,7 +2956,7 @@ var GTOPIC={1:"New Friends",2:"Shopping",3:"Making a Date",4:"The First Date",5:
     if(nx) prev+='<span class="gs-line"><b>Next up</b><span lang="ja">'+where(nx.k)+rubyText(nx.p.p)+'</span></span>';
     else if(!rf.length&&!tn.length) prev+='<span class="gs-line"><b>All done</b><span>Every point mastered.</span></span>';
     var open=autoOpen||!!S.glopen["sec-"+sec];
-    html+='<details class="gsecd" data-s="'+sec+'"'+(open?' open':'')+'><summary><span class="gs-top"><span class="gsec">'+sd[1]+'<span lang="ja">'+sd[2]+'</span></span>'+
+    html+='<details class="gsecd" data-s="'+sec+'"'+(open?' open':'')+'><summary><span class="gs-top"><span class="gsec'+(sd[1]?'':' gsec-ja')+'">'+sd[1]+'<span lang="ja">'+sd[2]+'</span></span>'+
       '<span class="gs-circ">'+circleSvg(frac,done)+'<span class="gs-cn"><b>'+got+'/'+secPts.length+'</b><small>mastered</small></span></span></span>'+
       '<span class="gs-prev">'+prev+'</span></summary><div class="gs-body">'+(sd[3]?'<p class="hint gsec-hint">'+sd[3]+'</p>':'');
     keys.forEach(function(k){
