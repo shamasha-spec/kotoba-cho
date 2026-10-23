@@ -1154,12 +1154,16 @@ main.wrap{padding-top:24px;padding-bottom:80px}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]):not([data-theme="reading"]) .logo{filter:drop-shadow(0 0 1px rgba(255,255,255,.22))}
   :root:not([data-theme="light"]):not([data-theme="reading"]) .ld-b3 .front{box-shadow:inset 6px 0 0 rgba(0,0,0,.18),inset 0 0 0 1px rgba(255,255,255,.22)}
   :root:not([data-theme="light"]):not([data-theme="reading"]) .ld-b3 .back,:root:not([data-theme="light"]):not([data-theme="reading"]) .ld-b3 .spine{box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}}
-/* word of the day: a slim highlighter stroke under the word, softer in dark mode */
-:root{--wotd-hl:color-mix(in srgb,var(--sun) 85%,transparent)}
-:root[data-theme="dark"]{--wotd-hl:color-mix(in srgb,var(--sun-ink) 28%,transparent)}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]):not([data-theme="reading"]){--wotd-hl:color-mix(in srgb,var(--sun-ink) 28%,transparent)}}
-.wb-wotd .wb-jp{background:linear-gradient(transparent 72%,var(--wotd-hl) 72%,var(--wotd-hl) 90%,transparent 90%);padding:0 6px}
-.wb-mean span{display:inline!important;margin:0!important}
+/* word of the day: no highlight. The word sits dead centre with the speaker beside it,
+   and "romaji · meaning" is centred under the word in one size. */
+.wb-wotd .wb-jp{background:none;padding:0;max-width:none!important;overflow:visible}
+.wb-wotd .wb-word{display:grid;grid-template-columns:minmax(max-content,1fr) max-content minmax(max-content,1fr);align-items:center;column-gap:10px;width:100%;max-width:100%}
+.wb-wotd .wb-word::before{content:""}
+.wb-wotd .wb-word .say{justify-self:start}
+.wb-wotd .wb-mean{text-align:center}
+.wb-mean span{display:inline!important;margin:0!important;font-size:inherit!important}
+.mt.wide .wb{container-type:inline-size}
+@container (max-width:160px){.wb-wotd .wb-word{display:flex;justify-content:center;gap:6px}.wb-wotd .wb-word::before{display:none}.wb-wotd .wb-mean span,.wb-wotd .wb-dot{display:none!important}}
 .wb-dot{font-style:normal;color:var(--muted);margin:0 7px}
 /* sign-in greeting */
 #kc-setup .kc-brand p{display:grid;gap:2px}
