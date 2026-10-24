@@ -1698,7 +1698,7 @@ async function loadAll(){
   if(!mcp) return;
   S.loading=true; S.error=null; renderStatus();
   try{
-    var got=await Promise.all([getValues("Vocab Bank!A1:O1000"),getValues("Journal!A1:J1001"),getValues("Grammar!A1:G300").catch(function(){return null;})]);
+    var got=await Promise.all([getValues("Vocab Bank!A1:O5000"),getValues("Journal!A1:J1001"),getValues("Grammar!A1:G300").catch(function(){return null;})]);
     S.words=parseVocab(got[0]); S.entries=parseJournal(got[1]); S.loaded=true; S.lastSync=new Date();
     if(got[2]) S.sheetG=parseGrammarTab(got[2]); else S.sheetG=S.sheetG||[];
   }catch(e){ S.error=e; }
@@ -1827,7 +1827,7 @@ async function saveWord(){
     source:F.source.value,tags:F.tags.value.trim(),mastery:F.mastery.value,last:"",next:""};
   b.disabled=true; msg(m,"info","Saving…");
   try{
-    var r=await nextRow("Vocab Bank!B1:B1000");
+    var r=await nextRow("Vocab Bank!B1:B5000");
     var vals=FIELDS.map(function(k){return k==="date"?w.date:cell(w[k]);});
     await updateValues("Vocab Bank!A"+r+":O"+r,[vals]);
     w.row=r; S.words.push(w); if(S.tab==="words") renderWords();
@@ -3298,7 +3298,7 @@ function nwHtml(r){
 }
 async function addWordsToBank(ws,ex){
   if(!mcp||!S.loaded) throw Object.assign(new Error("Connect your sheet first."),{code:"not_granted"});
-  var r=await nextRow("Vocab Bank!B1:B1000"), n=0;
+  var r=await nextRow("Vocab Bank!B1:B5000"), n=0;
   for(var i=0;i<ws.length;i++){
     var w=ws[i]; if(inBank(w.jp,w.kana)){ w.added=true; continue; }
     var verb=w.type==="Verb", adj=/Adjective/.test(w.type);
