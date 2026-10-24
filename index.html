@@ -1213,14 +1213,6 @@ main.wrap{padding-top:24px;padding-bottom:80px}
   .mt-row>.mt .mt-lab{position:static!important;margin-top:auto;padding-top:14px;justify-items:end;text-align:right}
   .mtiles .mt-row>.mt .mt-lab small{-webkit-line-clamp:2}
 }
-/* 茶聖 theme: gold and matcha while you hold the top rank */
-:root.kc-sage{--ai:#3E6B35;--ai-soft:#E4EDD7;--sage-gold:#B8902F}
-:root.kc-sage[data-theme="dark"]{--ai:#B9D48C;--ai-soft:#26321D;--sage-gold:#E3C26A}
-@media (prefers-color-scheme: dark){:root.kc-sage:not([data-theme="light"]):not([data-theme="reading"]){--ai:#B9D48C;--ai-soft:#26321D;--sage-gold:#E3C26A}}
-.kc-sage .top::after{background:linear-gradient(90deg,var(--ai) 0 28%,var(--sage-gold) 28% 33%,transparent 33%)}
-.kc-sage .tab-ind{background:linear-gradient(90deg,var(--ai),var(--sage-gold))}
-.kc-sage .mt[data-go="rank"]{border-color:color-mix(in srgb,var(--sage-gold) 55%,var(--line));box-shadow:0 10px 24px -18px var(--sage-gold)}
-.kc-sage .panel.level{border-color:color-mix(in srgb,var(--sage-gold) 60%,var(--line))}
 .sage-cel{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:24px;background:rgba(20,24,18,.35);opacity:0;transition:opacity .4s}
 .sage-cel.in{opacity:1}
 .sage-card{display:grid;justify-items:center;gap:8px;max-width:320px;text-align:center;padding:28px 26px 24px;border-radius:22px;background:var(--surface);border:1px solid var(--sage-gold,#B8902F);box-shadow:0 30px 60px -20px rgba(0,0,0,.4);transform:translateY(16px) scale(.96);transition:transform .55s cubic-bezier(.34,1.4,.6,1)}
@@ -1236,7 +1228,19 @@ main.wrap{padding-top:24px;padding-bottom:80px}
 .jline{transition:background .25s,box-shadow .25s}
 .jline.playing{background:color-mix(in srgb,var(--ai) 9%,transparent);box-shadow:inset 3px 0 0 var(--ai);border-radius:8px}
 .jline.your-turn{background:color-mix(in srgb,var(--matcha) 12%,transparent);box-shadow:inset 3px 0 0 var(--matcha)}
-body.kc-playing .dock-tools,body.kc-playing .dock-hint,body.kc-playing .selchip{display:none!important}
+body.kc-playing .dock[data-page="player"] .dock-tools,body.kc-playing .dock[data-page="player"] .dock-hint,body.kc-playing .dock[data-page="player"] .selchip{display:none!important}
+body.kc-playing .dock[data-page="tools"] .dock-player{display:none!important}
+.dock-pages{display:flex;justify-content:center;gap:4px;margin-bottom:-2px}
+.dock-pages[hidden]{display:none}
+.dock-pages button{display:inline-flex;align-items:center;gap:5px;border:0;background:none;color:inherit;opacity:.55;font:inherit;font-size:.7rem;letter-spacing:.04em;padding:2px 8px;border-radius:999px;cursor:pointer}
+.dock-pages button i{width:6px;height:6px;border-radius:50%;background:currentColor}
+.dock-pages button[aria-pressed="true"]{opacity:1}
+.dock-pages button[aria-pressed="true"] i{width:16px;border-radius:3px}
+.dock{touch-action:pan-y}
+.pg-in-r{animation:pgInR .28s cubic-bezier(.22,.9,.24,1)}.pg-in-l{animation:pgInL .28s cubic-bezier(.22,.9,.24,1)}
+@keyframes pgInR{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+@keyframes pgInL{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.pg-in-r,.pg-in-l{animation:none}}
 .dock-player{display:grid;gap:6px;padding:2px 2px}
 .dock-player[hidden]{display:none}
 .pl-now{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:0 8px;font-size:.82rem;min-width:0}
@@ -1568,6 +1572,7 @@ body.kc-locked{overflow:hidden}
       <button class="btn small primary" data-act="hl-apply">Highlight</button>
       <button class="btn small" data-act="hl-note">Highlight and add note</button>
     </div>
+    <div class="dock-pages" id="dock-pages" hidden><button data-page="player" aria-label="Player"><i></i><span>Player</span></button><button data-page="tools" aria-label="Pen and highlight tools"><i></i><span>Tools</span></button></div>
     <div class="dock-player" id="dock-player" role="toolbar" aria-label="Entry player" hidden></div>
     <div class="dock-tools" role="toolbar" aria-label="Annotation tools">
       <button class="tbtn" data-tool="read" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V12"/><path d="M11 11.5v-2a1.5 1.5 0 0 1 3 0V12"/><path d="M14 10.5a1.5 1.5 0 0 1 3 0V12"/><path d="M17 11.5a1.5 1.5 0 0 1 3 0V16a6 6 0 0 1-6 6h-1.5a6 6 0 0 1-4.6-2.2L5 16.5a1.6 1.6 0 0 1 2.4-2.1L8 15"/></svg>Read</button>
@@ -1939,10 +1944,10 @@ function rankUpCheck(RI){
   if(prev!==null && RI.idx>prev) setTimeout(function(){ if(RI.idx===5) sageCelebrate(); else toast("Rank up! You’re now "+R.k+", "+R.en+"."); },300);
   store("kc-rank",RI.idx);
 }
-/* 茶聖 reached: a short celebration card. The gold and matcha theme stays on while you hold the rank. */
+/* 茶聖 reached: a short celebration card. */
 function sageCelebrate(){
   var d=document.createElement("div"); d.className="sage-cel"; d.setAttribute("role","status");
-  d.innerHTML='<div class="sage-card"><div class="sage-seal" lang="ja">茶聖</div><b><ruby>茶聖<rt>ちゃせい</rt></ruby> Tea Sage</b><span>Every word you know, mastered. A gold and matcha theme is yours while you hold it.</span></div>';
+  d.innerHTML='<div class="sage-card"><div class="sage-seal" lang="ja">茶聖</div><b><ruby>茶聖<rt>ちゃせい</rt></ruby> Tea Sage</b><span>Every word you know, mastered. Rikyu would approve.</span></div>';
   document.body.appendChild(d); requestAnimationFrame(function(){ d.classList.add("in"); });
   function bye(){ d.classList.remove("in"); setTimeout(function(){ d.remove(); },450); }
   d.addEventListener("click",bye); setTimeout(bye,4200);
@@ -1954,7 +1959,6 @@ function rankInfo(){
   S.words.forEach(function(w){var r=rec(w); if(r.good+r.miss>=RANK_MIN_SEEN){ total++; pts+=WEIGHT[w.mastery]||0; }});
   var score=total?pts/(3*total)*100:0;
   var idx=score>=RANK_BOUNDS[5]?5:Math.min(4,Math.floor(score/20));
-  document.documentElement.classList.toggle("kc-sage",idx===5);
   return {score:score,idx:idx,lo:RANK_BOUNDS[idx],hi:RANK_BOUNDS[idx+1]};
 }
 S.size=recall("kc-size")||"10"; S.front=recall("kc-front")||"jp"; S.furi=recall("kc-furi")||"flip"; S.voice=recall("kc-voice")||"tap"; S.rate=recall("kc-rate")||"normal";
@@ -2643,8 +2647,29 @@ var ICO_NEXT='<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor
 var ICO_STOP='<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
 var ICO_LOOP='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 2l3 3-3 3"/><path d="M4 11V9a4 4 0 0 1 4-4h12"/><path d="M7 22l-3-3 3-3"/><path d="M20 13v2a4 4 0 0 1-4 4H4"/></svg>';
 var ICO_SHADOW='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';
+/* while an entry plays, the toolbar has two pages: Player and Tools. Swipe or tap the dots to switch; the audio keeps going. */
+S.dockPage="player";
+function setDockPage(pg,dir){
+  if(!S.play) pg="player";
+  var dock=$("#dock"), changed=dock.getAttribute("data-page")!==pg&&dock.hasAttribute("data-page");
+  S.dockPage=pg; if(S.play) dock.setAttribute("data-page",pg); else dock.removeAttribute("data-page");
+  document.querySelectorAll("#dock-pages button").forEach(function(b){ b.setAttribute("aria-pressed",String(b.dataset.page===pg)); });
+  if(changed){ var el=pg==="player"?$("#dock-player"):document.querySelector(".dock-tools"); if(el){ el.classList.remove("pg-in-l","pg-in-r"); void el.offsetWidth; el.classList.add(dir<0?"pg-in-l":"pg-in-r"); } }
+}
+(function(){
+  var dock=$("#dock"), x0=null, y0=0;
+  dock.addEventListener("pointerdown",function(e){ if(!S.play) return; x0=e.clientX; y0=e.clientY; });
+  dock.addEventListener("pointerup",function(e){
+    if(x0===null||!S.play) return; var dx=e.clientX-x0, dy=e.clientY-y0; x0=null;
+    if(Math.abs(dx)<40||Math.abs(dx)<Math.abs(dy)*1.3) return;
+    setDockPage(dx<0?"tools":"player",dx<0?1:-1);
+  });
+  dock.addEventListener("pointercancel",function(){ x0=null; });
+  $("#dock-pages").addEventListener("click",function(e){ var b=e.target.closest("[data-page]"); if(b) setDockPage(b.dataset.page,b.dataset.page==="tools"?1:-1); });
+})();
 function renderPlayer(){
   var p=S.play, box=$("#dock-player"); document.body.classList.toggle("kc-playing",!!p);
+  $("#dock-pages").hidden=!p; if(!p) S.dockPage="player"; setDockPage(S.dockPage);
   document.querySelectorAll('[data-act="play-entry"]').forEach(function(b){ var on=!!p&&p.key===b.dataset.key&&!p.paused; b.classList.toggle("on",!!p&&p.key===b.dataset.key); b.innerHTML=(on?ICO_PAUSE:ICO_PLAY)+'<span>'+(on?'Pause':'Listen')+'</span>'; b.setAttribute("aria-label",on?"Pause":"Listen to the whole entry"); });
   if(!box) return;
   if(!p){ box.hidden=true; box.innerHTML=""; return; }
