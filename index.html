@@ -1253,7 +1253,15 @@ body.kc-playing .dock[data-page="tools"] .dock-player{display:none!important}
 /* home: start reviewing */
 .home-review{display:flex;align-items:center;gap:14px;width:100%;margin:2px 0 16px;padding:14px 16px;border:0;border-radius:16px;background:var(--ai);color:var(--surface);font:inherit;text-align:left;cursor:pointer;box-shadow:0 12px 24px -16px color-mix(in srgb,var(--ai) 80%,transparent);transition:transform .12s,filter .15s}
 .home-review:hover{filter:brightness(1.07)}.home-review:active{transform:scale(.985)}
-.hr-ico{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--surface) 22%,transparent);font-size:.95rem}
+.hr-ico{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--surface) 22%,transparent);font-size:.95rem;position:relative;perspective:120px}
+.hr-ico .fc{position:absolute;left:50%;top:50%;width:18px;height:24px;margin:-12px 0 0 -9px;border-radius:4px}
+.hr-ico .fc-b{background:color-mix(in srgb,var(--surface) 55%,transparent);transform:translate(-4px,1px) rotate(-14deg)}
+.hr-ico .fc-f{transform-style:preserve-3d;transform:translate(3px,-1px) rotate(8deg);animation:hrflip 4.5s ease-in-out infinite}
+.hr-ico .fc-f i{position:absolute;inset:0;display:grid;place-items:center;border-radius:4px;background:var(--surface);color:var(--ai);font-style:normal;font-weight:700;font-size:.72rem;line-height:1;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 2px 4px rgba(0,0,0,.18)}
+.hr-ico .fc-f i+i{transform:rotateY(180deg);font-family:inherit}
+.hr-ico .fc-f i:first-child{font-family:var(--serif)}
+@keyframes hrflip{0%,35%{transform:translate(3px,-1px) rotate(8deg) rotateY(0)}45%,80%{transform:translate(3px,-1px) rotate(8deg) rotateY(180deg)}90%,100%{transform:translate(3px,-1px) rotate(8deg) rotateY(360deg)}}
+@media (prefers-reduced-motion:reduce){.hr-ico .fc-f{animation:none}}
 .hr-txt{flex:1;display:grid;gap:2px;min-width:0}.hr-txt b{font-size:1.05rem}.hr-txt b span{font-family:var(--serif);margin-right:4px}.hr-txt small{opacity:.85;font-size:.82rem}
 .hr-arrow{font-size:1.6rem;opacity:.8}
 /* review: quick start */
@@ -1284,7 +1292,10 @@ li.wgroup>details>summary span{color:var(--muted);font-size:.85rem;display:flex;
 li.wgroup>details>summary span::after{content:"";width:8px;height:8px;border-right:2px solid var(--ai);border-bottom:2px solid var(--ai);transform:rotate(45deg);transition:transform .2s}
 li.wgroup>details[open]>summary span::after{transform:rotate(-135deg)}
 li.wgroup ul.words{margin:0 0 10px 6px;border-top:0}
-li.wmore{list-style:none;display:flex;justify-content:center;padding:16px 0}
+li.wpager{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 0}
+li.wpager span{color:var(--muted);font-size:.85rem}
+li.wpager .btn:disabled{opacity:.4;cursor:default}
+#list,li.wgroup{scroll-margin-top:90px}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="favicon.png">
@@ -1900,13 +1911,23 @@ function renderWords(){
     S.wGroups=groups;
     $("#count").textContent=ws.length+(ws.length===1?" word":" words")+" in "+order.length+(order.length===1?" group":" groups");
     list.innerHTML=order.map(function(k){ var open=!!(S.wopen||{})[g+"|"+k], n=groups[k].length;
-      return '<li class="wgroup"><details data-g="'+esc(k)+'"'+(open?' open':'')+'><summary><b>'+esc(k)+'</b><span>'+n+'</span></summary><ul class="words">'+(open?groups[k].map(wItem).join(""):'')+'</ul></details></li>'; }).join("");
+      return '<li class="wgroup"><details data-g="'+esc(k)+'"'+(open?' open':'')+'><summary><b>'+esc(k)+'</b><span>'+n+'</span></summary><ul class="words">'+(open?groupPage(k):'')+'</ul></details></li>'; }).join("");
     return;
   }
-  /* flat view (or searching): newest first, a page at a time */
-  var shown=Math.min(ws.length,S.wLimit||60);
-  $("#count").textContent=ws.length+(ws.length===1?" word":" words")+", newest first"+(shown<ws.length?" (showing "+shown+")":"");
-  list.innerHTML=ws.slice(0,shown).map(wItem).join("")+(shown<ws.length?'<li class="wmore"><button class="btn" data-act="wmore">Show '+Math.min(60,ws.length-shown)+' more</button></li>':'');
+  /* flat view (or searching): newest first, 10 words a page */
+  var pages=Math.ceil(ws.length/WPER), p=Math.max(0,Math.min(S.wPage||0,pages-1)); S.wPage=p;
+  $("#count").textContent=ws.length+(ws.length===1?" word":" words")+", newest first";
+  list.innerHTML=ws.slice(p*WPER,p*WPER+WPER).map(wItem).join("")+pagerHtml(p,ws.length,null);
+}
+var WPER=10;
+function pagerHtml(p,total,k){
+  var pages=Math.ceil(total/WPER); if(pages<2) return "";
+  var dk=k==null?'':' data-k="'+esc(k)+'"';
+  return '<li class="wpager"><button class="btn" data-act="wpg"'+dk+' data-p="'+(p-1)+'"'+(p<=0?' disabled':'')+'>‹ Prev</button><span>Page '+(p+1)+' of '+pages+'</span><button class="btn" data-act="wpg"'+dk+' data-p="'+(p+1)+'"'+(p>=pages-1?' disabled':'')+'>Next ›</button></li>';
+}
+function groupPage(k){
+  var arr=(S.wGroups||{})[k]||[], key=wGroupMode()+"|"+k, pages=Math.ceil(arr.length/WPER), p=Math.max(0,Math.min(S.gpage[key]||0,pages-1)); S.gpage[key]=p;
+  return arr.slice(p*WPER,p*WPER+WPER).map(wItem).join("")+pagerHtml(p,arr.length,k);
 }
 function wGroupMode(){ var m=S.wgroup||recall("kc-wgroup"); if(m) return m; var tagged=S.words.filter(function(w){return w.tags;}).length; return tagged>S.words.length/2?"topic":"none"; }
 function wGroupKey(w,g){ if(g==="type") return w.type||"Other"; if(g==="mastery") return w.mastery||"New"; var t=String(w.tags||"").split(",")[0].trim(); return t||"Untagged"; }
@@ -1920,18 +1941,22 @@ function wItem(w){
       '<span class="stamp st-'+w.mastery+'" lang="ja" title="'+w.mastery+'" aria-label="'+w.mastery+'">'+STAMP[w.mastery]+'</span></button>'+
       '<div class="w-body">'+(TTS?'<div class="row" style="margin-bottom:8px">'+sayBtn(w.kana||w.jp,"Play the word")+'<span class="hint">'+recText(w)+'</span></div>':'<p class="hint">'+recText(w)+'</p>')+'<dl>'+dl+'</dl>'+ex+'<a class="sheetlink" href="'+rowLink(VOCAB_GID,w.row)+'" target="_blank" rel="noopener">'+ICO_SHEET+'<span>Open row '+w.row+' in sheet</span><span class="ext" aria-hidden="true">↗</span></a></div></li>';
 }
-S.wopen={}; S.wLimit=60;
-$("#q").addEventListener("input",function(){S.wLimit=60;renderWords();});
-$("#fm").addEventListener("change",function(){S.wLimit=60;renderWords();});
-$("#wg").addEventListener("change",function(e){S.wgroup=e.target.value; store("kc-wgroup",S.wgroup); S.wLimit=60; renderWords();});
+S.wopen={}; S.wPage=0; S.gpage={};
+$("#q").addEventListener("input",function(){S.wPage=0;renderWords();});
+$("#fm").addEventListener("change",function(){S.wPage=0;S.gpage={};renderWords();});
+$("#wg").addEventListener("change",function(e){S.wgroup=e.target.value; store("kc-wgroup",S.wgroup); S.wPage=0; renderWords();});
 $("#list").addEventListener("toggle",function(e){
   var d=e.target; if(!d.matches||!d.matches("details[data-g]")) return;
   var g=wGroupMode(), k=d.dataset.g; S.wopen[g+"|"+k]=d.open;
-  var ul=d.querySelector("ul.words"); if(d.open&&!ul.children.length&&S.wGroups&&S.wGroups[k]) ul.innerHTML=S.wGroups[k].map(wItem).join("");
+  var ul=d.querySelector("ul.words"); if(d.open&&!ul.children.length&&S.wGroups&&S.wGroups[k]) ul.innerHTML=groupPage(k);
 },true);
 $("#type-chips").addEventListener("click",function(e){var b=e.target.closest(".chip");if(!b)return;S.type=b.dataset.type;renderWords();});
 $("#list").addEventListener("click",function(e){
-  if(e.target.closest('[data-act="wmore"]')){ S.wLimit=(S.wLimit||60)+60; renderWords(); return; }
+  var pg=e.target.closest('[data-act="wpg"]');
+  if(pg){ if(pg.disabled) return; var p=Number(pg.dataset.p), k=pg.dataset.k;
+    if(k==null){ S.wPage=p; renderWords(); $("#list").scrollIntoView({block:"start",behavior:"smooth"}); }
+    else { S.gpage[wGroupMode()+"|"+k]=p; var ul=pg.closest("ul.words"); ul.innerHTML=groupPage(k); ul.closest("li.wgroup").scrollIntoView({block:"start",behavior:"smooth"}); }
+    return; }
   var h=e.target.closest(".w-head"); if(!h) return;
   var li=h.parentNode, r=li.dataset.row; S.open[r]=!S.open[r];
   if(S.open[r]) li.setAttribute("data-open",""); else li.removeAttribute("data-open");
@@ -2933,7 +2958,7 @@ function renderHome(){
   var jpDate=(nowD.getMonth()+1)+"月"+nowD.getDate()+"日（"+WK[nowD.getDay()]+"）", enDate=nowD.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
   var html='<div class="greet-wrap"><div class="greet-date"><span lang="ja">'+jpDate+'</span><span>'+enDate+'</span></div><h2 class="greet"><span lang="ja">'+G[0]+'</span><span>'+esc((window.KC_ME&&window.KC_ME.name)||"Pete")+'</span></h2><p class="greet-sub">'+G[1]+'. Pick up where you left off.</p></div>';
   var dueN=S.words.filter(function(w){return !w.next||w.next<=t;}).length;
-  if(S.words.length) html+='<button class="home-review" data-act="home-review"><span class="hr-ico" aria-hidden="true">▶</span><span class="hr-txt"><b><span lang="ja">復習</span> Start reviewing</b><small>'+(dueN?dueN+(dueN===1?' card':' cards')+' due today':'Nothing due, try a random mix')+'</small></span><span class="hr-arrow" aria-hidden="true">›</span></button>';
+  if(S.words.length) html+='<button class="home-review" data-act="home-review"><span class="hr-ico" aria-hidden="true"><span class="fc fc-b"></span><span class="fc fc-f"><i lang="ja">あ</i><i>a</i></span></span><span class="hr-txt"><b><span lang="ja">復習</span> Start reviewing</b><small>'+(dueN?dueN+(dueN===1?' card':' cards')+' due today':'Nothing due, try a random mix')+'</small></span><span class="hr-arrow" aria-hidden="true">›</span></button>';
   html+='<div id="hchat-slot"></div>';
   var newest=S.words.slice().sort(function(x,y){return y.row-x.row;})[0];
   function mt(o){
