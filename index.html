@@ -15,6 +15,7 @@
   --hl-y:rgba(247,214,74,.55); --hl-g:rgba(140,200,110,.45); --hl-b:rgba(120,170,235,.42); --hl-p:rgba(240,140,180,.42);
   --c-y:#A67C00; --c-g:#4A8230; --c-b:#3466B5; --c-p:#B04174;
   --rk-0:#5E8C31; --rk-1:#A3822A; --rk-2:#8B5A3C; --rk-3:#3F6187; --rk-4:#6A4C93; --rk-5:#B3362F;
+  --kd-0:#8C7B2E; --kd-1:#8A5A2B; --kd-2:#33507F; --kd-3:#24385E; --kd-4:#5B3A78; --kd-5:#A3262B;
   --sans:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic","Noto Sans JP",system-ui,sans-serif;
   --serif:"Shippori Mincho","Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
   color-scheme: light;
@@ -30,6 +31,7 @@
     --hl-y:rgba(230,190,40,.38); --hl-g:rgba(120,180,90,.38); --hl-b:rgba(100,150,230,.40); --hl-p:rgba(225,110,160,.38);
     --c-y:#E8C34A; --c-g:#9CCB7C; --c-b:#8DB2EE; --c-p:#EE93BC;
     --rk-0:#9CC46E; --rk-1:#D9B65A; --rk-2:#C98F6B; --rk-3:#86A8D6; --rk-4:#B497DD; --rk-5:#E8807A;
+    --kd-0:#D2C06A; --kd-1:#D19A68; --kd-2:#8FA9DA; --kd-3:#7F98C9; --kd-4:#B79ADB; --kd-5:#EC8288;
     color-scheme: dark;
   }
 }
@@ -40,6 +42,7 @@
     --hl-y:rgba(230,190,40,.38); --hl-g:rgba(120,180,90,.38); --hl-b:rgba(100,150,230,.40); --hl-p:rgba(225,110,160,.38);
     --c-y:#E8C34A; --c-g:#9CCB7C; --c-b:#8DB2EE; --c-p:#EE93BC;
     --rk-0:#9CC46E; --rk-1:#D9B65A; --rk-2:#C98F6B; --rk-3:#86A8D6; --rk-4:#B497DD; --rk-5:#E8807A;
+    --kd-0:#D2C06A; --kd-1:#D19A68; --kd-2:#8FA9DA; --kd-3:#7F98C9; --kd-4:#B79ADB; --kd-5:#EC8288;
   color-scheme: dark;
 }
 :root[data-theme="reading"]{
@@ -191,10 +194,10 @@ input,select,textarea{box-sizing:border-box;max-width:100%}
 
 ul.words{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
 .w{border-bottom:1px solid var(--line)}
-.w-head{width:100%;display:grid;grid-template-columns:minmax(0,10rem) 1fr auto;gap:14px;align-items:center;background:none;border:0;padding:14px 2px;text-align:left;cursor:pointer}
+.w-head{width:100%;display:grid;grid-template-columns:minmax(0,10rem) 1fr auto;gap:14px;align-items:center;background:none;border:0;padding:14px 12px;text-align:left;cursor:pointer}
 .w-jp{font-size:1.35rem;line-height:1.5;overflow-wrap:anywhere}
 .w-en{color:var(--muted)}
-.w-body{padding:0 2px 16px;display:none}
+.w-body{padding:0 12px 16px;display:none}
 .w[data-open] .w-body{display:block}
 .w-body dl{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;margin:0 0 10px;font-size:.92rem}
 .w-body dt{color:var(--muted)} .w-body dd{margin:0}
@@ -406,7 +409,11 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .addmore-in>.grid{padding-top:16px}
 .no-ai .addmore{grid-template-rows:1fr}
 /* playlist-style home cards */
-:root{--cv-cards:#2C4870;--cv-journal:#2B7A78;--cv-grammar:#A63A4A;--cv-r0:#5E8C31;--cv-r1:#A3822A;--cv-r2:#8B5A3C;--cv-r3:#3F6187;--cv-r4:#6A4C93;--cv-r5:#B3362F}
+:root{--cv-cards:#2C4870;--cv-journal:#2B7A78;--cv-grammar:#A63A4A;--cv-r0:#5E8C31;--cv-r1:#A3822A;--cv-r2:#8B5A3C;--cv-r3:#3F6187;--cv-r4:#6A4C93;--cv-r5:#B3362F;--cv-k0:#8C7B2E;--cv-k1:#8A5A2B;--cv-k2:#33507F;--cv-k3:#24385E;--cv-k4:#5B3A78;--cv-k5:#A3262B}
+.tea-done{display:inline-block;margin-left:8px;padding:2px 8px;vertical-align:middle;border-radius:999px;border:1.5px solid currentColor;font-family:var(--serif);font-size:.72rem;font-weight:700;line-height:1.3;white-space:nowrap;opacity:.9}
+.path-done{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:-4px 0 14px;font-size:.8rem;color:var(--muted)}
+.path-done .rung{font-size:.7rem;padding:2px 6px}
+.path-rule{font-size:.8rem;color:var(--muted);margin:-6px 0 14px}
 .greet{font-size:1.4rem;margin:28px 0 4px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
 .greet [lang="ja"]{font-family:var(--serif);color:var(--ai)}
 .greet-sub{color:var(--muted);font-size:.9rem;margin:0 0 12px}
@@ -615,7 +622,7 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .startbtn::after{content:"→";transition:transform .2s}
 .startbtn:hover::after{transform:translateX(3px)}
 .skills{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
-.skill{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--paper);display:grid;gap:5px;align-content:start}
+.skill{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--paper);display:grid;gap:5px;align-content:start}
 .sk-top{display:flex;justify-content:space-between;align-items:flex-end}
 .sk-k{font-family:var(--serif);font-weight:700;font-size:1.25rem;line-height:1.5;color:var(--rk)}
 .sk-pct{font-family:var(--serif);font-weight:700;font-size:1.3rem}
@@ -1284,7 +1291,7 @@ body.kc-playing .dock[data-page="tools"] .dock-player{display:none!important}
   .panel.level:not([open]) .xp-wrap{margin-top:4px}
 }
 /* words: grouped sections and paging */
-li.wpager{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 0}
+li.wpager{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 4px}
 li.wpager span{color:var(--muted);font-size:.85rem}
 li.wpager .btn:disabled{opacity:.4;cursor:default}
 #list{scroll-margin-top:90px}
@@ -1422,7 +1429,7 @@ body.kc-locked{overflow:hidden}
   function switchUser(user,role){
     var last=recallUser();
     if((last&&last!==user)||(!last&&role==="learner")){
-      ["kc-stats","kc-grammar","kc-rank","kc-grank","kc-hl","kc-pen","kc-draft","kc-chat"].forEach(function(k){ localStorage.removeItem(k); });
+      ["kc-stats","kc-grammar","kc-rank","kc-krank","kc-tea-done","kc-grank","kc-hl","kc-pen","kc-draft","kc-chat"].forEach(function(k){ localStorage.removeItem(k); });
       Object.keys(localStorage).forEach(function(k){ if(k.indexOf("kc-marks-")===0) localStorage.removeItem(k); });
     }
     localStorage.setItem("kc-lastuser",user);
@@ -1985,30 +1992,48 @@ var RANKS=[
   {k:"茶人",r:"ちゃじん",en:"Tea Person",d:"You move through your words with ease."},
   {k:"茶聖",r:"ちゃせい",en:"Tea Sage",d:"Every word mastered. Rikyu would approve."}
 ];
+/* Second path, unlocked by 茶聖 (Oct 2026): 剣道. Same word base, a higher bar per word. */
+var KENDO=[
+  {k:"竹刀",r:"しない",en:"Bamboo Sword",d:"A new path. Now your words go deeper."},
+  {k:"木刀",r:"ぼくとう",en:"Wooden Sword",d:"Solid in the hand. Words that stay put."},
+  {k:"初段",r:"しょだん",en:"First Dan",d:"Your first grade. Recall that lasts."},
+  {k:"剣士",r:"けんし",en:"Swordsman",d:"Words come back clean, even after a month away."},
+  {k:"師範",r:"しはん",en:"Master Instructor",d:"You could teach these words."},
+  {k:"剣聖",r:"けんせい",en:"Sword Saint",d:"Every word deep and sharp. Musashi would nod."}
+];
+var DEEP_SEEN=8, DEEP_STREAK=5;
+function isDeep(w,r){ return w.mastery==="Mastered" && r.good+r.miss>=DEEP_SEEN && r.streak>=DEEP_STREAK; }
 var WEIGHT={New:0,Learning:1,Reviewing:2,Mastered:3};
 /* Rank-up news, checked from Home and Review. Waits until words and review stats have both loaded, so a half-loaded screen never fakes a rank-up. */
 function rankUpCheck(RI){
   if(!S.loaded||!S.statsReady) return;
-  var prev=recall("kc-rank"), R=RANKS[RI.idx];
-  if(prev!==null && RI.idx>prev) setTimeout(function(){ if(RI.idx===5) sageCelebrate(); else toast("Rank up! You’re now "+R.k+", "+R.en+"."); },300);
-  store("kc-rank",RI.idx);
+  if(RI.teaDone){
+    var tp=recall("kc-rank"); store("kc-tea-done",1);
+    if(tp!==null && tp<5){ store("kc-rank",5); setTimeout(function(){ sageCelebrate(RANKS[5],"Every word you know, mastered. Rikyu would approve. Next path: 剣道, the way of the sword."); },300); return; }
+  }
+  var prev=recall(RI.key), R=RI.L[RI.idx];
+  if(prev!==null && RI.idx>prev) setTimeout(function(){ if(RI.idx===5) sageCelebrate(R,RI.teaDone?"Every word deep and sharp. Musashi would approve.":"Every word you know, mastered. Rikyu would approve."); else toast("Rank up! You’re now "+R.k+", "+R.en+"."); },300);
+  store(RI.key,RI.idx);
 }
-/* 茶聖 reached: a short celebration card. */
-function sageCelebrate(){
+/* Top of a path reached: a short celebration card. */
+function sageCelebrate(R,line){
   var d=document.createElement("div"); d.className="sage-cel"; d.setAttribute("role","status");
-  d.innerHTML='<div class="sage-card"><div class="sage-seal" lang="ja">茶聖</div><b><ruby>茶聖<rt>ちゃせい</rt></ruby> Tea Sage</b><span>Every word you know, mastered. Rikyu would approve.</span></div>';
+  d.innerHTML='<div class="sage-card"><div class="sage-seal" lang="ja">'+R.k+'</div><b><ruby>'+R.k+'<rt>'+R.r+'</rt></ruby> '+R.en+'</b><span>'+line+'</span></div>';
   document.body.appendChild(d); requestAnimationFrame(function(){ d.classList.add("in"); });
   function bye(){ d.classList.remove("in"); setTimeout(function(){ d.remove(); },450); }
   d.addEventListener("click",bye); setTimeout(bye,4200);
 }
 /* Rank rules (Oct 2026): a word only counts once it has been reviewed 3 times, and 茶聖 starts at 95%, so one slip doesn't knock you off the top. */
 var RANK_MIN_SEEN=3, RANK_BOUNDS=[0,20,40,60,80,95,100];
+/* 剣道 rule: once 茶聖 is reached it stays reached on this device. Score = share of counted words that are deep (Mastered, 8+ reviews, 5 right in a row). */
 function rankInfo(){
-  var total=0, pts=0;
-  S.words.forEach(function(w){var r=rec(w); if(r.good+r.miss>=RANK_MIN_SEEN){ total++; pts+=WEIGHT[w.mastery]||0; }});
-  var score=total?pts/(3*total)*100:0;
+  var total=0, pts=0, deep=0;
+  S.words.forEach(function(w){var r=rec(w); if(r.good+r.miss>=RANK_MIN_SEEN){ total++; pts+=WEIGHT[w.mastery]||0; if(isDeep(w,r)) deep++; }});
+  var tea=total?pts/(3*total)*100:0;
+  var teaDone=tea>=RANK_BOUNDS[5]||!!recall("kc-tea-done");
+  var score=teaDone?(total?deep/total*100:0):tea;
   var idx=score>=RANK_BOUNDS[5]?5:Math.min(4,Math.floor(score/20));
-  return {score:score,idx:idx,lo:RANK_BOUNDS[idx],hi:RANK_BOUNDS[idx+1]};
+  return {score:score,idx:idx,lo:RANK_BOUNDS[idx],hi:RANK_BOUNDS[idx+1],teaDone:teaDone,L:teaDone?KENDO:RANKS,pre:teaDone?"kd":"rk",cv:teaDone?"cv-k":"cv-r",key:teaDone?"kc-krank":"kc-rank",deep:deep,total:total};
 }
 S.size=recall("kc-size")||"10"; S.front=recall("kc-front")||"jp"; S.furi=recall("kc-furi")||"flip"; S.voice=recall("kc-voice")||"tap"; S.rate=recall("kc-rate")||"normal";
 function decks(){
@@ -2056,16 +2081,17 @@ function levelHtml(){
   else if(acc>=60) read="Solid. A handful of words need more practice. Try the Tricky words deck.";
   else read="Building. Short daily sessions and the Tricky words deck will help most.";
   var seg=["New","Learning","Reviewing","Mastered"].map(function(k){return st[k]?'<i class="lv-'+k+'" style="flex:'+st[k]+'" title="'+k+': '+st[k]+'"></i>':'';}).join("");
-  var RI=rankInfo(), R=RANKS[RI.idx], NX=RANKS[RI.idx+1], inRank=RI.idx>=5?100:Math.round((RI.score-RI.lo)/(RI.hi-RI.lo)*100);
+  var RI=rankInfo(), R=RI.L[RI.idx], NX=RI.L[RI.idx+1], inRank=RI.idx>=5?100:Math.round((RI.score-RI.lo)/(RI.hi-RI.lo)*100);
   rankUpCheck(RI);
   var badge='<summary class="lv-sum"><div class="badge-row"><div class="seal" lang="ja" aria-hidden="true">'+R.k+'</div><div class="badge-txt">'+
-    '<div class="rank-name" lang="ja"><ruby>'+R.k+'<rt>'+R.r+'</rt></ruby> <span lang="en">'+R.en+'</span></div>'+
+    '<div class="rank-name" lang="ja"><ruby>'+R.k+'<rt>'+R.r+'</rt></ruby> <span lang="en">'+R.en+'</span>'+(RI.teaDone?'<span class="tea-done" lang="ja" title="Tea path complete">茶聖</span>':'')+'</div>'+
     '<div class="rank-sub">'+R.d+'</div>'+
     '<div class="xp-wrap"><div class="xp-bar"><i class="xp" data-w="'+inRank+'" style="width:'+inRank+'%"></i></div><span class="xp-num">'+inRank+'%</span></div>'+
     (NX?'<div class="rank-sub">'+Math.max(1,Math.ceil(RI.hi-RI.score))+'% more to '+NX.k+', '+NX.en+'</div>':'<div class="rank-sub">Top rank reached</div>')+
     '</div></div></summary><div class="lv-body">'+
-    '<div class="ladder" aria-label="Ranks">'+RANKS.map(function(x,i){return '<span class="rung'+(i<=RI.idx?' got':'')+(i===RI.idx?' now':'')+'" style="--rk:var(--rk-'+i+')" lang="ja" title="'+x.en+(i<=RI.idx?'':' (locked)')+'">'+x.k+'</span>';}).join('<i></i>')+'</div>'+skillsHtml();
-  return '<details class="panel level" style="--rk:var(--rk-'+RI.idx+');--rb:var(--cv-r'+RI.idx+')"'+(S.levelOpen?' open':'')+'>'+badge+
+    '<div class="ladder" aria-label="Ranks">'+RI.L.map(function(x,i){return '<span class="rung'+(i<=RI.idx?' got':'')+(i===RI.idx?' now':'')+'" style="--rk:var(--'+RI.pre+'-'+i+')" lang="ja" title="'+x.en+(i<=RI.idx?'':' (locked)')+'">'+x.k+'</span>';}).join('<i></i>')+'</div>'+
+    (RI.teaDone?'<p class="path-rule">剣道 counts a word once it is Mastered, reviewed '+DEEP_SEEN+'+ times, and right '+DEEP_STREAK+' times in a row. '+RI.deep+' of '+RI.total+' so far.</p><div class="path-done"><span lang="ja">茶道</span> Tea path, completed '+RANKS.map(function(x,i){return '<span class="rung got" style="--rk:var(--rk-'+i+')" lang="ja">'+x.k+'</span>';}).join('')+'</div>':'')+skillsHtml();
+  return '<details class="panel level" style="--rk:var(--'+RI.pre+'-'+RI.idx+');--rb:var(--'+RI.cv+RI.idx+')"'+(S.levelOpen?' open':'')+'>'+badge+
     '<div class="lv-stats"><div><b>'+seen+'</b><span>of '+total+' words reviewed</span></div>'+
     '<div><b>'+(acc===null?"–":acc+"%")+'</b><span>answered right</span></div>'+
     '<div><b>'+st.Mastered+'</b><span>mastered</span></div></div>'+
@@ -2907,7 +2933,7 @@ function renderHome(){
     else if(S.error&&!S.loading) el.innerHTML='<div class="loadfail"><b>Couldn’t open your notebook.</b><p>'+sheetErr(S.error)+'</p><div class="row"><button class="btn primary" data-act="retry-load">Try again</button><a class="btn" href="#setup">Sign in again</a></div></div>';
     else el.innerHTML=LOADER_HTML;
     return;}
-  var RI=rankInfo(), R=RANKS[RI.idx], NX=RANKS[RI.idx+1], inRank=RI.idx>=5?100:Math.round((RI.score-RI.lo)/(RI.hi-RI.lo)*100);
+  var RI=rankInfo(), R=RI.L[RI.idx], NX=RI.L[RI.idx+1], inRank=RI.idx>=5?100:Math.round((RI.score-RI.lo)/(RI.hi-RI.lo)*100);
   rankUpCheck(RI);
   var t=today(), due=S.words.filter(function(w){return !w.next||w.next<=t;});
   if(!S.previewW||S.words.indexOf(S.previewW)<0){var pool=due.length?due:S.words; S.previewW=pool[Math.floor(Math.random()*pool.length)]||null;}
@@ -2935,7 +2961,7 @@ function renderHome(){
       extra:'<button class="mt-add'+(S.bannerAdd?' on':'')+'" data-act="addword" data-tip="'+(S.bannerAdd?'Close':'Add a word')+'" aria-expanded="'+!!S.bannerAdd+'"><span class="mt-add-ico" aria-hidden="true">＋</span><span class="mt-add-txt">'+(S.bannerAdd?'Close':'Add a word')+'</span></button>'+
         '<div class="wb" data-state="'+(S.bannerAdd?'add':'wotd')+'">'+wotdHtml()+'<div class="wb-add">'+bannerAddHtml()+'</div></div>'})+
     '<div class="mt-addslot'+(S.homeAdd?' on':'')+'" id="home-addslot"></div><div class="mt-row">'+
-    mt({go:"rank",c:"var(--cv-r"+RI.idx+")",jp:"段位",en:"Mastery",mark:R.k.slice(-1),
+    mt({go:"rank",c:"var(--"+RI.cv+RI.idx+")",jp:"段位",en:"Mastery",mark:R.k.slice(-1),
       face:'<span class="f-seal" lang="ja">'+R.k+'</span>',
       sub:R.en+', '+(NX?Math.max(1,Math.ceil(RI.hi-RI.score))+'% to next':'top rank')})+
     mt({go:"cards",c:"var(--d-ai)",jp:"札",en:"Flashcards",mark:"札",
