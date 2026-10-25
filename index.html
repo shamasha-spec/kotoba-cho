@@ -1284,18 +1284,10 @@ body.kc-playing .dock[data-page="tools"] .dock-player{display:none!important}
   .panel.level:not([open]) .xp-wrap{margin-top:4px}
 }
 /* words: grouped sections and paging */
-li.wgroup{list-style:none;border-bottom:1px solid var(--line)}
-li.wgroup>details>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 4px;cursor:pointer}
-li.wgroup>details>summary::-webkit-details-marker{display:none}
-li.wgroup>details>summary b{font-size:1rem}
-li.wgroup>details>summary span{color:var(--muted);font-size:.85rem;display:flex;align-items:center;gap:10px}
-li.wgroup>details>summary span::after{content:"";width:8px;height:8px;border-right:2px solid var(--ai);border-bottom:2px solid var(--ai);transform:rotate(45deg);transition:transform .2s}
-li.wgroup>details[open]>summary span::after{transform:rotate(-135deg)}
-li.wgroup ul.words{margin:0 0 10px 6px;border-top:0}
 li.wpager{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 0}
 li.wpager span{color:var(--muted);font-size:.85rem}
 li.wpager .btn:disabled{opacity:.4;cursor:default}
-#list,li.wgroup{scroll-margin-top:90px}
+#list{scroll-margin-top:90px}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="favicon.png">
@@ -1582,7 +1574,6 @@ body.kc-locked{overflow:hidden}
     <div class="toolbar">
       <input type="search" id="q" placeholder="Search Japanese, reading, romaji, meaning, or tag" aria-label="Search words">
       <select id="fm" aria-label="Filter by mastery"><option value="all">Any mastery</option><option>New</option><option>Learning</option><option>Reviewing</option><option>Mastered</option></select>
-      <select id="wg" aria-label="Group words"><option value="topic">Group: Topic</option><option value="type">Group: Type</option><option value="mastery">Group: Mastery</option><option value="none">Newest first</option></select>
     </div>
     <div class="chips" id="type-chips"></div>
     <div class="count" id="count"></div>
@@ -1889,7 +1880,6 @@ $("#btn-save").addEventListener("click",saveWord);
 var TYPES=[["all","All"],["verb","Verbs"],["noun","Nouns"],["adj","Adjectives"],["adv","Adverbs"],["other","Other"]];
 function typeKey(t){if(t==="Verb")return"verb";if(t==="Noun")return"noun";if(/Adjective/.test(t))return"adj";if(t==="Adverb")return"adv";return"other";}
 function renderWords(){
-  var wgs=$("#wg"); if(wgs) wgs.value=wGroupMode();
   $("#type-chips").innerHTML=TYPES.map(function(t){return '<button class="chip" data-type="'+t[0]+'" aria-pressed="'+(S.type===t[0])+'">'+t[1]+'</button>';}).join("");
   var list=$("#list");
   if(!S.loaded){list.innerHTML='<li class="empty">'+(S.noMcp?"Connect your notebook to see your words.":"Loading your words…")+'</li>';$("#count").textContent="";return;}
@@ -1901,36 +1891,16 @@ function renderWords(){
     return true;
   }).sort(function(a,b){return b.row-a.row;});
   if(!ws.length){$("#count").textContent="0 words";list.innerHTML='<li class="empty">No words match. Clear the search or add a new word.</li>';return;}
-  var g=wGroupMode();
-  if(g!=="none"&&!q){
-    /* grouped view: one folding section per topic, type or mastery. A section's words are drawn only when it is opened. */
-    var groups={}, order=[];
-    ws.forEach(function(w){ var k=wGroupKey(w,g); if(!groups[k]){groups[k]=[];order.push(k);} groups[k].push(w); });
-    if(g==="mastery") order.sort(function(a,b){return ["New","Learning","Reviewing","Mastered"].indexOf(a)-["New","Learning","Reviewing","Mastered"].indexOf(b);});
-    else if(g==="topic") order.sort(function(a,b){ return a==="Untagged"?1:b==="Untagged"?-1:0; });
-    S.wGroups=groups;
-    $("#count").textContent=ws.length+(ws.length===1?" word":" words")+" in "+order.length+(order.length===1?" group":" groups");
-    list.innerHTML=order.map(function(k){ var open=!!(S.wopen||{})[g+"|"+k], n=groups[k].length;
-      return '<li class="wgroup"><details data-g="'+esc(k)+'"'+(open?' open':'')+'><summary><b>'+esc(k)+'</b><span>'+n+'</span></summary><ul class="words">'+(open?groupPage(k):'')+'</ul></details></li>'; }).join("");
-    return;
-  }
-  /* flat view (or searching): newest first, 10 words a page */
+  /* newest first, 10 words a page */
   var pages=Math.ceil(ws.length/WPER), p=Math.max(0,Math.min(S.wPage||0,pages-1)); S.wPage=p;
   $("#count").textContent=ws.length+(ws.length===1?" word":" words")+", newest first";
-  list.innerHTML=ws.slice(p*WPER,p*WPER+WPER).map(wItem).join("")+pagerHtml(p,ws.length,null);
+  list.innerHTML=ws.slice(p*WPER,p*WPER+WPER).map(wItem).join("")+pagerHtml(p,ws.length);
 }
 var WPER=10;
-function pagerHtml(p,total,k){
+function pagerHtml(p,total){
   var pages=Math.ceil(total/WPER); if(pages<2) return "";
-  var dk=k==null?'':' data-k="'+esc(k)+'"';
-  return '<li class="wpager"><button class="btn" data-act="wpg"'+dk+' data-p="'+(p-1)+'"'+(p<=0?' disabled':'')+'>‹ Prev</button><span>Page '+(p+1)+' of '+pages+'</span><button class="btn" data-act="wpg"'+dk+' data-p="'+(p+1)+'"'+(p>=pages-1?' disabled':'')+'>Next ›</button></li>';
+  return '<li class="wpager"><button class="btn" data-act="wpg" data-p="'+(p-1)+'"'+(p<=0?' disabled':'')+'>‹ Prev</button><span>Page '+(p+1)+' of '+pages+'</span><button class="btn" data-act="wpg" data-p="'+(p+1)+'"'+(p>=pages-1?' disabled':'')+'>Next ›</button></li>';
 }
-function groupPage(k){
-  var arr=(S.wGroups||{})[k]||[], key=wGroupMode()+"|"+k, pages=Math.ceil(arr.length/WPER), p=Math.max(0,Math.min(S.gpage[key]||0,pages-1)); S.gpage[key]=p;
-  return arr.slice(p*WPER,p*WPER+WPER).map(wItem).join("")+pagerHtml(p,arr.length,k);
-}
-function wGroupMode(){ var m=S.wgroup||recall("kc-wgroup"); if(m) return m; var tagged=S.words.filter(function(w){return w.tags;}).length; return tagged>S.words.length/2?"topic":"none"; }
-function wGroupKey(w,g){ if(g==="type") return w.type||"Other"; if(g==="mastery") return w.mastery||"New"; var t=String(w.tags||"").split(",")[0].trim(); return t||"Untagged"; }
 function wItem(w){
     var open=S.open[w.row];
     var dl=[["Romaji",w.romaji],["Type",w.type],["Verb group",w.group&&w.group!=="N/A"?w.group:""],["Te-form",w.te],["Tags",w.tags],["Source",w.source],["Added",w.date],["Last reviewed",w.last],["Next review",w.next]]
@@ -1941,22 +1911,13 @@ function wItem(w){
       '<span class="stamp st-'+w.mastery+'" lang="ja" title="'+w.mastery+'" aria-label="'+w.mastery+'">'+STAMP[w.mastery]+'</span></button>'+
       '<div class="w-body">'+(TTS?'<div class="row" style="margin-bottom:8px">'+sayBtn(w.kana||w.jp,"Play the word")+'<span class="hint">'+recText(w)+'</span></div>':'<p class="hint">'+recText(w)+'</p>')+'<dl>'+dl+'</dl>'+ex+'<a class="sheetlink" href="'+rowLink(VOCAB_GID,w.row)+'" target="_blank" rel="noopener">'+ICO_SHEET+'<span>Open row '+w.row+' in sheet</span><span class="ext" aria-hidden="true">↗</span></a></div></li>';
 }
-S.wopen={}; S.wPage=0; S.gpage={};
+S.wPage=0;
 $("#q").addEventListener("input",function(){S.wPage=0;renderWords();});
-$("#fm").addEventListener("change",function(){S.wPage=0;S.gpage={};renderWords();});
-$("#wg").addEventListener("change",function(e){S.wgroup=e.target.value; store("kc-wgroup",S.wgroup); S.wPage=0; renderWords();});
-$("#list").addEventListener("toggle",function(e){
-  var d=e.target; if(!d.matches||!d.matches("details[data-g]")) return;
-  var g=wGroupMode(), k=d.dataset.g; S.wopen[g+"|"+k]=d.open;
-  var ul=d.querySelector("ul.words"); if(d.open&&!ul.children.length&&S.wGroups&&S.wGroups[k]) ul.innerHTML=groupPage(k);
-},true);
-$("#type-chips").addEventListener("click",function(e){var b=e.target.closest(".chip");if(!b)return;S.type=b.dataset.type;renderWords();});
+$("#fm").addEventListener("change",function(){S.wPage=0;renderWords();});
+$("#type-chips").addEventListener("click",function(e){var b=e.target.closest(".chip");if(!b)return;S.type=b.dataset.type;S.wPage=0;renderWords();});
 $("#list").addEventListener("click",function(e){
   var pg=e.target.closest('[data-act="wpg"]');
-  if(pg){ if(pg.disabled) return; var p=Number(pg.dataset.p), k=pg.dataset.k;
-    if(k==null){ S.wPage=p; renderWords(); $("#list").scrollIntoView({block:"start",behavior:"smooth"}); }
-    else { S.gpage[wGroupMode()+"|"+k]=p; var ul=pg.closest("ul.words"); ul.innerHTML=groupPage(k); ul.closest("li.wgroup").scrollIntoView({block:"start",behavior:"smooth"}); }
-    return; }
+  if(pg){ if(pg.disabled) return; S.wPage=Number(pg.dataset.p); renderWords(); $("#list").scrollIntoView({block:"start",behavior:"smooth"}); return; }
   var h=e.target.closest(".w-head"); if(!h) return;
   var li=h.parentNode, r=li.dataset.row; S.open[r]=!S.open[r];
   if(S.open[r]) li.setAttribute("data-open",""); else li.removeAttribute("data-open");
