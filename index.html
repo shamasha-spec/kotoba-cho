@@ -178,7 +178,16 @@ input,select,textarea{box-sizing:border-box;max-width:100%}
 .btn.primary:hover{filter:brightness(1.08)}
 .btn.small{padding:6px 12px;min-height:36px;font-size:.875rem}
 .btn:disabled{opacity:.55;cursor:not-allowed}
-.no-ai .ai-only{display:none!important}
+html:not(.kc-demo) .no-ai .ai-only{display:none!important}
+/* demo: AI parts stay visible but faded, with a short note on what they do */
+.kc-demo .ai-only{opacity:.5}
+.demo-ai{display:none}
+.kc-demo .demo-ai{display:flex;gap:10px;align-items:flex-start;margin:0 0 16px;padding:10px 14px;border:1px dashed var(--line);border-radius:12px;background:var(--surface);color:var(--muted);font-size:.85rem;line-height:1.45}
+.demo-ai b{flex:none;font-size:.68rem;letter-spacing:.06em;padding:2px 7px;border-radius:999px;background:var(--ai-soft);color:var(--ai);margin-top:1px}
+.kc-demo a[href*="docs.google.com/spreadsheets"]{display:none!important}
+.hchat.demo-off{opacity:.55;filter:grayscale(.35)}
+.hchat.demo-off .hc-notif{cursor:default}
+.hchat.demo-off .hc-prev,.hchat.demo-off .hc-nexpr,.hchat.demo-off .hc-nexpr span{white-space:normal;overflow:visible;text-overflow:clip;display:block;-webkit-line-clamp:unset}
 
 .msg{border-radius:10px;padding:10px 14px;font-size:.9rem;margin-top:14px}
 .msg.ok{background:var(--matcha-soft)} .msg.err{background:var(--warn-soft);color:var(--ink)} .msg.info{background:var(--ai-soft)}
@@ -1358,6 +1367,9 @@ body.kc-locked{overflow:hidden}
   window.KC_ME=(conf()||{}).me||null;
   window.KC_LEARNER=!!(window.KC_ME&&window.KC_ME.role==="learner");
   if(window.KC_LEARNER) document.documentElement.classList.add("kc-learner");
+  /* demo account: the full app on its own tabs, AI shown but off */
+  window.KC_DEMO=!!(window.KC_ME&&window.KC_ME.role==="demo");
+  if(window.KC_DEMO) document.documentElement.classList.add("kc-demo");
   var running=0, waiting=[];
   function slot(){ return new Promise(function(res){ if(running<2){running++;res();} else waiting.push(res); }); }
   function free(){ var n=waiting.shift(); if(n) n(); else running--; }
@@ -1535,6 +1547,7 @@ body.kc-locked{overflow:hidden}
     <details class="panel startbox addbox" id="addbox">
       <summary><span class="sb-jp" lang="ja"><ruby>単語<rt>たんご</rt></ruby>を<ruby>追加<rt>ついか</rt></ruby></span><span class="sb-en">Add a word</span></summary>
       <div class="addbox-in">
+      <p class="demo-ai"><b>AI</b><span>Auto-fill: type a word in any form and AI fills in the reading, meaning, word type and an example sentence. It is off in this demo, so use Fill in myself.</span></p>
       <div class="ai-only">
         <label for="f-lookup">Word <span class="hint">kanji, kana, romaji, or English</span></label>
         <div class="lookup">
@@ -1598,12 +1611,14 @@ body.kc-locked{overflow:hidden}
   <section id="v-grammar" role="tabpanel" hidden>
     <h2>Grammar</h2>
     <p class="lede">Genki 1 patterns, lesson by lesson. Mark what needs work, add your own examples, and try them in your journal.</p>
+    <p class="demo-ai"><b>AI</b><span>Transmute drills: AI writes five short situations for the points you need to work on, then checks your answers. Check it reviews an example you write. Both are off in this demo.</span></p>
     <div id="grammar"></div>
   </section>
 
   <section id="v-journal" role="tabpanel" hidden>
     <h2>Journal</h2>
     <p class="lede">Write one sentence at a time. Add furigana and get a check before you save it to your Journal tab.</p>
+    <p class="demo-ai"><b>AI</b><span>Add furigana puts hiragana readings after kanji. Check sentence corrects your Japanese and explains the grammar. Chats with アンちゃん can be saved here as entries. All three use AI and are off in this demo.</span></p>
     <div id="composer"></div>
     <h2 style="margin-top:32px">Past entries</h2>
     <div id="entries"></div>
@@ -1694,6 +1709,7 @@ function sheetErr(e,isWrite){
   if(c==="server_unavailable") return "Google Sheets didn’t answer. Try Refresh in a moment.";
   return "Something blocked the connection to Google Sheets"+(e&&e.message?": "+esc(e.message):"")+".";
 }
+function aiOffText(){ return window.KC_DEMO?"AI is off in this demo. In the full app, this button asks Claude.":"Claude help is off. Add your API key to your Apps Script to turn it on."; }
 function aiErr(e){
   var c=e&&e.code;
   if(c==="not_granted") return "Claude help is off for this page. Allow it when asked to use these buttons.";
@@ -1831,7 +1847,7 @@ $("#btn-clear").addEventListener("click",function(){clearForm(false);msg($("#sav
 async function autoFill(){
   var q=F.lookup.value.trim()||F.jp.value.trim(); var m=$("#fill-msg"), b=$("#btn-fill");
   if(!q){msg(m,"err","Type a word first.");F.lookup.focus();return;}
-  if(!sample){msg(m,"err","Claude help is off. Add your API key to your Apps Script to turn it on.");return;}
+  if(!sample){msg(m,"err",aiOffText());return;}
   b.disabled=true; msg(m,"info","Thinking…");
   var prompt='You fill in a Japanese vocabulary card for a beginner (finished Genki 1, starting Genki 2).\n'+
     'The learner typed: "'+q.replace(/"/g,"'")+'". It may be kanji, kana, romaji, or English. Pick the most common, beginner-relevant Japanese word for it.\n'+
@@ -2373,6 +2389,7 @@ $("#composer").addEventListener("click",function(e){
 async function furigana(i,btn){
   var l=S.draft.lines[i], m=$("#lm-"+i);
   if(!l.jp.trim()){msg(m,"err","Write the Japanese sentence first.");return;}
+  if(!sample){msg(m,"err",aiOffText());return;}
   btn.disabled=true; msg(m,"info","Adding furigana…");
   var prompt="Add furigana to this Japanese text. Right after every word written with kanji, put its hiragana reading in half-width parentheses, for example: 私(わたし)の高校(こうこう)は神学校(しんがっこう)でした。 Put the reading only after the kanji part of a word, so 食べました becomes 食(た)べました. Keep any readings that are already there. Do not change, fix, or translate anything else. Return only the text.\n\nText: "+l.jp.trim();
   try{
@@ -2385,6 +2402,7 @@ async function furigana(i,btn){
 async function checkLine(i,btn){
   var l=S.draft.lines[i], m=$("#lm-"+i);
   if(!l.jp.trim()){msg(m,"err","Write the Japanese sentence first.");return;}
+  if(!sample){msg(m,"err",aiOffText());return;}
   btn.disabled=true; msg(m,"info","Checking…");
   var prompt="You are a kind, direct Japanese tutor. The learner finished Genki 1 and is starting Genki 2. Check one sentence from their journal.\n"+
     "Sentence: "+stripFuri(l.jp).trim()+"\nWhat they meant (may be empty): "+(l.en||"")+"\nGrammar focus of the entry (may be empty): "+(S.draft.grammar||"")+"\n"+
@@ -2418,6 +2436,7 @@ function toAdd(i,word){
   window.scrollTo(0,0);
 }
 function wordFormula(w){
+  if(window.KC_DEMO) return w;
   var q=w.replace(/"/g,'""');
   return '=LET(w,"'+q+'",IFERROR(HYPERLINK("#gid='+VOCAB_GID+'&range=A"&MATCH(w,\'Vocab Bank\'!$B:$B,0)&":M"&MATCH(w,\'Vocab Bank\'!$B:$B,0),w),w))';
 }
@@ -3341,7 +3360,7 @@ function rankHtml(){
     '<div class="gr-body"><div class="gr-ladder">'+METALS.map(function(m,i){return '<span class="gr-rung'+(i<=R.idx?' got':'')+(i===R.idx?' now':'')+'" style="--mt:'+m.c+'" title="'+m.en+'"><b lang="ja">'+m.k+'</b><small>'+m.en+'</small></span>';}).join("")+'</div>'+
     '<div class="lv-stats"><div><b>'+mast+'</b><span>of '+pts.length+' points mastered</span></div><div><b>'+Math.round(R.pct)+'%</b><span>toward gold</span></div><div><b>'+tarn+'</b><span>tarnished</span></div></div>'+
     '<p class="hint" style="margin:6px 0 0">Points are earned, not clicked. Each point is worth 100: up to 45 from drill answers (15 each), up to 30 from your own examples that pass Check it, and 25 for using it in a journal entry (put the pattern in the entry’s Grammar focus). 70 or more is mastered. A mastered point left unpractised for '+TARNISH_DAYS+' days tarnishes and loses a quarter of its value until you drill it again.</p></div></details>'+
-    '<div class="gd-start"><button class="btn primary" data-act="gd-start"'+(sample?'':' disabled')+'><span lang="ja">錬成</span> Transmute: 5-point drill</button><span class="hint">'+(sample?(tarn?tarn+' tarnished point'+(tarn===1?'':'s')+' first, then Reinforce, then what you’re working on.':'Reinforce points first, then what you’re working on, then what’s next.'):'Needs your API key. Add it to your Apps Script to turn this on.')+'</span></div>';
+    '<div class="gd-start"><button class="btn primary" data-act="gd-start"'+(sample?'':' disabled')+'><span lang="ja">錬成</span> Transmute: 5-point drill</button><span class="hint">'+(sample?(tarn?tarn+' tarnished point'+(tarn===1?'':'s')+' first, then Reinforce, then what you’re working on.':'Reinforce points first, then what you’re working on, then what’s next.'):(window.KC_DEMO?'Uses AI. Off in this demo.':'Needs your API key. Add it to your Apps Script to turn this on.'))+'</span></div>';
 }
 function drillPick(){
   var pts=allPoints().filter(function(p){return p.p;}), sc={}; pts.forEach(function(p){sc[p.id]=gScore(p);});
@@ -3355,7 +3374,7 @@ function drillPick(){
   return out;
 }
 async function drillStart(){
-  if(!sample){toast("Claude help is off. Add your API key to your Apps Script to turn it on.");return;}
+  if(!sample){toast(aiOffText());return;}
   var picks=drillPick(); if(!picks.length){toast("Nothing left to drill. Everything is gold.");return;}
   S.drill={items:picks.map(function(p){return {id:p.id,p:p.p,m:p.m,f:p.f||"",prompt:"",hint:""};}),i:0,busy:true,res:null,good:0,startRank:gRank().idx};
   renderGrammar();
@@ -3595,6 +3614,11 @@ async function chatToJournal(){
   }catch(e){ toast(sheetErr(e,true)); if(btn){btn.disabled=false;btn.textContent="Save to journal";} }
 }
 function chatHtml(){
+  if(!sample&&window.KC_DEMO&&S.loaded) return '<section class="hchat mini demo-off" aria-label="'+CHAT_NAME+', off in this demo"><div class="hc-notif">'+
+    '<div class="hc-av big" aria-hidden="true">'+HAV+'</div>'+
+    '<div class="hc-nbody"><div class="hc-ntop"><b lang="ja">'+CHAT_NAME+'</b><span class="hc-time">AI · off in demo</span></div>'+
+    '<div class="hc-prev">AI chat partner. Each day she starts a short chat in easy Japanese about your day and gently fixes mistakes.</div>'+
+    '<div class="hc-nexpr"><i lang="ja">今日の一言</i><span>A new phrase each day. Finished chats can be saved to your journal.</span></div></div></div></section>';
   if(!sample||!S.loaded) return "";
   var c=chatToday();
   if(c.dismissed) return '<section class="hchat chip" aria-label="'+CHAT_NAME+'"><button class="hc-reopen" data-act="hc-reopen" title="Open today’s chat"><span class="hc-av" aria-hidden="true">'+HAV+'</span><b lang="ja">'+CHAT_NAME+'</b><span>'+(c.msgs.length?'Today’s chat':'Say hi')+'</span></button></section>';
@@ -3671,7 +3695,7 @@ gEl.addEventListener("click",async function(e){
   else if(act==="g-delex"){var arr=S.gram.mine[id]||[]; arr.splice(+a.dataset.i,1); saveGrammar(); renderGrammar();}
   else if(act==="g-excheck"){
     var pt=allPoints().find(function(p){return p.id===id;}), jp2=$("#gx-jp").value.trim(), m=$("#gx-msg");
-    if(!jp2){msg(m,"err","Write a sentence first.");return;} if(!sample){msg(m,"err","Claude help is off. Add your API key to your Apps Script to turn it on.");return;}
+    if(!jp2){msg(m,"err","Write a sentence first.");return;} if(!sample){msg(m,"err",aiOffText());return;}
     a.disabled=true; msg(m,"info","Checking…");
     try{
       var d=await sample.json("You are a kind, direct Japanese tutor for a beginner who finished Genki 1. The learner is practising this grammar point: "+stripFuri(pt.p)+" ("+pt.m+").\nTheir sentence: "+stripFuri(jp2)+"\nReturn only JSON: {\"ok\": true if it is correct, natural, and uses the pattern correctly, \"corrected\": the corrected sentence (or the original) with the hiragana reading in half-width parentheses right after every kanji part, like 毎日(まいにち), \"english\": a natural translation, \"note\": one or two short plain-English sentences about the pattern use. No em dashes.}",{modelTier:"default"});
