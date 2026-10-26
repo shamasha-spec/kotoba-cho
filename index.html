@@ -3547,12 +3547,22 @@ function chatWords(){
 }
 function chatTranscript(c){ return c.msgs.map(function(m){return (m.me?"Pete: ":CHAT_NAME+": ")+stripFuri(m.me?m.text:m.jp);}).join("\n"); }
 var CHAT_SYS="You are アン, a cheerful Japanese university student (her friends call her アンちゃん) texting her friend Pete. Pete is a beginner (finished Genki 1, about N5) practising casual Japanese. Always write casual spoken Japanese: plain form, natural endings like よ, ね, の？, じゃん, sparingly. Keep each message short (one or two sentences, under 20 words) and use mostly Genki 1 vocabulary. Put the hiragana reading in half-width parentheses right after every kanji part, like 今日(きょう). No emoji. No em dashes.";
+CHAT_SYS+=" Do not start replies with ねえ or ねえねえ. Vary how each message begins.";
+/* Openers are picked here, not by the model, so they rotate. The last 4 used are skipped. "" = straight to the question. */
+var CHAT_OPENERS=["ねえねえ、","ちょっと聞いて！","ね、ピート！","あ、ピート！","やっほー！","おつかれ！","ねえ、ピート、","そういえば、","ピート、聞いてもいい？","今日(きょう)さ、","",""];
+function chatOpener(){
+  var used=recall("kc-chat-open")||[], pool=CHAT_OPENERS.map(function(o,i){return i;}).filter(function(i){return used.indexOf(i)<0;});
+  var i=pool[Math.floor(Math.random()*pool.length)]; store("kc-chat-open",used.concat(i).slice(-4));
+  var h=new Date().getHours(), o=CHAT_OPENERS[i];
+  if(o===""&&Math.random()<.5) o=h<11?"おはよう！":h>=18?"こんばんは！":"";
+  return o;
+}
 async function chatOpen(){
   var c=chatToday(); if(c.msgs.length||S.chatBusy||!sample) return;
   S.chatBusy=true; renderChat();
-  var topic=CHAT_TOPICS[(parseInt(hash(c.date),36)||0)%CHAT_TOPICS.length];
+  var topic=CHAT_TOPICS[(parseInt(hash(c.date),36)||0)%CHAT_TOPICS.length], op=chatOpener();
   try{
-    var d=await sample.json(CHAT_SYS+"\nStart a new chat the way a friend grabs his attention: open with a playful attention-getter such as ねえねえ、 or ちょっと聞いて！ or ね、ピート！ (vary it), then ask Pete about "+topic+". Make the question easy to answer in one short casual sentence.\nWords he is learning, use one if it fits naturally: "+chatWords()+"\nReturn only JSON: {\"jp\": your message, \"en\": natural English translation}",{modelTier:"default"});
+    var d=await sample.json(CHAT_SYS+"\nStart a new chat like a friend texting: "+(op?"start with exactly \""+op+"\" and then":"skip any attention-getter (no ねえ or ねえねえ) and")+" ask Pete about "+topic+". Make the question easy to answer in one short casual sentence.\nWords he is learning, use one if it fits naturally: "+chatWords()+"\nReturn only JSON: {\"jp\": your message, \"en\": natural English translation}",{modelTier:"default"});
     if(!d||!d.jp) throw {code:"bad"};
     c.msgs.push({me:false,jp:d.jp,en:d.en||""}); chatSave();
   }catch(err){ c.err=aiErr(err); }
