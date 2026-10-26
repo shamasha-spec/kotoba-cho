@@ -662,6 +662,15 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .gq-dots button{width:8px;height:8px;padding:0;border:0;border-radius:4px;background:var(--line);cursor:pointer;transition:width .25s,background .25s}
 .gq-dots button.on{width:22px;background:var(--t-grammar)}
 .gq-count{margin-left:8px;font-size:.75rem;color:var(--muted)}
+.cv-entry{margin:-2px 0 10px;font-size:.88rem}
+.cv-entry>summary{list-style:none;display:inline-flex;align-items:center;gap:6px;cursor:pointer;color:var(--muted);padding:4px 0}
+.cv-entry>summary::-webkit-details-marker{display:none}
+.cv-entry>summary::after{content:"";width:6px;height:6px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg) translateY(-2px);margin-left:2px;transition:transform .2s}
+.cv-entry[open]>summary::after{transform:rotate(-135deg) translateY(-1px)}
+.cv-entry>summary:hover{color:var(--ink,inherit)}
+.cv-box{display:grid;gap:6px;padding:8px 12px 4px;margin-top:4px;border-radius:10px;background:var(--paper)}
+.cv-box .setrow{display:flex;align-items:center;gap:10px}.cv-box .setlabel{min-width:72px}
+.cv-box .hint{margin:2px 0 4px}
 .cv-pick{display:flex;align-items:center;gap:6px;flex:1;min-width:0}.cv-pick select{flex:1;min-width:0;max-width:300px}
 .gs-qrow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin:2px 0 8px}
 .gs-qrow .hint svg{width:14px;height:14px;vertical-align:-2px}
@@ -2060,11 +2069,11 @@ function chatVoiceHtml(){
     jaVoices.map(function(v){return '<option value="'+esc(v.name)+'"'+(S.cv[who]===v.name?' selected':'')+'>'+esc(v.name)+'</option>';}).join("")+'</select>'+
     '<button class="say" data-act="cv-try" data-who="'+who+'" aria-label="Try this voice" title="Try this voice">'+SPK+'</button></div></div>'; }
   var c=chatVoice("an"), d=chatVoice("me");
-  return '<div class="cv-box"><p class="lv-label" style="margin:12px 0 4px">Chat voices <span class="hint">for journal chats with アンちゃん, on this device</span></p>'+
+  return '<div class="cv-box">'+
     sel("an","アンちゃん")+sel("me","You (Me)")+
-    (c.v===d.v?'<p class="hint">'+(jaVoices.length<2?'This device has one Japanese voice, so ':'Same voice picked, so ')+'アンちゃん speaks a little higher and you a little lower.</p>':'')+'</div>';
+    '<p class="hint">'+(c.v===d.v?(jaVoices.length<2?'This device has one Japanese voice, so ':'Same voice picked, so ')+'アンちゃん speaks a little higher and you a little lower. ':'')+'Saved on this device, for every chat.</p></div>';
 }
-document.addEventListener("change",function(e){ var m=e.target.id&&e.target.id.match(/^cv-(an|me)$/); if(!m) return; S.cv[m[1]]=e.target.value; store("kc-chatvoice",S.cv); speak(m[1]==="an"?"アンちゃん：こんにちは！今日(きょう)もがんばろうね。":"Me：こんにちは。よろしくお願(ねが)いします。"); if(typeof renderReview==="function"&&S.tab==="review"&&!S.deck) renderReview(); });
+document.addEventListener("change",function(e){ var m=e.target.id&&e.target.id.match(/^cv-(an|me)$/); if(!m) return; S.cv[m[1]]=e.target.value; store("kc-chatvoice",S.cv); document.querySelectorAll(".cv-box").forEach(function(b){ var n=b.querySelector(".hint"), t=document.createElement("div"); t.innerHTML=chatVoiceHtml(); var n2=t.querySelector(".hint"); if(n&&n2) n.innerHTML=n2.innerHTML; }); speak(m[1]==="an"?"アンちゃん：こんにちは！今日(きょう)もがんばろうね。":"Me：こんにちは。よろしくお願(ねが)いします。"); });
 document.addEventListener("click",function(e){ var b=e.target.closest('[data-act="cv-try"]'); if(!b) return; e.stopPropagation(); speak(b.dataset.who==="an"?"アンちゃん：こんにちは！今日(きょう)もがんばろうね。":"Me：こんにちは。よろしくお願(ねが)いします。"); },true);
 var speakTimer=null;
 function speak(text,who){
@@ -2183,7 +2192,7 @@ function rankInfo(){
   var idx=score>=RANK_BOUNDS[5]?5:Math.min(4,Math.floor(score/20));
   return {score:score,idx:idx,lo:RANK_BOUNDS[idx],hi:RANK_BOUNDS[idx+1],teaDone:teaDone,L:teaDone?KENDO:RANKS,pre:teaDone?"kd":"rk",cv:teaDone?"cv-k":"cv-r",key:teaDone?"kc-krank":"kc-rank",deep:deep,total:total};
 }
-S.size=recall("kc-size")||"10"; S.front=recall("kc-front")||"jp"; S.furi=recall("kc-furi")||"flip"; S.voice=recall("kc-voice")||"tap"; S.rate=recall("kc-rate")||"normal";
+S.size=recall("kc-size")||"10"; S.front=recall("kc-front")||"jp"; S.furi=recall("kc-furi")||"flip"; S.voice=recall("kc-voice")||"tap"; S.rate="normal"; /* Speed setting removed Oct 2026 (unused). Code still reads S.rate, so it stays "normal". */
 function decks(){
   var t=today();
   var due=S.words.filter(function(w){return !w.next || w.next<=t;});
@@ -2197,8 +2206,7 @@ var SETTINGS=[
   ["size","Cards per session",[["5","5"],["10","10"],["20","20"],["30","30"],["all","All"]]],
   ["front","Front of card",[["jp","Japanese"],["en","English"],["listen","Listening"]]],
   ["furi","Furigana",[["always","Always"],["flip","After flip"],["kana","Kana only"]]],
-  ["voice","Voice",[["off","Off"],["tap","Tap to play"],["auto","Auto-play"]]],
-  ["rate","Speed",[["slow","Slow"],["normal","Normal"]]]
+  ["voice","Voice",[["off","Off"],["tap","Tap to play"],["auto","Auto-play"]]]
 ];
 function segHtml(k,label,opts){
   return '<div class="setrow"><span class="setlabel">'+label+'</span><div class="seg" role="radiogroup" aria-label="'+label+'">'+
@@ -2273,7 +2281,7 @@ function renderReview(){
       '</div><div class="settings">'+SETTINGS.filter(function(x){return TTS||(x[0]!=="voice"&&x[0]!=="rate");}).map(function(x){
         var opts=x[2]; if(x[0]==="front"&&!TTS) opts=opts.filter(function(o){return o[0]!=="listen";});
         return segHtml(x[0],x[1],opts);}).join("")+
-      (voiceNote?'<p class="hint">'+voiceNote+'</p>':'')+chatVoiceHtml()+
+      (voiceNote?'<p class="hint">'+voiceNote+'</p>':'')+
       '</div><div class="row" style="margin-top:18px"><button class="btn primary startbtn" data-act="start">Start review</button><span class="hint">Space flips, 1 is Again, 2 is Got it, P plays audio</span></div><div class="msg" id="deck-msg"></div></details>'+journalDecksHtml();
     if(S.animLevel){S.animLevel=false; requestAnimationFrame(function(){animateLevel(S.levelOpen);});}
     return;
@@ -2641,7 +2649,9 @@ function lineHtmlPast(l,i){
     '<div class="anns"></div><canvas class="ink" aria-hidden="true"></canvas>'+(l.jp?'<span class="jsay">'+sayBtn(l.jp,"Hear this sentence")+'</span>':'')+'</div>';
 }
 function bodyHtml(en){
+  var chat=/^Chat with /.test(en.grammar||"")&&!!chatVoiceHtml();
   return (en.grammar?'<p class="hint" lang="ja">Grammar focus: '+esc(en.grammar)+'</p>':'')+
+    (chat?'<details class="cv-entry"><summary><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg><span>Voices</span></summary>'+chatVoiceHtml()+'</details>':'')+
     '<div class="jlines">'+en.lines.map(lineHtmlPast).join("")+'</div>'+
     '<a class="sheetlink" href="'+rowLink(JOURNAL_GID,en.row)+'" target="_blank" rel="noopener">'+ICO_SHEET+'<span>Open in sheet</span><span class="ext" aria-hidden="true">↗</span></a>';
 }
