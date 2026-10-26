@@ -619,6 +619,57 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .gd-prompt{margin-top:10px;padding:12px 14px;border-radius:10px;background:var(--paper);border-left:3px solid var(--t-grammar);font-size:1rem}
 .gd-you{margin-top:10px;display:grid;gap:2px}
 .gd-you div{font-size:1.05rem}
+.gd-dots i.miss{background:#B3362F}
+/* grammar quiz carousel (Oct 2026) */
+.gq{position:relative;margin-bottom:14px}
+.gq-track{display:flex;gap:12px;overflow-x:auto;overflow-y:hidden;transition:height .3s ease;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;overscroll-behavior-x:contain;align-items:flex-start;border-radius:14px}
+.gq-track::-webkit-scrollbar{display:none}
+.gq-slide{flex:0 0 100%;min-width:0;scroll-snap-align:start}
+.gq-slide>.panel{margin-bottom:0}
+.gq-slide>.gd-start{display:none}
+@media (hover:none),(pointer:coarse){.gq-slide{flex-basis:calc(100% - 22px)}}
+.gq-head{display:flex;gap:16px;align-items:center;padding:18px 20px;color:#fff;background:linear-gradient(135deg,color-mix(in srgb,var(--mt) 80%,#fff),var(--mt) 50%,color-mix(in srgb,var(--mt) 70%,#000))}
+.gq-body{padding:14px 18px 16px;display:grid;gap:10px}
+.gq-body>p{margin:0;font-size:.88rem;color:var(--muted)}
+.gq-body .gd-start{margin:0}
+.gq-opts{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+.gq-opts .setlabel{min-width:76px;font-size:.82rem;color:var(--muted)}
+.gq-weak{margin:0;font-size:.82rem;color:var(--muted)}
+.gq-weak b{color:var(--ink,inherit);font-weight:600;margin-right:4px}
+.gq-arrow{display:none}
+@media (hover:hover) and (pointer:fine){
+  .gq-arrow{display:grid;place-items:center;position:absolute;top:44px;z-index:3;width:34px;height:34px;padding:0 0 3px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink,inherit);font-size:1.4rem;line-height:1;cursor:pointer;box-shadow:0 4px 10px -4px rgba(0,0,0,.3);transition:opacity .2s,transform .2s}
+  .gq-arrow:hover{transform:scale(1.08)}
+  .gq-arrow.prev{left:-12px}.gq-arrow.next{right:-12px}
+}
+@media (hover:hover) and (pointer:fine) and (min-width:860px){
+  .gq-arrow{top:40px}.gq-arrow.prev{left:-50px}.gq-arrow.next{right:-50px}
+  .gq-arrow[disabled]{opacity:0;pointer-events:none}
+}
+.gq-dots{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:10px}
+.gq-dots button{width:8px;height:8px;padding:0;border:0;border-radius:4px;background:var(--line);cursor:pointer;transition:width .25s,background .25s}
+.gq-dots button.on{width:22px;background:var(--t-grammar)}
+.gq-count{margin-left:8px;font-size:.75rem;color:var(--muted)}
+.qz .q-prompt{margin-top:6px;padding:14px 16px;border-radius:12px;background:var(--paper);border-left:3px solid var(--t-grammar);display:grid;gap:4px}
+.q-word{font-family:var(--serif);font-size:1.6rem;font-weight:700;line-height:1.6}
+.q-sent{font-size:1.25rem;line-height:2}
+.q-en{font-size:.85rem;color:var(--muted)}
+.q-to{font-size:.95rem}.q-to b{color:var(--t-grammar)}
+.q-blank{display:inline-block;min-width:2.2em;margin:0 2px;padding:0 4px;text-align:center;border-bottom:2px solid var(--t-grammar);color:var(--muted)}
+.q-blank.fill{color:var(--t-grammar);font-weight:700}
+.q-opts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.q-opt{min-height:48px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-size:1.2rem;font-family:var(--serif);cursor:pointer;color:inherit;transition:transform .15s,background .2s}
+.q-opt:not([disabled]):hover{transform:translateY(-2px);border-color:var(--t-grammar)}
+.q-opt.right{background:color-mix(in srgb,var(--matcha) 22%,var(--surface));border-color:var(--matcha)}
+.q-opt.wrong{background:color-mix(in srgb,#B3362F 15%,var(--surface));border-color:#B3362F}
+.q-opt[disabled]{cursor:default}
+.q-ansr{font-weight:700;font-size:1.05rem}
+.q-score{margin:6px 0 4px;font-size:1.05rem}
+.q-miss{display:grid;gap:6px;margin-top:6px}
+.q-mrow{display:grid;gap:2px;padding:8px 12px;border-radius:10px;background:var(--paper)}
+.q-mrow small{color:var(--muted)}
+.q-perfect{margin:6px 0;font-family:var(--serif);font-size:1.2rem;font-weight:700}.q-perfect span{font-family:var(--sans);font-size:.9rem;font-weight:400;color:var(--muted)}
+
 .gs-circ{display:flex;align-items:center;gap:8px;flex:none}
 .gs-cn{display:grid;line-height:1.15;text-align:right}
 .gs-cn b{font-size:.9rem}
@@ -3227,7 +3278,7 @@ async function loadGrammar(){
   var d=null;
   try{ if(db&&uid){var snap=await db.collection("data/users/"+uid).doc("grammar").get(); if(snap.exists) d=JSON.parse(JSON.stringify(snap.data()));} }catch(e){}
   if(!d) d=recall("kc-grammar");
-  d=d||{}; S.gram={st:d.st||{},mine:d.mine||{},custom:Array.isArray(d.custom)?d.custom:[],xp:d.xp||{},cov3:!!d.cov3};
+  d=d||{}; S.gram={st:d.st||{},mine:d.mine||{},custom:Array.isArray(d.custom)?d.custom:[],xp:d.xp||{},cov3:!!d.cov3,q:d.q||undefined};
   if(!S.gram.cov3){ var nowC=Date.now(); GENKI.forEach(function(p){ if(+p.l<=3){ var xx=gx(p.id); xx.c=1; if(!xx.t) xx.t=nowC; } }); S.gram.cov3=true; setTimeout(saveGrammar,0); }
   renderHome(); if(S.tab==="grammar") renderGrammar();
 }
@@ -3235,7 +3286,7 @@ var gTimer;
 function saveGrammar(){
   clearTimeout(gTimer);
   gTimer=setTimeout(async function(){
-    var body={st:S.gram.st,mine:S.gram.mine,custom:S.gram.custom,xp:S.gram.xp||{},cov3:!!S.gram.cov3,updated:new Date().toISOString()};
+    var body={st:S.gram.st,mine:S.gram.mine,custom:S.gram.custom,xp:S.gram.xp||{},cov3:!!S.gram.cov3,q:S.gram.q||{},updated:new Date().toISOString()};
     store("kc-grammar",body);
     if(db&&uid){ try{ await db.collection("data/users/"+uid).doc("grammar").set(body); }catch(e){ toast("Couldn’t sync grammar progress. It’s kept on this device."); } }
   },600);
@@ -3290,6 +3341,7 @@ function animateG(){
 function renderGrammar(){
   var el=$("#grammar"); if(!el) return;
   if(S.drill){ el.innerHTML=drillHtml(); var gi=$("#gd-ans"); if(gi&&!gi.disabled) gi.focus({preventScroll:true}); return; }
+  if(S.quiz){ el.innerHTML=quizHtml(); quizFocus(); return; }
   var pts=allPoints();
   var cnt={all:pts.length,rf:0,got:0,mine:(S.gram.custom||[]).length+(S.sheetG||[]).filter(function(p){return p.l==="my";}).length}; pts.forEach(function(p){var s=gStatus(p.id); if(cnt[s]!==undefined&&s!=="all") cnt[s]++;});
   var f=S.gfilter;
@@ -3305,7 +3357,7 @@ var GTOPIC={1:"New Friends",2:"Shopping",3:"Making a Date",4:"The First Date",5:
   var GALL=function(k){return k==="mine"?(S.gram.custom||[]):(k==="gx"||k==="pp"||k==="my")?(S.sheetG||[]).filter(function(p){return p.l===k;}):GENKI.filter(function(p){return String(p.l)===k;});};
   var autoOpen=f!=="all";
   var html='<div class="chips">'+[["all","All"],["rf","Reinforce"],["got","Got it"],["mine","Mine"]].map(function(c){return '<button class="chip" data-act="g-filter" data-f="'+c[0]+'" aria-pressed="'+(f===c[0])+'">'+c[1]+' <span class="chip-n">'+cnt[c[0]]+'</span></button>';}).join("")+'</div>';
-  html=rankHtml()+html;
+  html=quizCarouselHtml()+html;
   html+=GADD_HTML();
   if(!show.length) html+='<p class="empty">'+(f==="rf"?"Nothing marked to reinforce. Tap Reinforce on any point you want to practise.":f==="got"?"No points marked Got it yet.":f==="mine"?"You haven’t added any points yet. Use Add a grammar point above.":"No grammar points.")+'</p>';
   var SECS=[["genki","Genki","げんき",""],["preply","Preply","プレプリー","From the Preply section of the Grammar tab in your sheet. Add rows there and sync."],["mine","Mine","じぶん","From the My Grammar section of the Grammar tab in your sheet, plus any points you add in the app."]];
@@ -3339,7 +3391,7 @@ var GTOPIC={1:"New Friends",2:"Shopping",3:"Making a Date",4:"The First Date",5:
     });
     html+='</div></details>';
   });
-  el.innerHTML=html;
+  el.innerHTML=html; gqSync(true);
   if(S.animG){ S.animG=false; requestAnimationFrame(animateG); }
   if(S.gex){var inp=$("#gx-jp"); if(inp) inp.focus();}
 }
@@ -3495,6 +3547,7 @@ async function drillCheck(){
     D.res={ok:d.ok,corrected:d.corrected||ans,english:d.english||"",note:d.note||"",gain:(d.ok&&gxPeek(it.id).d<3)?15:0,
       newWords:pickNewWords(d.words,it), typos:(Array.isArray(d.typos)?d.typos:[]).filter(function(t){return t&&t.wrote&&t.meant&&stripFuri(t.wrote)!==stripFuri(t.meant);}).slice(0,3)};
     if(d.ok) D.good++;
+    var qtr=qStats().tr; qtr.n++; if(d.ok) qtr.ok++;
     gPractised(it.id,d.ok);
   }catch(err){ D.res={err:aiErr(err)}; }
   D.busy=false; renderGrammar();
@@ -3544,6 +3597,272 @@ function drillHtml(){
   });
   el.addEventListener("keydown",function(e){ if(e.target.id==="gd-ans"&&e.key==="Enter"&&!e.isComposing){ e.preventDefault(); drillCheck(); } });
   el.addEventListener("toggle",function(e){ if(e.target.classList&&e.target.classList.contains("grank")){ S.grankOpen=e.target.open; if(e.target.open) animateG(); } },true);
+})();
+/* ---------- grammar quizzes (Oct 2026): swipe carousel, Forms, Particles, Mix. Forms, Particles and Mix need no AI. ---------- */
+var QLV=[0,20,60,150,300,500,800];
+S.qsize=recall("kc-qsize")||"10"; S.qwords=recall("kc-qwords")||"rf"; S.gqi=+(recall("kc-gqi")||0);
+function qStats(){
+  var q=S.gram.q||(S.gram.q={});
+  ["tr","fm","pt"].forEach(function(k){ q[k]=q[k]||{ok:0,n:0,weak:{}}; q[k].weak=q[k].weak||{}; });
+  if(!q.seed){ var s=0; Object.keys(S.gram.xp||{}).forEach(function(id){ s+=(S.gram.xp[id]&&S.gram.xp[id].d)||0; }); q.tr.ok=Math.max(q.tr.ok,s); q.seed=1; }
+  return q;
+}
+function qLevel(ok){
+  var i=0; QLV.forEach(function(v,j){ if(ok>=v) i=j; });
+  var lo=QLV[i], hi=QLV[i+1];
+  return {idx:i,inRank:hi?Math.round((ok-lo)/(hi-lo)*100):100,toNext:hi?hi-ok:0};
+}
+/* ---- conjugation ---- */
+var QA={"う":"わ","く":"か","ぐ":"が","す":"さ","つ":"た","ぬ":"な","ぶ":"ば","む":"ま","る":"ら"};
+var QI={"う":"い","く":"き","ぐ":"ぎ","す":"し","つ":"ち","ぬ":"に","ぶ":"び","む":"み","る":"り"};
+var QT={"う":"って","つ":"って","る":"って","む":"んで","ぶ":"んで","ぬ":"んで","く":"いて","ぐ":"いで","す":"して"};
+var VSUF={nai:"ない",nakatta:"なかった",masu:"ます",masen:"ません",mashita:"ました",masendeshita:"ませんでした"};
+var VL={dict:"dictionary form",nai:"short negative (ない)",ta:"short past (た)",nakatta:"short past negative (なかった)",masu:"polite (ます)",masen:"polite negative (ません)",mashita:"polite past (ました)",masendeshita:"polite past negative (ませんでした)",te:"て-form"};
+var AL={dict:"short present",neg:"short negative",past:"short past",pastneg:"short past negative",pol:"polite present",pneg:"polite negative",ppast:"polite past",ppastneg:"polite past negative",te:"て-form (くて / で)"};
+/* built-in Genki 1 words: every verb ending, the exceptions, both adjective types */
+var QBUILT=[["会う","あう","u","to meet"],["買う","かう","u","to buy"],["行く","いく","u","to go"],["書く","かく","u","to write"],["聞く","きく","u","to listen"],["泳ぐ","およぐ","u","to swim"],["話す","はなす","u","to speak"],["待つ","まつ","u","to wait"],["持つ","もつ","u","to hold"],["死ぬ","しぬ","u","to die"],["遊ぶ","あそぶ","u","to play"],["飲む","のむ","u","to drink"],["読む","よむ","u","to read"],["帰る","かえる","u","to go home"],["入る","はいる","u","to enter"],["分かる","わかる","u","to understand"],["ある","ある","u","to exist (things)"],["撮る","とる","u","to take (a photo)"],
+  ["食べる","たべる","ru","to eat"],["見る","みる","ru","to see"],["起きる","おきる","ru","to get up"],["寝る","ねる","ru","to sleep"],["いる","いる","ru","to exist (people)"],["教える","おしえる","ru","to teach"],["する","する","irr","to do"],["来る","くる","irr","to come"],["勉強する","べんきょうする","irr","to study"],
+  ["高い","たかい","i","expensive"],["安い","やすい","i","cheap"],["面白い","おもしろい","i","interesting"],["いい","いい","i","good"],["寒い","さむい","i","cold"],["大きい","おおきい","i","big"],["忙しい","いそがしい","i","busy"],["楽しい","たのしい","i","fun"],
+  ["きれい","きれい","na","pretty, clean"],["静か","しずか","na","quiet"],["好き","すき","na","to like"],["元気","げんき","na","energetic"],["便利","べんり","na","convenient"],["有名","ゆうめい","na","famous"]];
+function qWord(jp,kana,cls,en){
+  jp=String(jp||"").split("・")[0].trim(); kana=String(kana||"").split("・")[0].trim();
+  if(!kana&&!KANJI_RE.test(jp)) kana=jp; if(!jp||!kana||/[\s,、（(]/.test(jp+kana)) return null;
+  if(cls==="na"){ jp=jp.replace(/な$/,""); kana=kana.replace(/な$/,""); }
+  var lj=jp.slice(-1), lk=kana.slice(-1);
+  if(cls==="u"&&!QA[lk]) return null;
+  if(cls==="ru"&&lk!=="る") return null;
+  if(cls==="irr"&&!/(する|くる)$/.test(kana)) return null;
+  if(cls==="i"&&lk!=="い") return null;
+  if(cls!=="na"&&lj!==lk) jp=kana;
+  return {jp:jp,kana:kana,cls:cls,en:en||"",iku:cls==="u"&&/いく$/.test(kana)&&(/行く$/.test(jp)||jp===kana),aru:kana==="ある",ii:cls==="i"&&kana==="いい"};
+}
+function qClass(w){
+  if(w.type==="Verb"){ var g=String(w.group||""); return /1/.test(g)?"u":/2/.test(g)?"ru":/3/.test(g)?"irr":null; }
+  return w.type==="i-Adjective"?"i":w.type==="na-Adjective"?"na":null;
+}
+/* one form of a verb, from the kanji or kana spelling */
+function vForm(b,W,f,isKana){
+  if(f==="dict") return b;
+  if(W.cls==="irr"){
+    if(/する$/.test(b)){ var s=b.slice(0,-2); return s+{nai:"しない",ta:"した",nakatta:"しなかった",masu:"します",masen:"しません",mashita:"しました",masendeshita:"しませんでした",te:"して"}[f]; }
+    if(/くる$/.test(b)){ var s2=b.slice(0,-2); return s2+{nai:"こない",ta:"きた",nakatta:"こなかった",masu:"きます",masen:"きません",mashita:"きました",masendeshita:"きませんでした",te:"きて"}[f]; }
+    var s3=b.slice(0,-1); return s3+{nai:"ない",ta:"た",nakatta:"なかった",masu:"ます",masen:"ません",mashita:"ました",masendeshita:"ませんでした",te:"て"}[f];
+  }
+  if(W.cls==="ru"){ var r=b.slice(0,-1); return r+(f==="te"?"て":f==="ta"?"た":VSUF[f]); }
+  var st=b.slice(0,-1), l=b.slice(-1);
+  if(W.aru&&(f==="nai"||f==="nakatta")) return f==="nai"?"ない":"なかった";
+  if(f==="nai"||f==="nakatta") return st+QA[l]+VSUF[f];
+  if(VSUF[f]) return st+QI[l]+VSUF[f];
+  var te=W.iku?"って":QT[l];
+  return st+(f==="te"?te:te.replace(/て$/,"た").replace(/で$/,"だ"));
+}
+/* all accepted spellings of an adjective form */
+function aForms(b,W,f){
+  if(W.cls==="na"){
+    var M={dict:[b+"だ"],neg:[b+"じゃない",b+"ではない"],past:[b+"だった"],pastneg:[b+"じゃなかった",b+"ではなかった"],pol:[b+"です"],pneg:[b+"じゃないです",b+"じゃありません",b+"ではありません",b+"ではないです"],ppast:[b+"でした"],ppastneg:[b+"じゃなかったです",b+"じゃありませんでした",b+"ではありませんでした",b+"ではなかったです"],te:[b+"で"]};
+    return M[f];
+  }
+  var st=(W.ii?(b==="良い"?"良":"よ"):b.slice(0,-1));
+  var N={dict:[b],neg:[st+"くない"],past:[st+"かった"],pastneg:[st+"くなかった"],pol:[b+"です"],pneg:[st+"くないです",st+"くありません"],ppast:[st+"かったです"],ppastneg:[st+"くなかったです",st+"くありませんでした"],te:[st+"くて"]};
+  return N[f];
+}
+/* returns {show: display html, ok: accepted answers} */
+function qForm(W,f){
+  var adj=W.cls==="i"||W.cls==="na", ok=[], jp, kn;
+  if(adj){ jp=aForms(W.jp,W,f); kn=aForms(W.kana,W,f); if(W.ii&&f!=="dict"&&f!=="pol"&&W.jp==="いい") jp=kn; ok=jp.concat(kn); if(W.cls==="na"&&f==="dict") ok.push(W.jp,W.kana); return {show:rubyWord(jp[0],kn[0]),ok:ok}; }
+  jp=vForm(W.jp,W,f,false); kn=vForm(W.kana,W,f,true); return {show:rubyWord(jp,kn),ok:[jp,kn]};
+}
+function qNorm(s){ return stripFuri(String(s||"")).replace(/[\s　。．.!！?？、,]/g,""); }
+/* rule key, label and one-line rule for a form question */
+function qKey(W,f){
+  if(W.cls==="u"){ if(W.iku&&(f==="te"||f==="ta")) return "iku:"+f; if(W.aru&&(f==="nai"||f==="nakatta")) return "aru:"+f; var l=W.kana.slice(-1); return "u:"+f+((f==="te"||f==="ta"||f==="nai"||f==="nakatta")?":"+l:""); }
+  if(W.cls==="irr") return (/くる$/.test(W.kana)?"kuru:":"suru:")+f;
+  if(W.cls==="i"&&W.ii) return "ii:"+f;
+  return W.cls+":"+f;
+}
+function qKeyLabel(k){
+  var p=k.split(":"), f=p[1], L=(p[0]==="i"||p[0]==="na"||p[0]==="ii")?AL[f]:VL[f];
+  var who={u:"う-verbs"+(p[2]?" ending in "+p[2]:""),ru:"る-verbs",suru:"する verbs",kuru:"来(く)る",iku:"行(い)く",aru:"ある",i:"い-adjectives",ii:"いい",na:"な-adjectives"}[p[0]];
+  return who+", "+(L||f);
+}
+function qRule(W,f){
+  var c=W.cls, l=W.kana.slice(-1);
+  if(c==="u"){
+    if(W.iku&&(f==="te"||f==="ta")) return "行(い)く is the one exception: 行(い)って, 行(い)った.";
+    if(W.aru&&(f==="nai"||f==="nakatta")) return "ある is special. Its negative is ない, not あらない.";
+    if(f==="nai"||f==="nakatta") return "Group 1: change the last "+l+" to "+QA[l]+", then add "+VSUF[f]+"."+(l==="う"?" Verbs ending in う use わ, not あ.":"");
+    if(VSUF[f]) return "Group 1: change the last "+l+" to "+QI[l]+", then add "+VSUF[f]+".";
+    var g={"う":"う・つ・る","つ":"う・つ・る","る":"う・つ・る","む":"む・ぶ・ぬ","ぶ":"む・ぶ・ぬ","ぬ":"む・ぶ・ぬ","く":"く","ぐ":"ぐ","す":"す"}[l], e=QT[l]; if(f==="ta") e=e.replace(/て$/,"た").replace(/で$/,"だ");
+    return "Group 1 verbs ending in "+g+" → "+e+".";
+  }
+  if(c==="ru") return "Group 2: drop る, then add "+(f==="te"?"て":f==="ta"?"た":VSUF[f])+".";
+  if(c==="irr") return /くる$/.test(W.kana)?"来(く)る changes its sound: 来(こ)ない, 来(き)ます, 来(き)た, 来(き)て.":"する verbs: する → "+vForm("する",W,f)+".";
+  if(c==="i"){
+    var R={dict:"The dictionary form is already the casual present.",neg:"drop い, add くない.",past:"drop い, add かった.",pastneg:"drop い, add くなかった.",pol:"add です.",pneg:"drop い, add くないです (or くありません).",ppast:"drop い, add かったです.",ppastneg:"drop い, add くなかったです.",te:"drop い, add くて."}[f];
+    return W.ii&&f!=="dict"&&f!=="pol"?"いい uses よ for every form except the present: よくない, よかった, よくて.":"い-adjectives: "+R;
+  }
+  return "な-adjectives: "+{dict:"add だ (or leave it bare).",neg:"add じゃない.",past:"add だった.",pastneg:"add じゃなかった.",pol:"add です.",pneg:"add じゃないです (or じゃありません).",ppast:"add でした.",ppastneg:"add じゃなかったです.",te:"add で."}[f];
+}
+var QPT_V={nai:"g8-38",dict:"g8-38",ta:"g9-45",nakatta:"g9-45",masu:"g3-10",masen:"g3-10",mashita:"g4-21",masendeshita:"g4-21",te:"g6-28"};
+var QPT_A={neg:"g5-24",pneg:"g5-24",past:"g5-25",pastneg:"g5-25",ppast:"g5-25",ppastneg:"g5-25",te:"g7-36",dict:"g8-38"};
+var QB_V={masu:"dict",masen:"nai",mashita:"ta",masendeshita:"nakatta"}, QB_A={pol:"dict",pneg:"neg",ppast:"past",ppastneg:"pastneg"};
+function qPool(mode){
+  var seen={}, bank=[], built=[], note="";
+  (S.words||[]).forEach(function(w){ var c=qClass(w); if(!c) return; var W=qWord(w.jp,w.kana,c,w.en); if(!W||seen[W.jp]) return; seen[W.jp]=1; var r=rec(w); W.isNew=w.mastery==="New"||r.good+r.miss<3; bank.push(W); });
+  QBUILT.forEach(function(x){ if(seen[x[0]]) return; var W=qWord(x[0],x[1],x[2],x[3]); if(W){ seen[W.jp]=1; built.push(W); } });
+  if(mode==="new"){ var nw=bank.filter(function(W){return W.isNew;}); if(nw.length>=4) return {list:nw,note:""}; note="You only have "+nw.length+" new verb"+(nw.length===1?"":"s")+" and adjectives, so review words are mixed in."; return {list:nw.concat(bank.filter(function(W){return !W.isNew;})).concat(built),note:note}; }
+  return {list:bank.filter(function(W){return !W.isNew;}).concat(built),note:note};
+}
+function qMakeForm(W){
+  var adj=W.cls==="i"||W.cls==="na", back=Math.random()<0.3, from=null, f;
+  if(back){ var src=pick(Object.keys(adj?QB_A:QB_V)); f=(adj?QB_A:QB_V)[src]; from=qForm(W,src); }
+  else f=pick(adj?["neg","past","pastneg","pneg","ppast","ppastneg","te"]:["nai","ta","nakatta","masu","masen","mashita","masendeshita","te"]);
+  var A=qForm(W,f);
+  return {kind:"fm",W:W,f:f,back:!!from,from:from?from.show:"",show:A.show,ok:A.ok,key:qKey(W,f),p:(adj?QPT_A:QPT_V)[f],label:back?"casual (short form)":(adj?AL[f]:VL[f]),rule:qRule(W,f)};
+}
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+/* choose the best of a few random candidates, leaning toward weak spots */
+function qChoose(make,weak,used){
+  var best=null, bs=-1;
+  for(var t=0;t<8;t++){ var c=make(); if(!c) continue; var id=c.key+"|"+(c.W?c.W.jp:c.s); if(used[id]) continue; var sc=(weak[c.key]||0)*2+Math.random()*3; if(sc>bs){bs=sc;best=c;best._id=id;} }
+  if(best) used[best._id]=1; return best;
+}
+/* ---- particles ---- */
+var QPN={"wa-topic":"は marks the topic: what the sentence is about.","no":"の links two nouns: 日本語(にほんご)の本(ほん) = a Japanese book.","mo":"も means also. It takes the place of は or が.","de-place":"で marks where an action happens.","ni-dest":"に or へ marks where you go. Both work here.","ni-time":"に marks a specific time, like 七時(しちじ)に.","wo":"を marks the object: what the action is done to.","to-with":"と means with (a person).","ni-exist":"に marks where something or someone is, with あります・います.","ga-exist":"With あります・います, the thing or person that exists takes が.","ga-q":"Question words like だれ and 何(なに) take が when they are the subject.","de-means":"で marks the means: by bus, with chopsticks.","kara":"から means from: a starting time or place.","made":"まで means until, or as far as.","ga-suki":"好(す)き and きらい take が for the thing you like.","ga-body":"Person は body part が adjective: 髪(かみ)が長(なが)い = has long hair.","ni-person":"に marks the person you call, ask or meet.","de-range":"で marks the group or range for いちばん.","ga-subj":"が marks the subject of something that happens, like rain falling.","to-and":"と joins nouns: A and B."};
+var QPP={"wa-topic":"g1-0","no":"g1-2","mo":"g2-7","de-place":"g3-12","ni-dest":"g3-13","ni-time":"g3-14","wo":"g3-15","to-with":"g4-23","ni-exist":"g4-18","ga-exist":"g4-18","ga-q":"g8-43","ga-subj":"g8-43","de-means":"g10-53","ga-suki":"g5-26","ga-body":"g7-35","de-range":"g10-50"};
+var QPS=[["私(わたし)＿学生(がくせい)です。","は","wa-topic","I am a student."],["これは日本語(にほんご)＿本(ほん)です。","の","no","This is a Japanese book."],["これは私(わたし)＿かさです。","の","no","This is my umbrella."],["私(わたし)は学生(がくせい)です。たけしさん＿学生(がくせい)です。","も","mo","I'm a student. Takeshi is a student too."],["図書館(としょかん)＿本(ほん)を読(よ)みます。","で","de-place","I read books at the library."],["カフェ＿コーヒーを飲(の)みます。","で","de-place","I drink coffee at a cafe."],["毎日(まいにち)学校(がっこう)＿行(い)きます。","に|へ","ni-dest","I go to school every day."],["うち＿帰(かえ)ります。","に|へ","ni-dest","I go home."],["どこ＿行(い)きますか。","に|へ","ni-dest","Where are you going?"],["七時(しちじ)＿起(お)きます。","に","ni-time","I get up at seven."],["日曜日(にちようび)＿テニスをします。","に","ni-time","I play tennis on Sunday."],["コーヒー＿飲(の)みます。","を","wo","I drink coffee."],["手紙(てがみ)＿書(か)きます。","を","wo","I write a letter."],["何(なに)＿食(た)べますか。","を","wo","What will you eat?"],["部屋(へや)＿掃除(そうじ)しました。","を","wo","I cleaned my room."],["友(とも)だち＿映画(えいが)を見(み)ます。","と","to-with","I watch a movie with a friend."],["たけしさんはメアリーさん＿デートします。","と","to-with","Takeshi goes on a date with Mary."],["公園(こうえん)＿犬(いぬ)がいます。","に","ni-exist","There is a dog in the park."],["机(つくえ)の上(うえ)＿本(ほん)があります。","に","ni-exist","There is a book on the desk."],["あそこ＿銀行(ぎんこう)があります。","に","ni-exist","There is a bank over there."],["私(わたし)は弟(おとうと)＿います。","が","ga-exist","I have a younger brother."],["今日(きょう)は時間(じかん)＿ありません。","が","ga-exist","I don't have time today."],["だれ＿来(き)ましたか。","が","ga-q","Who came?"],["バス＿学校(がっこう)に行(い)きます。","で","de-means","I go to school by bus."],["はし＿ご飯(はん)を食(た)べます。","で","de-means","I eat with chopsticks."],["新幹線(しんかんせん)＿京都(きょうと)に行(い)きました。","で","de-means","I went to Kyoto by bullet train."],["九時(くじ)＿五時(ごじ)まで働(はたら)きます。","から","kara","I work from nine to five."],["フィリピン＿来(き)ました。","から","kara","I came from the Philippines."],["九時(くじ)から五時(ごじ)＿働(はたら)きます。","まで","made","I work from nine until five."],["私(わたし)は猫(ねこ)＿好(す)きです。","が","ga-suki","I like cats."],["京都(きょうと)と大阪(おおさか)と、どちら＿好(す)きですか。","が","ga-suki","Which do you like, Kyoto or Osaka?"],["メアリーさんは髪(かみ)＿長(なが)いです。","が","ga-body","Mary has long hair."],["母(はは)＿電話(でんわ)します。","に","ni-person","I call my mother."],["先生(せんせい)＿聞(き)きます。","に","ni-person","I ask the teacher."],["駅(えき)で友(とも)だち＿会(あ)いました。","に","ni-person","I met a friend at the station."],["日本(にほん)＿いちばん高(たか)い山(やま)は富士山(ふじさん)です。","で","de-range","The tallest mountain in Japan is Mt. Fuji."],["雨(あめ)＿降(ふ)っています。","が","ga-subj","It's raining."],["ラーメン＿すしを食(た)べました。","と","to-and","I ate ramen and sushi."]];
+var QPALL=["は","が","を","に","で","へ","の","も","と","から","まで"];
+function qMakePart(){
+  var x=pick(QPS), acc=x[1].split("|"), opts=[acc[0]], rest=shuffle(QPALL.filter(function(p){return acc.indexOf(p)<0;}));
+  opts=shuffle(opts.concat(rest.slice(0,3)));
+  return {kind:"pt",s:x[0],ok:acc,opts:opts,key:x[2],p:QPP[x[2]]||null,en:x[3],rule:QPN[x[2]]};
+}
+/* ---- quiz run ---- */
+var QT_NAME={fm:["活用","かつよう","Forms"],pt:["助詞","じょし","Particles"],mx:["混合","こんごう","Mix"]};
+function quizStart(t){
+  var q=qStats(), n=+S.qsize||10, used={}, items=[], pool=null, note="";
+  if(t!=="pt"){ var P=qPool(S.qwords); pool=P.list; note=P.note; }
+  for(var i=0;i<n;i++){
+    var kind=t==="mx"?(Math.random()<0.5?"fm":"pt"):t, it=null;
+    if(kind==="fm"&&pool&&pool.length) it=qChoose(function(){return qMakeForm(pick(pool));},q.fm.weak,used);
+    if(kind==="pt"||!it) it=qChoose(qMakePart,q.pt.weak,used);
+    if(it) items.push(it);
+  }
+  S.quiz={t:t,items:items,i:0,good:0,note:note,start:{fm:qLevel(q.fm.ok).idx,pt:qLevel(q.pt.ok).idx,mx:qLevel(q.fm.ok+q.pt.ok).idx}};
+  renderGrammar(); window.scrollTo({top:0,behavior:"smooth"});
+}
+function quizAnswer(given){
+  var Q=S.quiz, it=Q.items[Q.i]; if(!it||it.res) return;
+  var g=it.kind==="fm"?qNorm(given):given;
+  if(it.kind==="fm"&&!g){ var m=$("#q-msg"); if(m) msg(m,"err","Type an answer first."); return; }
+  var ok=it.ok.some(function(a){return (it.kind==="fm"?qNorm(a):a)===g;});
+  it.res={ok:ok,given:given}; if(ok) Q.good++;
+  var st=qStats()[it.kind]; st.n++; if(ok) st.ok++;
+  var w=st.weak; w[it.key]=Math.max(0,(w[it.key]||0)+(ok?-1:2)); if(!w[it.key]) delete w[it.key];
+  saveGrammar(); renderGrammar();
+}
+function quizFinish(){
+  var Q=S.quiz, n=Q.items.length, rate=n?Q.good/n:0, gained=[];
+  if(rate>=0.8){
+    var byP={}; Q.items.forEach(function(it){ if(!it.p) return; byP[it.p]=byP[it.p]===undefined?!!(it.res&&it.res.ok):(byP[it.p]&&!!(it.res&&it.res.ok)); });
+    Object.keys(byP).forEach(function(id){ if(!byP[id]) return; var pt=GENKI.find(function(p){return p.id===id;}); if(!pt) return; if(gxPeek(id).d<3) gained.push(stripFuri(pt.p)); gPractised(id,true); });
+    checkRankUp();
+  }
+  Q.done={rate:rate,gained:gained}; renderGrammar();
+}
+function quizHtml(){
+  var Q=S.quiz, T=QT_NAME[Q.t], n=Q.items.length;
+  var head='<div class="gd-top"><span lang="ja" class="gd-k">'+T[0]+'</span><span>'+(Q.done?'Round complete':(Q.i+1)+' of '+n)+'</span>'+(Q.done?'':'<button class="linkbtn" data-act="q-quit" style="margin-left:auto">End quiz</button>')+'</div>'+
+    '<div class="gd-dots">'+Q.items.map(function(x,i){return '<i class="'+(x.res?(x.res.ok?'done':'miss'):i===Q.i?'now':'')+'"></i>';}).join("")+'</div>';
+  if(Q.done){
+    var q=qStats(), lv=Q.t==="mx"?{fm:qLevel(q.fm.ok).idx,pt:qLevel(q.pt.ok).idx}:{}; if(Q.t!=="mx") lv[Q.t]=qLevel(q[Q.t].ok).idx;
+    var ups=Object.keys(lv).filter(function(k){return lv[k]>Q.start[k];}).map(function(k){return QT_NAME[k][2]+' is now <span lang="ja">'+METALS[lv[k]].k+'</span>, '+METALS[lv[k]].en+'.';});
+    var miss=Q.items.filter(function(x){return x.res&&!x.res.ok;});
+    return '<div class="panel gdrill">'+head+'<p class="q-score"><b>'+Q.good+' of '+n+'</b> correct.</p>'+
+      (ups.length?'<p class="msg ok" style="display:block"><b>Rank up!</b> '+ups.join(" ")+'</p>':'')+
+      '<p class="hint" style="margin:0">'+(Q.done.rate>=0.8?(Q.done.gained.length?'Grammar points +15: '+Q.done.gained.map(esc).join(", "):'80% or more. These points already have full drill credit.'):'Get 80% or more in a round to earn grammar points.')+'</p>'+
+      (miss.length?'<div class="q-miss"><span class="gp-lbl">To review</span>'+miss.map(function(x){return '<div class="q-mrow"><span lang="ja">'+(x.kind==="fm"?(x.back?x.from:rubyWord(x.W.jp,x.W.kana))+' → '+x.show:qBlank(x,true))+'</span><small>'+(x.kind==="fm"?esc(x.label)+'. ':'')+esc(stripFuri(x.rule))+'</small></div>';}).join("")+'</div>':'<p class="q-perfect" lang="ja">完璧(かんぺき)！ <span>Perfect round.</span></p>')+
+      '<div class="row" style="margin-top:8px"><button class="btn primary" data-act="q-start" data-t="'+Q.t+'">Another round</button><button class="btn ghost" data-act="q-quit">Done</button></div></div>';
+  }
+  var it=Q.items[Q.i], body='';
+  if(Q.note&&Q.i===0) body+='<p class="hint" style="margin:0 0 4px">'+esc(Q.note)+'</p>';
+  if(it.kind==="fm"){
+    body+='<div class="q-prompt"><div class="q-word" lang="ja">'+(it.back?it.from:rubyWord(it.W.jp,it.W.kana))+'</div><div class="q-en">'+(it.back?'':esc(it.W.en))+'</div><div class="q-to"><span aria-hidden="true">→</span> <b>'+esc(it.label)+'</b></div></div>';
+    if(!it.res) body+='<label for="q-ans">Your answer</label><input type="text" id="q-ans" lang="ja" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Kana or kanji">'+
+      '<div class="row" style="margin-top:10px"><button class="btn primary" data-act="q-check">Check</button></div><div class="msg" id="q-msg"></div>';
+  } else {
+    body+='<div class="q-prompt"><div class="q-sent" lang="ja">'+qBlank(it,!!it.res)+'</div><div class="q-en">'+esc(it.en)+'</div></div>'+
+      '<div class="q-opts">'+it.opts.map(function(o){var c=it.res?(it.ok.indexOf(o)>-1?' right':o===it.res.given?' wrong':''):''; return '<button class="q-opt'+c+'" data-act="q-pick" data-v="'+o+'" lang="ja"'+(it.res?' disabled':'')+'>'+o+'</button>';}).join("")+'</div>';
+  }
+  if(it.res){
+    body+='<div class="msg '+(it.res.ok?'ok':'info')+'" style="display:block"><b>'+(it.res.ok?'Correct.':'Not quite.')+'</b> '+
+      (it.kind==="fm"?(it.res.ok?'':'You wrote <span lang="ja">'+esc(it.res.given)+'</span>. ')+'Answer: <span lang="ja" class="q-ansr">'+it.show+'</span>':(it.res.ok?'':'Answer: <span lang="ja" class="q-ansr">'+it.ok.join(" or ")+'</span>'))+
+      '<br><span lang="ja">'+rubyText(it.rule)+'</span></div>'+
+      '<div class="row" style="margin-top:10px"><button class="btn primary" data-act="q-next" id="q-next">'+(Q.i+1<n?'Next':'See results')+'</button></div>';
+  }
+  return '<div class="panel gdrill qz">'+head+body+'</div>';
+}
+function qBlank(it,fill){ var h=rubyText(it.s); return h.replace("＿",'<span class="q-blank'+(fill?' fill':'')+'">'+(fill?it.ok[0]:'＿＿')+'</span>'); }
+function quizFocus(){ var a=$("#q-ans"); if(a){ a.focus({preventScroll:true}); return; } var b=$("#q-next"); if(b) b.focus({preventScroll:true}); }
+/* ---- carousel ---- */
+function qSeg(k,opts){ return '<div class="seg" role="radiogroup" aria-label="'+(k==="qsize"?"Questions per round":"Words")+'">'+opts.map(function(o){return '<button role="radio" data-act="q-set" data-k="'+k+'" data-v="'+o[0]+'" aria-checked="'+(S[k]===o[0])+'">'+o[1]+'</button>';}).join("")+'</div>'; }
+function qCard(t,ok,desc,body){
+  var T=t==="tr"?["錬成","れんせい","Transmute"]:QT_NAME[t], L=qLevel(ok), M=METALS[L.idx], N=METALS[L.idx+1];
+  return '<div class="panel grank gq-card" style="--mt:'+M.c+'"><div class="gq-head"><div class="gr-seal" lang="ja">'+M.k+'</div><div class="gr-txt">'+
+    '<div class="gr-name"><ruby lang="ja">'+T[0]+'<rt>'+T[1]+'</rt></ruby> <span>'+T[2]+'</span></div>'+
+    '<div class="gr-sub"><span lang="ja">'+M.k+'</span> '+M.en+' · '+ok+' correct</div>'+
+    '<div class="xp-wrap"><div class="xp-bar"><i class="xp" style="width:'+L.inRank+'%"></i></div><span class="xp-num">'+L.inRank+'%</span></div>'+
+    '<div class="gr-sub">'+(N?L.toNext+' more to <span lang="ja">'+N.k+'</span>, '+N.en:'Top rank reached')+'</div></div></div>'+
+    '<div class="gq-body"><p>'+desc+'</p>'+body+'</div></div>';
+}
+var QPL={"wa-topic":"は (topic)","no":"の (linking nouns)","mo":"も (also)","de-place":"で (place)","ni-dest":"に・へ (destination)","ni-time":"に (time)","wo":"を (object)","to-with":"と (with)","ni-exist":"に (location)","ga-exist":"が (with あります・います)","ga-q":"が (question words)","de-means":"で (means)","kara":"から (from)","made":"まで (until)","ga-suki":"が (with 好き)","ga-body":"が (body part)","ni-person":"に (person)","de-range":"で (range)","ga-subj":"が (subject)","to-and":"と (and)"};
+function qWeakLine(st,pt){ var k=Object.keys(st.weak).sort(function(a,b){return st.weak[b]-st.weak[a];}).slice(0,2); return k.length?'<p class="gq-weak"><b>Working on</b> <span lang="ja">'+k.map(function(x){return rubyText(pt?(QPL[x]||x):qKeyLabel(x));}).join(" · ")+'</span></p>':''; }
+function quizCarouselHtml(){
+  var q=qStats(), rk=rankHtml(), cut=rk.indexOf('<div class="gd-start">'), overall=cut>-1?rk.slice(0,cut):rk, tstart=cut>-1?rk.slice(cut):'';
+  var size=qSeg("qsize",[["5","5"],["10","10"],["20","20"]]), words=qSeg("qwords",[["rf","Reinforce"],["new","New words"]]);
+  var slides=[
+    overall,
+    qCard("tr",q.tr.ok,'AI writes five situations for the points you need most, then checks your sentences.',tstart),
+    qCard("fm",q.fm.ok,'Change verbs and adjectives into other forms. Checked instantly, no AI.','<div class="gq-opts"><span class="setlabel">Words</span>'+words+'</div><div class="gq-opts"><span class="setlabel">Questions</span>'+size+'</div>'+qWeakLine(q.fm)+'<div class="row"><button class="btn primary" data-act="q-start" data-t="fm"><span lang="ja">活用</span> Start Forms</button></div>'),
+    qCard("pt",q.pt.ok,'Pick the right particle for each Genki sentence. Checked instantly, no AI.','<div class="gq-opts"><span class="setlabel">Questions</span>'+size+'</div>'+qWeakLine(q.pt,true)+'<div class="row"><button class="btn primary" data-act="q-start" data-t="pt"><span lang="ja">助詞</span> Start Particles</button></div>'),
+    qCard("mx",q.fm.ok+q.pt.ok,'Forms and Particles shuffled together. Answers count toward both.','<div class="gq-opts"><span class="setlabel">Words</span>'+words+'</div><div class="gq-opts"><span class="setlabel">Questions</span>'+size+'</div><div class="row"><button class="btn primary" data-act="q-start" data-t="mx"><span lang="ja">混合</span> Start Mix</button></div>')
+  ], n=slides.length, cur=Math.max(0,Math.min(n-1,S.gqi||0)), names=["Overall","Transmute","Forms","Particles","Mix"];
+  return '<div class="gq"><div class="gq-track" id="gq-track" aria-label="Grammar quizzes">'+slides.map(function(s,i){return '<div class="gq-slide" role="group" aria-roledescription="slide" aria-label="'+names[i]+', '+(i+1)+' of '+n+'">'+s+'</div>';}).join("")+'</div>'+
+    '<button class="gq-arrow prev" data-act="q-nav" data-d="-1" aria-label="Previous card"'+(cur===0?' disabled':'')+'>‹</button><button class="gq-arrow next" data-act="q-nav" data-d="1" aria-label="Next card"'+(cur===n-1?' disabled':'')+'>›</button>'+
+    '<div class="gq-dots">'+names.map(function(nm,i){return '<button data-act="q-go" data-i="'+i+'" class="'+(i===cur?'on':'')+'" aria-label="'+nm+'" title="'+nm+'"></button>';}).join("")+'<span class="gq-count">'+names[cur]+' · '+(cur+1)+' of '+n+'</span></div></div>';
+}
+function gqSync(jump){
+  var tr=$("#gq-track"); if(!tr) return; var sl=tr.children, n=sl.length; if(!n) return;
+  if(jump){ var i0=Math.max(0,Math.min(n-1,S.gqi||0)); tr.style.scrollBehavior="auto"; tr.scrollLeft=sl[i0].offsetLeft-sl[0].offsetLeft; tr.style.scrollBehavior=""; }
+  var w=sl[0].offsetWidth+parseFloat(getComputedStyle(tr).columnGap||12), i=jump?Math.max(0,Math.min(n-1,S.gqi||0)):Math.max(0,Math.min(n-1,Math.round(tr.scrollLeft/(w||1))));
+  if(!jump&&i!==S.gqi){ S.gqi=i; store("kc-gqi",i); }
+  gqMark(i);
+  if(jump&&window.ResizeObserver){ var ro=new ResizeObserver(function(){ gqMark(S.gqi||0); }); Array.prototype.forEach.call(sl,function(s){ ro.observe(s); }); }
+}
+function gqMark(i){
+  var tr=$("#gq-track"); if(!tr) return; var sl=tr.children, n=sl.length; if(!sl[i]) return;
+  tr.style.height=sl[i].offsetHeight+"px";
+  var names=["Overall","Transmute","Forms","Particles","Mix"], wrap=tr.parentNode;
+  wrap.querySelectorAll(".gq-dots button").forEach(function(b,j){ b.classList.toggle("on",j===i); });
+  var c=wrap.querySelector(".gq-count"); if(c) c.textContent=names[i]+" · "+(i+1)+" of "+n;
+  var p=wrap.querySelector(".gq-arrow.prev"), x=wrap.querySelector(".gq-arrow.next"); if(p) p.disabled=i===0; if(x) x.disabled=i===n-1;
+}
+function gqGo(i){ var tr=$("#gq-track"); if(!tr) return; var sl=tr.children; i=Math.max(0,Math.min(sl.length-1,i)); S.gqi=i; store("kc-gqi",i); gqMark(i); tr.scrollTo({left:sl[i].offsetLeft-sl[0].offsetLeft,behavior:"smooth"}); }
+(function(){
+  var el=$("#grammar"), t=0;
+  el.addEventListener("click",function(e){
+    var a=e.target.closest("[data-act]"); if(!a) return; var act=a.dataset.act;
+    if(act==="q-nav") gqGo((S.gqi||0)+(+a.dataset.d));
+    else if(act==="q-go") gqGo(+a.dataset.i);
+    else if(act==="q-set"){ S[a.dataset.k]=a.dataset.v; store("kc-"+a.dataset.k,a.dataset.v); document.querySelectorAll('#grammar [data-act="q-set"][data-k="'+a.dataset.k+'"]').forEach(function(b){ b.setAttribute("aria-checked",String(b.dataset.v===a.dataset.v)); }); }
+    else if(act==="q-start"){ quizStart(a.dataset.t); }
+    else if(act==="q-check"){ var inp=$("#q-ans"); quizAnswer(inp?inp.value:""); }
+    else if(act==="q-pick"){ quizAnswer(a.dataset.v); }
+    else if(act==="q-next"){ S.quiz.i++; if(S.quiz.i>=S.quiz.items.length) quizFinish(); else renderGrammar(); }
+    else if(act==="q-quit"){ S.quiz=null; renderGrammar(); renderHome(); }
+  });
+  el.addEventListener("keydown",function(e){ if(e.target.id==="q-ans"&&e.key==="Enter"&&!e.isComposing){ e.preventDefault(); quizAnswer(e.target.value); } });
+  el.addEventListener("scroll",function(e){ if(e.target.id!=="gq-track") return; clearTimeout(t); t=setTimeout(function(){ gqSync(false); },90); },true);
 })();
 /* ---------- home: daily chat with ハル ---------- */
 var HAV='<svg viewBox="0 0 40 40" class="hav"><defs><clipPath id="havc"><circle cx="20" cy="20" r="20"/></clipPath></defs><g clip-path="url(#havc)"><rect width="40" height="40" fill="#D8EADF"/><path d="M8.6 21.5c0-7.8 5.1-12.6 11.4-12.6s11.4 4.8 11.4 12.6v7.6c0 1.1-.9 1.9-1.9 1.9H10.5c-1 0-1.9-.8-1.9-1.9z" fill="#3A2A22"/><path d="M7 41c1-6 6-8.6 13-8.6S32 35 33 41z" fill="#B8613E"/><path d="M17 29.5h6v4.2c-1 1.4-5 1.4-6 0z" fill="#CF9A70"/><circle cx="20" cy="22" r="9.6" fill="#E2AC82"/><path d="M10.2 21c.3-6.6 4.4-10.4 9.8-10.4 5.9 0 9.8 3.9 10 10.4-1.6-2.8-4.3-4.8-7.8-5.4-1 2-3.8 3.4-7.3 3.7-1.9.2-3.4.7-4.7 1.7z" fill="#3A2A22"/><circle class="eye" cx="16.2" cy="23.1" r="1" fill="#2A1E18"/><circle class="eye" cx="23.8" cy="23.1" r="1" fill="#2A1E18"/><circle cx="16.2" cy="23" r="3.2" fill="rgba(255,255,255,.22)" stroke="#2A1E18" stroke-width="1.05"/><circle cx="23.8" cy="23" r="3.2" fill="rgba(255,255,255,.22)" stroke="#2A1E18" stroke-width="1.05"/><path d="M19.4 22.7q.6-.7 1.2 0M13 22.4l-2.4-.8M27 22.4l2.4-.8" stroke="#2A1E18" stroke-width="1" fill="none" stroke-linecap="round"/><circle cx="13.8" cy="26.6" r="1.7" fill="#E98C7E" opacity=".5"/><circle cx="26.2" cy="26.6" r="1.7" fill="#E98C7E" opacity=".5"/><path d="M18.1 27.3q1.9 1.8 3.8 0" stroke="#7A3F2E" stroke-width="1.1" fill="none" stroke-linecap="round"/></g></svg>';
@@ -3956,7 +4275,7 @@ function sheetDb(){
     else if(key==="grammar"){ S.gram={st:obj.st||{},mine:obj.mine||{},custom:Array.isArray(obj.custom)?obj.custom:[],xp:obj.xp||{},cov3:!!obj.cov3}; }
     else if(/^e-/.test(key)&&S.marks[key]){ S.marks[key]={hl:obj.hl||[],ink:obj.ink||{}}; }
     setTimeout(function(){
-      if(S.tab==="grammar"&&!S.drill&&!S.gex) renderGrammar();
+      if(S.tab==="grammar"&&!S.drill&&!S.quiz&&!S.gex) renderGrammar();
       else if(S.tab==="review"&&!S.deck) renderReview();
       else if(S.tab==="journal"&&/^e-/.test(key)) rerenderEntry(key);
       else if(S.tab==="add") renderHome();
@@ -4026,7 +4345,7 @@ function sheetDb(){
     collection:function(){return {doc:function(k){return {get:function(){return get(k);},set:function(b){return set(k,b);}};}};}};
 }
 document.addEventListener("visibilitychange",function(){
-  if(document.visibilityState!=="visible"||!db||!db.reset||db.age()<30000||S.deck||S.drill) return;
+  if(document.visibilityState!=="visible"||!db||!db.reset||db.age()<30000||S.deck||S.drill||S.quiz) return;
   db.reset(); S.marks={};
   Promise.all([loadStats(),loadGrammar()]).then(function(){ if(S.tab==="review") renderReview(); if(S.tab==="grammar") renderGrammar(); if(S.tab==="journal") renderEntries(); });
   loadAll();
