@@ -3620,7 +3620,8 @@ async function drillStart(){
   S.drill.busy=false; renderGrammar();
 }
 /* ---------- new words found in drills ---------- */
-function inBank(jp,kana){ return S.words.some(function(w){ return w.jp===jp || (kana&&w.jp===kana) || (!KANJI_RE.test(jp)&&w.kana===jp); }); }
+/* Oct 2026: entries like いい・良い count each spelling */
+function inBank(jp,kana){ return S.words.some(function(w){ var ps=String(w.jp||"").split("・").map(function(x){return x.trim();}); return ps.indexOf(jp)>-1 || (kana&&ps.indexOf(kana)>-1) || (!KANJI_RE.test(jp)&&w.kana===jp); }); }
 function pickNewWords(list,it){
   var pat=stripFuri((it&&it.p)||""), seen={};
   return (Array.isArray(list)?list:[]).map(function(x){
@@ -3640,13 +3641,18 @@ function nwHtml(r){
 }
 async function addWordsToBank(ws,ex){
   if(!mcp||!S.loaded) throw Object.assign(new Error("Connect your sheet first."),{code:"not_granted"});
-  var r=await nextRow("Vocab Bank!B1:B5000"), n=0;
+  /* Oct 2026: read the sheet itself first, so words already there (added on another device, or by a save that
+     reported an error) are skipped. If Sheets doesn't confirm a write, read the row back before calling it an error. */
+  var cur=await getValues("Vocab Bank!B1:C5000"), last=1, have={};
+  cur.forEach(function(rw,i){ var b=String(rw&&rw[0]||"").trim(), c=String(rw&&rw[1]||"").trim(); if(b) last=i+1; if(i>0&&b){ b.split("・").forEach(function(x){ have[x.trim()]=1; }); if(!KANJI_RE.test(b)&&c) have[c]=1; } });
+  var r=last+1, n=0;
   for(var i=0;i<ws.length;i++){
-    var w=ws[i]; if(inBank(w.jp,w.kana)){ w.added=true; continue; }
+    var w=ws[i]; if(have[w.jp]||(w.kana&&!KANJI_RE.test(w.jp)&&have[w.kana])||inBank(w.jp,w.kana)){ w.added=true; w.dup=true; continue; }
     var verb=w.type==="Verb", adj=/Adjective/.test(w.type);
     var row={date:today(),jp:w.jp,kana:w.kana,romaji:w.romaji,en:w.en,type:w.type,group:verb?w.group:(adj?"N/A":""),te:verb?w.te:"",exJp:ex.jp||"",exEn:ex.en||"",source:ex.source||"",tags:ex.tags||"",mastery:"New",last:"",next:""};
-    await updateValues("Vocab Bank!A"+r+":O"+r,[FIELDS.map(function(k){return k==="date"?row.date:cell(row[k]);})]);
-    row.row=r; S.words.push(row); S.freshRows=(S.freshRows||[]).concat(r); r++; n++; w.added=true;
+    try{ await updateValues("Vocab Bank!A"+r+":O"+r,[FIELDS.map(function(k){return k==="date"?row.date:cell(row[k]);})]); }
+    catch(err){ var chk=null; try{ chk=await getValues("Vocab Bank!B"+r+":B"+r); }catch(e2){} if(String(chk&&chk[0]&&chk[0][0]||"").trim()!==cell(row.jp)) throw err; }
+    row.row=r; S.words.push(row); S.freshRows=(S.freshRows||[]).concat(r); have[w.jp]=1; r++; n++; w.added=true;
   }
   return n;
 }
@@ -3721,7 +3727,7 @@ function drillHtml(){
     else if(act==="gd-retry"){ S.drill.res=null; renderGrammar(); }
     else if(act==="gd-nw"){ var nw=S.drill&&S.drill.res&&S.drill.res.newWords[+a.dataset.i]; if(nw&&!nw.added){ nw.sel=!nw.sel; renderGrammar(); } }
     else if(act==="gd-addnw"){ var R=S.drill.res, pick=R.newWords.filter(function(w){return w.sel&&!w.added;}); if(!pick.length) return; a.disabled=true; a.textContent="Adding…";
-      try{ var n=await addWordsToBank(pick,{jp:stripFuri(R.corrected||S.drill.ans||""),en:R.english||"",source:"Drill",tags:"drill"}); renderGrammar(); wordsAdded(n); }
+      try{ var n=await addWordsToBank(pick,{jp:stripFuri(R.corrected||S.drill.ans||""),en:R.english||"",source:"Drill",tags:"drill"}); renderGrammar(); if(n) wordsAdded(n); else toast("Already in your Vocab Bank."); }
       catch(err){ toast(sheetErr(err,true)); a.disabled=false; a.textContent="Try again"; } }
     else if(act==="gd-skip"||act==="gd-next"){ S.drill.i++; S.drill.res=null; S.drill.ans=""; if(S.drill.i>=S.drill.items.length) checkRankUp(); renderGrammar(); }
     else if(act==="g-cover"){ var on=a.dataset.on==="1", l=a.dataset.l, nw=Date.now(); GENKI.forEach(function(p){ if(String(p.l)===l){ var xx=gx(p.id); if(on){xx.c=1; xx.t=xx.t||nw;} else delete xx.c; } }); saveGrammar(); checkRankUp(); renderGrammar(); }
