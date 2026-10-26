@@ -663,9 +663,12 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .gq-dots button.on{width:22px;background:var(--t-grammar)}
 .gq-count{margin-left:8px;font-size:.75rem;color:var(--muted)}
 .cv-pick{display:flex;align-items:center;gap:6px;flex:1;min-width:0}.cv-pick select{flex:1;min-width:0;max-width:300px}
-.gs-quiz{display:inline-flex;align-items:center;gap:5px;margin-right:4px;padding:6px 12px;min-height:34px;font-size:.82rem}
-.gs-quiz svg{width:16px;height:16px}
-@media (max-width:480px){.gs-quiz span{display:none}.gs-quiz{padding:6px 9px}}
+.gs-qrow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin:2px 0 8px}
+.gs-qrow .hint svg{width:14px;height:14px;vertical-align:-2px}
+.gs-qbtn{display:inline-flex;align-items:center;gap:6px;padding:6px 0;border:0;background:none;color:var(--t-grammar);font:inherit;font-size:.88rem;font-weight:600;cursor:pointer}
+.gs-qbtn:hover span{text-decoration:underline;text-underline-offset:2px}
+.gl-quiz{flex:none;margin-left:auto;margin-right:-4px;display:grid;place-items:center;width:32px;height:32px;padding:0;border:0;border-radius:8px;background:none;color:var(--muted);cursor:pointer;transition:color .2s,background .2s}
+.gl-quiz:hover,.gl-quiz:focus-visible{color:var(--t-grammar);background:color-mix(in srgb,var(--t-grammar) 10%,transparent)}
 .qz .q-prompt{margin-top:6px;padding:14px 16px;border-radius:12px;background:var(--paper);border-left:3px solid var(--t-grammar);display:grid;gap:4px}
 .q-word{font-family:var(--serif);font-size:1.6rem;font-weight:700;line-height:1.6}
 .q-sent{font-size:1.25rem;line-height:2}
@@ -3420,13 +3423,14 @@ var GTOPIC={1:"New Friends",2:"Shopping",3:"Making a Date",4:"The First Date",5:
     else if(!rf.length&&!tn.length) prev+='<span class="gs-line"><b>All done</b><span>Every point mastered.</span></span>';
     var open=autoOpen||!!S.glopen["sec-"+sec];
     html+='<details class="gsecd" data-s="'+sec+'"'+(open?' open':'')+'><summary><span class="gs-top"><span class="gsec'+(sd[1]?'':' gsec-ja')+'">'+sd[1]+'<span lang="ja">'+sd[2]+'</span></span>'+
-      '<span class="gs-circ"><button type="button" class="btn small gs-quiz ai-only" data-act="g-secquiz" data-s="'+sec+'" title="Transmute drill from '+sd[1]+'">'+QZ+'<span>Quiz</span></button>'+circleSvg(frac,done)+'<span class="gs-cn"><b>'+got+'/'+secPts.length+'</b><small>mastered</small></span></span></span>'+
-      '<span class="gs-prev">'+prev+'</span></summary><div class="gs-body">'+(sd[3]?'<p class="hint gsec-hint">'+sd[3]+'</p>':'');
+      '<span class="gs-circ">'+circleSvg(frac,done)+'<span class="gs-cn"><b>'+got+'/'+secPts.length+'</b><small>mastered</small></span></span></span>'+
+      '<span class="gs-prev">'+prev+'</span></summary><div class="gs-body">'+(sd[3]?'<p class="hint gsec-hint">'+sd[3]+'</p>':'')+
+      '<div class="gs-qrow ai-only"><button type="button" class="gs-qbtn" data-act="g-secquiz" data-s="'+sec+'">'+QZ+'<span>Quiz '+(sec==="genki"?'all Genki lessons':'all of '+sd[1])+'</span></button>'+(sec==="genki"?'<span class="hint">or tap '+QZ+' on a lesson</span>':'')+'</div>';
     keys.forEach(function(k){
       var list=groups[k], all=GALL(k);
       if(keys.length===1&&(k==="pp"||k==="mine"||k==="my")){ html+='<div class="gl-body">'+list.map(gCard).join("")+'</div>'; return; }
       var g=0, se=0; all.forEach(function(p){var q=gScore(p); se+=gProg(q)*100; if(q.mastered) g++;}); var lopen=autoOpen||S.glopen[k];
-      html+='<details class="glesson" data-l="'+k+'"'+(lopen?' open':'')+'><summary><span class="gl-name">'+GNAME(k)+'</span><span class="gl-prog"><span class="gl-bar"><i style="width:'+(all.length?se/all.length:0)+'%"></i></span>'+g+'/'+all.length+'</span></summary><div class="gl-body">'+(/^\d+$/.test(k)?(function(){var allC=all.every(function(p){return gxPeek(p.id).c;}); return '<div class="gl-cover">'+(allC?'<span class="hint">Covered in class. These count as mastered.</span><button class="linkbtn" data-act="g-cover" data-l="'+k+'" data-on="0">Undo</button>':'<span class="hint">Already studied this lesson?</span><button class="btn small" data-act="g-cover" data-l="'+k+'" data-on="1">Mark lesson covered</button>')+'</div>';})():'')+list.map(gCard).join("")+'</div></details>';
+      html+='<details class="glesson" data-l="'+k+'"'+(lopen?' open':'')+'><summary><span class="gl-name">'+GNAME(k)+'</span>'+(sec==="genki"?'<button type="button" class="gl-quiz ai-only" data-act="g-lesquiz" data-l="'+k+'" aria-label="Quiz '+(k==="gx"?'More Genki':'Lesson '+k)+'" title="Quiz '+(k==="gx"?'More Genki':'Lesson '+k)+'">'+QZ+'</button>':'')+'<span class="gl-prog"><span class="gl-bar"><i style="width:'+(all.length?se/all.length:0)+'%"></i></span>'+g+'/'+all.length+'</span></summary><div class="gl-body">'+(/^\d+$/.test(k)?(function(){var allC=all.every(function(p){return gxPeek(p.id).c;}); return '<div class="gl-cover">'+(allC?'<span class="hint">Covered in class. These count as mastered.</span><button class="linkbtn" data-act="g-cover" data-l="'+k+'" data-on="0">Undo</button>':'<span class="hint">Already studied this lesson?</span><button class="btn small" data-act="g-cover" data-l="'+k+'" data-on="1">Mark lesson covered</button>')+'</div>';})():'')+list.map(gCard).join("")+'</div></details>';
     });
     html+='</div></details>';
   });
@@ -3920,6 +3924,7 @@ function qSave(){ store("kc-qset",S.qs); }
     else if(act==="q-change"){ S.qopen=S.qopen===a.dataset.c?null:a.dataset.c; renderGrammar(); var sp=$("#gq-set"); if(sp&&sp.scrollIntoView) sp.scrollIntoView({block:"nearest",behavior:"smooth"}); }
     else if(act==="q-set"){ var c=a.dataset.c; S.qs[c][a.dataset.k]=a.dataset.v; if(c==="tr"&&a.dataset.k==="src") S.qs.tr.les="all"; qSave(); renderGrammar(); }
     else if(act==="q-start"){ S.qopen=null; quizStart(a.dataset.t); }
+    else if(act==="g-lesquiz"){ e.preventDefault(); S.qs.tr.src="genki"; S.qs.tr.les=a.dataset.l; qSave(); drillStart(); }
     else if(act==="g-secquiz"){ e.preventDefault(); S.qs.tr.src={genki:"genki",preply:"pp",mine:"my"}[a.dataset.s]||"all"; S.qs.tr.les="all"; qSave(); drillStart(); }
     else if(act==="q-check"){ var inp=$("#q-ans"); quizAnswer(inp?inp.value:""); }
     else if(act==="q-pick"){ quizAnswer(a.dataset.v); }
