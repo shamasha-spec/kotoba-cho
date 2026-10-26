@@ -620,32 +620,44 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .gd-you{margin-top:10px;display:grid;gap:2px}
 .gd-you div{font-size:1.05rem}
 .gd-dots i.miss{background:#B3362F}
-/* grammar quiz carousel (Oct 2026) */
-.gq{position:relative;margin-bottom:14px}
-.gq-track{display:flex;gap:12px;overflow-x:auto;overflow-y:hidden;transition:height .3s ease;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;overscroll-behavior-x:contain;align-items:flex-start;border-radius:14px}
+/* grammar quiz carousel (Oct 2026): two compact cards at a time */
+.panel.grank{margin-bottom:12px}
+.gq{position:relative;margin-bottom:12px}
+.gq-track{display:flex;gap:12px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;overscroll-behavior-x:contain;touch-action:pan-x pan-y}
 .gq-track::-webkit-scrollbar{display:none}
-.gq-slide{flex:0 0 100%;min-width:0;scroll-snap-align:start}
-.gq-slide>.panel{margin-bottom:0}
-.gq-slide>.gd-start{display:none}
-@media (hover:none),(pointer:coarse){.gq-slide{flex-basis:calc(100% - 22px)}}
-.gq-head{display:flex;gap:16px;align-items:center;padding:18px 20px;color:#fff;background:linear-gradient(135deg,color-mix(in srgb,var(--mt) 80%,#fff),var(--mt) 50%,color-mix(in srgb,var(--mt) 70%,#000))}
-.gq-body{padding:14px 18px 16px;display:grid;gap:10px}
-.gq-body>p{margin:0;font-size:.88rem;color:var(--muted)}
-.gq-body .gd-start{margin:0}
+.gq-slide{flex:0 0 calc(50% - 6px);min-width:0;display:flex}
+.gq-slide:nth-child(odd){scroll-snap-align:start}
+.qc{flex:1;display:flex;flex-direction:column;border-radius:14px;overflow:hidden;border:1px solid color-mix(in srgb,var(--mt) 45%,var(--line));background:var(--surface)}
+.qc.on{box-shadow:0 0 0 2px var(--mt)}
+.qc-head{display:flex;align-items:center;gap:10px;padding:12px 12px 8px;color:#fff;background:linear-gradient(135deg,color-mix(in srgb,var(--mt) 80%,#fff),var(--mt) 55%,color-mix(in srgb,var(--mt) 72%,#000))}
+.qc-seal{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:#fff;color:var(--mt);font-family:var(--serif);font-weight:700;font-size:.95rem;box-shadow:0 0 0 2px var(--mt),0 0 0 3.5px rgba(255,255,255,.8)}
+.qc-t{min-width:0;line-height:1.25}
+.qc-name{font-family:var(--serif);font-weight:700;font-size:1.1rem;line-height:1.6}
+.qc-name rt{font-size:.5em;color:rgba(255,255,255,.8)}
+.qc-en{font-size:.78rem;opacity:.9}
+.qc-lv{padding:6px 12px 0;font-size:.75rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qc-bar{margin:5px 12px 0;height:4px;border-radius:2px;background:var(--line);overflow:hidden}
+.qc-bar i{display:block;height:100%;background:var(--mt);border-radius:2px}
+.qc-body{display:grid;gap:8px;padding:8px 12px 12px;margin-top:auto}
+.qc-sum{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;font-size:.78rem;color:var(--muted)}
+.qc .qc-chg{font-size:.78rem;padding:0;min-height:0;border:0;background:none;box-shadow:none;color:var(--ai);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.qc .qc-chg::before,.qc .qc-chg::after{content:none}
+.qc-go{width:100%;justify-content:center}
+.gq-set{display:grid;gap:10px;margin-bottom:12px;animation:hcIn .25s ease-out both}
+.gq-set-h{display:flex;align-items:center;gap:10px}.gq-set-h b{flex:1}.gq-set-h b span{font-family:var(--serif)}
+.gq-set select{flex:1;min-width:0;max-width:280px}
 .gq-opts{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
 .gq-opts .setlabel{min-width:76px;font-size:.82rem;color:var(--muted)}
 .gq-weak{margin:0;font-size:.82rem;color:var(--muted)}
 .gq-weak b{color:var(--ink,inherit);font-weight:600;margin-right:4px}
 .gq-arrow{display:none}
 @media (hover:hover) and (pointer:fine){
-  .gq-arrow{display:grid;place-items:center;position:absolute;top:44px;z-index:3;width:34px;height:34px;padding:0 0 3px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink,inherit);font-size:1.4rem;line-height:1;cursor:pointer;box-shadow:0 4px 10px -4px rgba(0,0,0,.3);transition:opacity .2s,transform .2s}
+  .gq-arrow{display:grid;place-items:center;position:absolute;top:calc(50% - 30px);z-index:3;width:34px;height:34px;padding:0 0 3px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink,inherit);font-size:1.4rem;line-height:1;cursor:pointer;box-shadow:0 4px 10px -4px rgba(0,0,0,.3);transition:opacity .2s,transform .2s}
   .gq-arrow:hover{transform:scale(1.08)}
   .gq-arrow.prev{left:-12px}.gq-arrow.next{right:-12px}
-}
-@media (hover:hover) and (pointer:fine) and (min-width:860px){
-  .gq-arrow{top:40px}.gq-arrow.prev{left:-50px}.gq-arrow.next{right:-50px}
   .gq-arrow[disabled]{opacity:0;pointer-events:none}
 }
+@media (hover:hover) and (pointer:fine) and (min-width:860px){.gq-arrow.prev{left:-50px}.gq-arrow.next{right:-50px}}
 .gq-dots{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:10px}
 .gq-dots button{width:8px;height:8px;padding:0;border:0;border-radius:4px;background:var(--line);cursor:pointer;transition:width .25s,background .25s}
 .gq-dots button.on{width:22px;background:var(--t-grammar)}
@@ -3456,7 +3468,7 @@ function rankHtml(){
     '<div class="gd-start"><button class="btn primary" data-act="gd-start"'+(sample?'':' disabled')+'><span lang="ja">錬成</span> Transmute: 5-point drill</button><span class="hint">'+(sample?(tarn?tarn+' tarnished point'+(tarn===1?'':'s')+' first, then Reinforce, then what you’re working on.':'Reinforce points first, then what you’re working on, then what’s next.')+maxedHint():(window.KC_DEMO?'Uses AI. Off in this demo.':'Needs your API key. Add it to your Apps Script to turn this on.'))+'</span></div>';
 }
 function drillPick(){
-  var pts=allPoints().filter(function(p){return p.p;}), sc={}; pts.forEach(function(p){sc[p.id]=gScore(p);});
+  var pts=allPoints().filter(function(p){return p.p&&qInSource(p);}), sc={}; pts.forEach(function(p){sc[p.id]=gScore(p);});
   var used={}, out=[];
   function take(list){ list.forEach(function(p){ if(out.length<5&&!used[p.id]){used[p.id]=1;out.push(p);} }); }
   /* Oct 2026: skip points whose drill share is full (3 drills = 45), since drills can't raise them. Shuffle within each group so the same five don't repeat. Tarnished points still come first: a drill polishes them. */
@@ -3470,12 +3482,12 @@ function drillPick(){
 }
 function drillMaxed(p,s){ s=s||gScore(p); return !s.tarn && !s.mastered && gxPeek(p.id).d>=3; }
 function maxedHint(){
-  var m=allPoints().filter(function(p){return p.p&&drillMaxed(p);}); if(!m.length) return "";
+  var m=allPoints().filter(function(p){return p.p&&qInSource(p)&&drillMaxed(p);}); if(!m.length) return "";
   return '<br>Drills are done for <span lang="ja">'+esc(stripFuri(m[0].p))+'</span>'+(m.length>1?' and '+(m.length-1)+' more':'')+'. To finish '+(m.length>1?'them':'it')+', write two examples with Check it, or use '+(m.length>1?'them':'it')+' in a journal entry.';
 }
 async function drillStart(){
   if(!sample){toast(aiOffText());return;}
-  var picks=drillPick(); if(!picks.length){toast(maxedHint()?"Drills are done for now. Write examples to finish the rest.":"Nothing left to drill. Everything is gold.");return;}
+  var picks=drillPick(); if(!picks.length){toast(maxedHint()?"Drills are done for "+(S.qs.tr.src==="all"?"now":"this source")+". Write examples to finish the rest.":S.qs.tr.src==="all"?"Nothing left to drill. Everything is gold.":"Nothing left to drill in this source. Try another one.");return;}
   S.drill={items:picks.map(function(p){return {id:p.id,p:p.p,m:p.m,f:p.f||"",prompt:"",hint:""};}),i:0,busy:true,res:null,good:0,startRank:gRank().idx};
   renderGrammar();
   try{
@@ -3600,7 +3612,7 @@ function drillHtml(){
 })();
 /* ---------- grammar quizzes (Oct 2026): swipe carousel, Forms, Particles, Mix. Forms, Particles and Mix need no AI. ---------- */
 var QLV=[0,20,60,150,300,500,800];
-S.qsize=recall("kc-qsize")||"10"; S.qwords=recall("kc-qwords")||"rf"; S.gqi=+(recall("kc-gqi")||0);
+S.gqi=+(recall("kc-gqi")||0); S.qopen=null;
 function qStats(){
   var q=S.gram.q||(S.gram.q={});
   ["tr","fm","pt"].forEach(function(k){ q[k]=q[k]||{ok:0,n:0,weak:{}}; q[k].weak=q[k].weak||{}; });
@@ -3740,8 +3752,8 @@ function qMakePart(){
 /* ---- quiz run ---- */
 var QT_NAME={fm:["活用","かつよう","Forms"],pt:["助詞","じょし","Particles"],mx:["混合","こんごう","Mix"]};
 function quizStart(t){
-  var q=qStats(), n=+S.qsize||10, used={}, items=[], pool=null, note="";
-  if(t!=="pt"){ var P=qPool(S.qwords); pool=P.list; note=P.note; }
+  var q=qStats(), n=+S.qs[t].size||10, used={}, items=[], pool=null, note="";
+  if(t!=="pt"){ var P=qPool(S.qs[t].words); pool=P.list; note=P.note; }
   for(var i=0;i<n;i++){
     var kind=t==="mx"?(Math.random()<0.5?"fm":"pt"):t, it=null;
     if(kind==="fm"&&pool&&pool.length) it=qChoose(function(){return qMakeForm(pick(pool));},q.fm.weak,used);
@@ -3804,63 +3816,88 @@ function quizHtml(){
 }
 function qBlank(it,fill){ var h=rubyText(it.s); return h.replace("＿",'<span class="q-blank'+(fill?' fill':'')+'">'+(fill?it.ok[0]:'＿＿')+'</span>'); }
 function quizFocus(){ var a=$("#q-ans"); if(a){ a.focus({preventScroll:true}); return; } var b=$("#q-next"); if(b) b.focus({preventScroll:true}); }
-/* ---- carousel ---- */
-function qSeg(k,opts){ return '<div class="seg" role="radiogroup" aria-label="'+(k==="qsize"?"Questions per round":"Words")+'">'+opts.map(function(o){return '<button role="radio" data-act="q-set" data-k="'+k+'" data-v="'+o[0]+'" aria-checked="'+(S[k]===o[0])+'">'+o[1]+'</button>';}).join("")+'</div>'; }
-function qCard(t,ok,desc,body){
-  var T=t==="tr"?["錬成","れんせい","Transmute"]:QT_NAME[t], L=qLevel(ok), M=METALS[L.idx], N=METALS[L.idx+1];
-  return '<div class="panel grank gq-card" style="--mt:'+M.c+'"><div class="gq-head"><div class="gr-seal" lang="ja">'+M.k+'</div><div class="gr-txt">'+
-    '<div class="gr-name"><ruby lang="ja">'+T[0]+'<rt>'+T[1]+'</rt></ruby> <span>'+T[2]+'</span></div>'+
-    '<div class="gr-sub"><span lang="ja">'+M.k+'</span> '+M.en+' · '+ok+' correct</div>'+
-    '<div class="xp-wrap"><div class="xp-bar"><i class="xp" style="width:'+L.inRank+'%"></i></div><span class="xp-num">'+L.inRank+'%</span></div>'+
-    '<div class="gr-sub">'+(N?L.toNext+' more to <span lang="ja">'+N.k+'</span>, '+N.en:'Top rank reached')+'</div></div></div>'+
-    '<div class="gq-body"><p>'+desc+'</p>'+body+'</div></div>';
+/* ---- carousel: overall banner on top, then quiz cards two at a time. Settings fold away (Oct 2026). ---- */
+var QSET_DEF={tr:{src:"all",les:"all"},fm:{size:"10",words:"rf"},pt:{size:"10"},mx:{size:"10",words:"rf"}};
+S.qs=(function(){ var s=recall("kc-qset")||{}, o={}; Object.keys(QSET_DEF).forEach(function(k){ o[k]=Object.assign({},QSET_DEF[k],s[k]||{}); }); return o; })();
+var QSRC={all:"All sources",genki:"Genki",pp:"Preply",my:"Mine"};
+function qSrcOf(p){ return p.custom||p.l==="my"?"my":p.l==="pp"?"pp":"genki"; }
+function qInSource(p){ var s=S.qs.tr; if(s.src==="all") return true; if(qSrcOf(p)!==s.src) return false; return s.src!=="genki"||s.les==="all"||String(p.l)===s.les; }
+function qSum(t){
+  var s=S.qs[t];
+  if(t==="tr") return (s.src==="genki"&&s.les!=="all"?(s.les==="gx"?"More Genki":"Genki, Lesson "+s.les):QSRC[s.src])+" · 5 points";
+  return s.size+" questions"+(s.words?" · "+(s.words==="rf"?"Reinforce":"New words"):"");
 }
-var QPL={"wa-topic":"は (topic)","no":"の (linking nouns)","mo":"も (also)","de-place":"で (place)","ni-dest":"に・へ (destination)","ni-time":"に (time)","wo":"を (object)","to-with":"と (with)","ni-exist":"に (location)","ga-exist":"が (with あります・います)","ga-q":"が (question words)","de-means":"で (means)","kara":"から (from)","made":"まで (until)","ga-suki":"が (with 好き)","ga-body":"が (body part)","ni-person":"に (person)","de-range":"で (range)","ga-subj":"が (subject)","to-and":"と (and)"};
-function qWeakLine(st,pt){ var k=Object.keys(st.weak).sort(function(a,b){return st.weak[b]-st.weak[a];}).slice(0,2); return k.length?'<p class="gq-weak"><b>Working on</b> <span lang="ja">'+k.map(function(x){return rubyText(pt?(QPL[x]||x):qKeyLabel(x));}).join(" · ")+'</span></p>':''; }
+function qStartLabel(t){
+  if(t!=="tr") return "Start";
+  var s=S.qs.tr; return s.src==="all"?"Start":s.src==="genki"&&s.les!=="all"?"Start: "+(s.les==="gx"?"More Genki":"Lesson "+s.les):"Start: "+QSRC[s.src];
+}
+function qSeg(t,k,opts,label){ return '<div class="gq-opts"><span class="setlabel">'+label+'</span><div class="seg" role="radiogroup" aria-label="'+label+'">'+opts.map(function(o){return '<button role="radio" data-act="q-set" data-c="'+t+'" data-k="'+k+'" data-v="'+o[0]+'" aria-checked="'+(S.qs[t][k]===o[0])+'">'+o[1]+'</button>';}).join("")+'</div></div>'; }
+function qCard(t,ok){
+  var T=t==="tr"?["錬成","れんせい","Transmute"]:QT_NAME[t], L=qLevel(ok), M=METALS[L.idx], N=METALS[L.idx+1], off=t==="tr"&&!sample, open=S.qopen===t;
+  return '<div class="qc'+(open?' on':'')+'" style="--mt:'+M.c+'"><div class="qc-head"><div class="qc-seal" lang="ja">'+M.k+'</div><div class="qc-t">'+
+    '<div class="qc-name"><ruby lang="ja">'+T[0]+'<rt>'+T[1]+'</rt></ruby></div><div class="qc-en">'+T[2]+'</div></div></div>'+
+    '<div class="qc-lv" title="'+(N?L.toNext+' more to '+N.en:'Top rank reached')+'"><span lang="ja">'+M.k+'</span> '+M.en+' · '+ok+' right</div>'+
+    '<div class="qc-bar"><i style="width:'+L.inRank+'%"></i></div>'+
+    '<div class="qc-body"><div class="qc-sum"><span>'+(off?(window.KC_DEMO?'AI is off in this demo':'Needs your API key'):qSum(t))+'</span>'+(off?'':'<button class="linkbtn qc-chg" data-act="q-change" data-c="'+t+'" aria-expanded="'+open+'">'+(open?'Close':'Change')+'</button>')+'</div>'+
+    '<button class="btn small primary qc-go" data-act="'+(t==="tr"?'gd-start':'q-start')+'" data-t="'+t+'"'+(off?' disabled':'')+'>'+qStartLabel(t)+'</button></div></div>';
+}
+function qPanel(t){
+  if(!t) return "";
+  var T=t==="tr"?["錬成","Transmute"]:[QT_NAME[t][0],QT_NAME[t][2]], q=qStats(), h="";
+  if(t==="tr"){
+    h+=qSeg("tr","src",[["all","All"],["genki","Genki"],["pp","Preply"],["my","Mine"]],"Source");
+    if(S.qs.tr.src==="genki"){
+      var ls=[]; GENKI.forEach(function(p){ if(ls.indexOf(String(p.l))<0) ls.push(String(p.l)); }); if((S.sheetG||[]).some(function(p){return p.l==="gx";})) ls.push("gx");
+      h+='<div class="gq-opts"><label class="setlabel" for="q-les">Lesson</label><select id="q-les" data-c="tr"><option value="all">All lessons</option>'+ls.map(function(l){return '<option value="'+l+'"'+(S.qs.tr.les===l?' selected':'')+'>'+(l==="gx"?"More Genki (sheet)":"Lesson "+l+(GTOPIC[l]?" · "+GTOPIC[l]:""))+'</option>';}).join("")+'</select></div>';
+    }
+    var mh=maxedHint(); if(mh) h+='<p class="hint" style="margin:0">'+mh.replace(/^<br>/,"")+'</p>';
+  } else {
+    if(t!=="pt") h+=qSeg(t,"words",[["rf","Reinforce"],["new","New words"]],"Words");
+    h+=qSeg(t,"size",[["5","5"],["10","10"],["20","20"]],"Questions");
+    if(t==="fm") h+=qWeakLine(q.fm); if(t==="pt") h+=qWeakLine(q.pt,true);
+  }
+  return '<div class="panel gq-set" id="gq-set"><div class="gq-set-h"><b><span lang="ja">'+T[0]+'</span> '+T[1]+' settings</b><button class="linkbtn" data-act="q-change" data-c="'+t+'">Done</button></div>'+h+'</div>';
+}
 function quizCarouselHtml(){
-  var q=qStats(), rk=rankHtml(), cut=rk.indexOf('<div class="gd-start">'), overall=cut>-1?rk.slice(0,cut):rk, tstart=cut>-1?rk.slice(cut):'';
-  var size=qSeg("qsize",[["5","5"],["10","10"],["20","20"]]), words=qSeg("qwords",[["rf","Reinforce"],["new","New words"]]);
-  var slides=[
-    overall,
-    qCard("tr",q.tr.ok,'AI writes five situations for the points you need most, then checks your sentences.',tstart),
-    qCard("fm",q.fm.ok,'Change verbs and adjectives into other forms. Checked instantly, no AI.','<div class="gq-opts"><span class="setlabel">Words</span>'+words+'</div><div class="gq-opts"><span class="setlabel">Questions</span>'+size+'</div>'+qWeakLine(q.fm)+'<div class="row"><button class="btn primary" data-act="q-start" data-t="fm"><span lang="ja">活用</span> Start Forms</button></div>'),
-    qCard("pt",q.pt.ok,'Pick the right particle for each Genki sentence. Checked instantly, no AI.','<div class="gq-opts"><span class="setlabel">Questions</span>'+size+'</div>'+qWeakLine(q.pt,true)+'<div class="row"><button class="btn primary" data-act="q-start" data-t="pt"><span lang="ja">助詞</span> Start Particles</button></div>'),
-    qCard("mx",q.fm.ok+q.pt.ok,'Forms and Particles shuffled together. Answers count toward both.','<div class="gq-opts"><span class="setlabel">Words</span>'+words+'</div><div class="gq-opts"><span class="setlabel">Questions</span>'+size+'</div><div class="row"><button class="btn primary" data-act="q-start" data-t="mx"><span lang="ja">混合</span> Start Mix</button></div>')
-  ], n=slides.length, cur=Math.max(0,Math.min(n-1,S.gqi||0)), names=["Overall","Transmute","Forms","Particles","Mix"];
-  return '<div class="gq"><div class="gq-track" id="gq-track" aria-label="Grammar quizzes">'+slides.map(function(s,i){return '<div class="gq-slide" role="group" aria-roledescription="slide" aria-label="'+names[i]+', '+(i+1)+' of '+n+'">'+s+'</div>';}).join("")+'</div>'+
-    '<button class="gq-arrow prev" data-act="q-nav" data-d="-1" aria-label="Previous card"'+(cur===0?' disabled':'')+'>‹</button><button class="gq-arrow next" data-act="q-nav" data-d="1" aria-label="Next card"'+(cur===n-1?' disabled':'')+'>›</button>'+
-    '<div class="gq-dots">'+names.map(function(nm,i){return '<button data-act="q-go" data-i="'+i+'" class="'+(i===cur?'on':'')+'" aria-label="'+nm+'" title="'+nm+'"></button>';}).join("")+'<span class="gq-count">'+names[cur]+' · '+(cur+1)+' of '+n+'</span></div></div>';
+  var q=qStats(), rk=rankHtml(), cut=rk.indexOf('<div class="gd-start">'), overall=cut>-1?rk.slice(0,cut):rk;
+  var cards=[qCard("tr",q.tr.ok),qCard("fm",q.fm.ok),qCard("pt",q.pt.ok),qCard("mx",q.fm.ok+q.pt.ok)], pages=Math.ceil(cards.length/2), cur=Math.max(0,Math.min(pages-1,S.gqi||0));
+  var dots=''; for(var i=0;i<pages;i++) dots+='<button data-act="q-go" data-i="'+i+'" class="'+(i===cur?'on':'')+'" aria-label="Page '+(i+1)+'"></button>';
+  return overall+'<div class="gq"><div class="gq-track" id="gq-track" aria-label="Grammar quizzes">'+cards.map(function(c){return '<div class="gq-slide">'+c+'</div>';}).join("")+'</div>'+
+    '<button class="gq-arrow prev" data-act="q-nav" data-d="-1" aria-label="Previous"'+(cur===0?' disabled':'')+'>‹</button><button class="gq-arrow next" data-act="q-nav" data-d="1" aria-label="Next"'+(cur===pages-1?' disabled':'')+'>›</button>'+
+    '<div class="gq-dots">'+dots+'<span class="gq-count">'+(cur+1)+' of '+pages+'</span></div></div>'+qPanel(S.qopen);
 }
+function gqPages(tr){ return Math.ceil(tr.children.length/2); }
 function gqSync(jump){
-  var tr=$("#gq-track"); if(!tr) return; var sl=tr.children, n=sl.length; if(!n) return;
-  if(jump){ var i0=Math.max(0,Math.min(n-1,S.gqi||0)); tr.style.scrollBehavior="auto"; tr.scrollLeft=sl[i0].offsetLeft-sl[0].offsetLeft; tr.style.scrollBehavior=""; }
-  var w=sl[0].offsetWidth+parseFloat(getComputedStyle(tr).columnGap||12), i=jump?Math.max(0,Math.min(n-1,S.gqi||0)):Math.max(0,Math.min(n-1,Math.round(tr.scrollLeft/(w||1))));
-  if(!jump&&i!==S.gqi){ S.gqi=i; store("kc-gqi",i); }
+  var tr=$("#gq-track"); if(!tr||!tr.children.length) return; var sl=tr.children, P=gqPages(tr), i;
+  if(jump){ i=Math.max(0,Math.min(P-1,S.gqi||0)); tr.style.scrollBehavior="auto"; tr.scrollLeft=sl[i*2].offsetLeft-sl[0].offsetLeft; tr.style.scrollBehavior=""; }
+  else { i=Math.max(0,Math.min(P-1,Math.round(tr.scrollLeft/((tr.clientWidth+12)||1)))); if(i!==S.gqi){ S.gqi=i; store("kc-gqi",i); } }
   gqMark(i);
-  if(jump&&window.ResizeObserver){ var ro=new ResizeObserver(function(){ gqMark(S.gqi||0); }); Array.prototype.forEach.call(sl,function(s){ ro.observe(s); }); }
 }
 function gqMark(i){
-  var tr=$("#gq-track"); if(!tr) return; var sl=tr.children, n=sl.length; if(!sl[i]) return;
-  tr.style.height=sl[i].offsetHeight+"px";
-  var names=["Overall","Transmute","Forms","Particles","Mix"], wrap=tr.parentNode;
+  var tr=$("#gq-track"); if(!tr) return; var P=gqPages(tr), wrap=tr.parentNode;
   wrap.querySelectorAll(".gq-dots button").forEach(function(b,j){ b.classList.toggle("on",j===i); });
-  var c=wrap.querySelector(".gq-count"); if(c) c.textContent=names[i]+" · "+(i+1)+" of "+n;
-  var p=wrap.querySelector(".gq-arrow.prev"), x=wrap.querySelector(".gq-arrow.next"); if(p) p.disabled=i===0; if(x) x.disabled=i===n-1;
+  var c=wrap.querySelector(".gq-count"); if(c) c.textContent=(i+1)+" of "+P;
+  var p=wrap.querySelector(".gq-arrow.prev"), x=wrap.querySelector(".gq-arrow.next"); if(p) p.disabled=i===0; if(x) x.disabled=i===P-1;
 }
-function gqGo(i){ var tr=$("#gq-track"); if(!tr) return; var sl=tr.children; i=Math.max(0,Math.min(sl.length-1,i)); S.gqi=i; store("kc-gqi",i); gqMark(i); tr.scrollTo({left:sl[i].offsetLeft-sl[0].offsetLeft,behavior:"smooth"}); }
+function gqGo(i){ var tr=$("#gq-track"); if(!tr) return; var sl=tr.children; i=Math.max(0,Math.min(gqPages(tr)-1,i)); S.gqi=i; store("kc-gqi",i); gqMark(i); tr.scrollTo({left:sl[i*2].offsetLeft-sl[0].offsetLeft,behavior:"smooth"}); }
+var QPL={"wa-topic":"は (topic)","no":"の (linking nouns)","mo":"も (also)","de-place":"で (place)","ni-dest":"に・へ (destination)","ni-time":"に (time)","wo":"を (object)","to-with":"と (with)","ni-exist":"に (location)","ga-exist":"が (with あります・います)","ga-q":"が (question words)","de-means":"で (means)","kara":"から (from)","made":"まで (until)","ga-suki":"が (with 好き)","ga-body":"が (body part)","ni-person":"に (person)","de-range":"で (range)","ga-subj":"が (subject)","to-and":"と (and)"};
+function qWeakLine(st,pt){ var k=Object.keys(st.weak).sort(function(a,b){return st.weak[b]-st.weak[a];}).slice(0,2); return k.length?'<p class="gq-weak"><b>Working on</b> <span lang="ja">'+k.map(function(x){return rubyText(pt?(QPL[x]||x):qKeyLabel(x));}).join(" · ")+'</span></p>':''; }
+function qSave(){ store("kc-qset",S.qs); }
 (function(){
   var el=$("#grammar"), t=0;
   el.addEventListener("click",function(e){
     var a=e.target.closest("[data-act]"); if(!a) return; var act=a.dataset.act;
     if(act==="q-nav") gqGo((S.gqi||0)+(+a.dataset.d));
     else if(act==="q-go") gqGo(+a.dataset.i);
-    else if(act==="q-set"){ S[a.dataset.k]=a.dataset.v; store("kc-"+a.dataset.k,a.dataset.v); document.querySelectorAll('#grammar [data-act="q-set"][data-k="'+a.dataset.k+'"]').forEach(function(b){ b.setAttribute("aria-checked",String(b.dataset.v===a.dataset.v)); }); }
-    else if(act==="q-start"){ quizStart(a.dataset.t); }
+    else if(act==="q-change"){ S.qopen=S.qopen===a.dataset.c?null:a.dataset.c; renderGrammar(); var sp=$("#gq-set"); if(sp&&sp.scrollIntoView) sp.scrollIntoView({block:"nearest",behavior:"smooth"}); }
+    else if(act==="q-set"){ var c=a.dataset.c; S.qs[c][a.dataset.k]=a.dataset.v; if(c==="tr"&&a.dataset.k==="src") S.qs.tr.les="all"; qSave(); renderGrammar(); }
+    else if(act==="q-start"){ S.qopen=null; quizStart(a.dataset.t); }
     else if(act==="q-check"){ var inp=$("#q-ans"); quizAnswer(inp?inp.value:""); }
     else if(act==="q-pick"){ quizAnswer(a.dataset.v); }
     else if(act==="q-next"){ S.quiz.i++; if(S.quiz.i>=S.quiz.items.length) quizFinish(); else renderGrammar(); }
     else if(act==="q-quit"){ S.quiz=null; renderGrammar(); renderHome(); }
   });
+  el.addEventListener("change",function(e){ if(e.target.id==="q-les"){ S.qs.tr.les=e.target.value; qSave(); renderGrammar(); } });
   el.addEventListener("keydown",function(e){ if(e.target.id==="q-ans"&&e.key==="Enter"&&!e.isComposing){ e.preventDefault(); quizAnswer(e.target.value); } });
   el.addEventListener("scroll",function(e){ if(e.target.id!=="gq-track") return; clearTimeout(t); t=setTimeout(function(){ gqSync(false); },90); },true);
 })();
@@ -4133,7 +4170,7 @@ gEl.addEventListener("click",async function(e){
 /* ---------- swipe between tabs (follows the finger) ---------- */
 (function(){
   var TABS=window.KC_LEARNER?["add","words","review"]:["add","words","review","journal","grammar"];
-  var BLOCK="select,.card,.dock,.ladder,.sheet,.theme-pick,.shelf,.mt-row";
+  var BLOCK="select,.card,.dock,.ladder,.sheet,.theme-pick,.shelf,.mt-row,.gq-track";
   var mainEl=$("main"), nav=$("nav.tabs");
   var g=null, raf=0, EASE="cubic-bezier(.22,.8,.24,1)";
   function cleanup(){
