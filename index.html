@@ -419,7 +419,25 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .no-ai .addmore{grid-template-rows:1fr}
 /* playlist-style home cards */
 :root{--cv-cards:#2C4870;--cv-journal:#2B7A78;--cv-grammar:#A63A4A;--cv-r0:#5E8C31;--cv-r1:#A3822A;--cv-r2:#8B5A3C;--cv-r3:#3F6187;--cv-r4:#6A4C93;--cv-r5:#B3362F;--cv-k0:#8C7B2E;--cv-k1:#8A5A2B;--cv-k2:#33507F;--cv-k3:#24385E;--cv-k4:#5B3A78;--cv-k5:#A3262B}
-.tea-done{display:inline-block;margin-left:8px;padding:2px 8px;vertical-align:middle;border-radius:999px;border:1.5px solid currentColor;font-family:var(--serif);font-size:.72rem;font-weight:700;line-height:1.3;white-space:nowrap;opacity:.9}
+.tea-medal{position:absolute;top:10px;right:12px;z-index:2;width:46px;height:46px;padding:0;border:0;border-radius:50%;background:none;cursor:pointer;overflow:hidden;filter:drop-shadow(0 4px 5px rgba(0,0,0,.35));transform:rotate(-8deg);transition:transform .3s cubic-bezier(.34,1.6,.6,1)}
+.tea-medal svg{display:block;width:100%;height:100%}
+.tea-medal:hover{transform:rotate(0) scale(1.1)}
+.tea-medal:focus-visible{outline:2px solid var(--slip,#fff);outline-offset:2px;transform:rotate(0) scale(1.1)}
+.tea-medal::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.8) 50%,transparent 70%);transform:translateX(-130%)}
+.tea-medal.shine::after{animation:medalShine 1.1s ease-out .5s}
+@keyframes medalShine{to{transform:translateX(130%)}}
+.badge-row.has-medal .rank-name{padding-right:46px}
+@media (max-width:600px){.tea-medal{width:32px;height:32px;top:7px;right:8px}.badge-row.has-medal .rank-name{padding-right:30px}.level>.lv-sum:has(.tea-medal)::after{align-self:flex-end;margin-bottom:8px}}
+.tea-pop .sage-card{max-width:340px;width:100%}
+.tp-medal{width:92px;height:92px;filter:drop-shadow(0 8px 10px rgba(0,0,0,.3));animation:tpIn .75s cubic-bezier(.34,1.45,.6,1) .1s both}
+.tp-medal svg{display:block;width:100%;height:100%}
+@keyframes tpIn{0%{opacity:0;transform:scale(.3) rotate(-220deg)}100%{opacity:1;transform:none}}
+.sage-card .tp-otsu{font-family:var(--serif);font-size:1.05rem;color:var(--ink,inherit)}
+.tp-ranks{list-style:none;margin:6px 0 4px;padding:0;width:100%;display:grid;gap:5px;text-align:left}
+.tp-ranks li{display:flex;align-items:center;gap:10px;padding:6px 12px;border-radius:10px;background:color-mix(in srgb,var(--rk) 12%,var(--surface));animation:hcIn .4s ease-out both}
+.sage-card .tp-k{min-width:3.4em;font-family:var(--serif);font-weight:700;font-size:1.05rem;color:var(--rk)}
+.sage-card .tp-en{flex:1;font-size:.85rem;color:var(--muted)}
+.tp-ranks i{font-style:normal;font-weight:700;color:var(--rk)}
 .path-done{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:-4px 0 14px;font-size:.8rem;color:var(--muted)}
 .path-done .rung{font-size:.7rem;padding:2px 6px}
 .path-rule{font-size:.8rem;color:var(--muted);margin:-6px 0 14px}
@@ -2031,6 +2049,31 @@ function rankUpCheck(RI){
   if(prev!==null && RI.idx>prev) setTimeout(function(){ if(RI.idx===5) sageCelebrate(R,RI.teaDone?"Every word deep and sharp. Musashi would approve.":"Every word you know, mastered. Rikyu would approve."); else toast("Rank up! You’re now "+R.k+", "+R.en+"."); },300);
   store(RI.key,RI.idx);
 }
+/* Tea path medal (Oct 2026): sits in the banner's top right once 茶聖 is reached. Tap for the finished tea ladder. */
+function teaMedalSvg(id){
+  var g="tmg-"+id, m="tmm-"+id, dots="";
+  for(var i=0;i<12;i++){ var a=i*Math.PI/6; dots+='<circle cx="'+(32+27*Math.cos(a)).toFixed(2)+'" cy="'+(32+27*Math.sin(a)).toFixed(2)+'" r="1.3" fill="#FFF3C9" opacity=".85"/>'; }
+  return '<svg viewBox="0 0 64 64" aria-hidden="true"><defs>'+
+    '<linearGradient id="'+g+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F0D684"/><stop offset=".55" stop-color="#C79A35"/><stop offset="1" stop-color="#8E6A1E"/></linearGradient>'+
+    '<radialGradient id="'+m+'" cx=".38" cy=".32" r=".8"><stop offset="0" stop-color="#A9C96B"/><stop offset=".6" stop-color="#6E9236"/><stop offset="1" stop-color="#3F5E1C"/></radialGradient></defs>'+
+    '<circle cx="32" cy="32" r="31" fill="url(#'+g+')"/>'+dots+
+    '<circle cx="32" cy="32" r="22.5" fill="url(#'+m+')" stroke="#FFF3C9" stroke-width="1.4"/>'+
+    '<g transform="rotate(-28 32 32)"><path d="M32 15 C42.5 21 44 36 32 48 C20 36 21.5 21 32 15 Z" fill="#F7F2E7"/>'+
+    '<path d="M32 19 V50" stroke="#5E8231" stroke-width="1.6" stroke-linecap="round" fill="none"/>'+
+    '<path d="M32 27 L37 23 M32 33 L38.5 28.5 M32 39 L37.5 35 M32 27 L27 23 M32 33 L25.5 28.5 M32 39 L26.5 35" stroke="#5E8231" stroke-width="1.1" stroke-linecap="round" fill="none"/></g></svg>';
+}
+function teaMedalPop(){
+  if(document.querySelector(".tea-pop")) return;
+  var d=document.createElement("div"); d.className="sage-cel tea-pop"; d.setAttribute("role","dialog"); d.setAttribute("aria-modal","true"); d.setAttribute("aria-label","Tea path complete");
+  d.innerHTML='<div class="sage-card"><div class="tp-medal">'+teaMedalSvg("p")+'</div><b>Tea path complete!</b><span class="tp-otsu" lang="ja">'+rubyText("お疲(つか)れ様(さま)でした！")+'</span>'+
+    '<ol class="tp-ranks">'+RANKS.map(function(x,i){return '<li style="--rk:var(--rk-'+i+');animation-delay:'+(0.45+i*0.08).toFixed(2)+'s"><span class="tp-k" lang="ja"><ruby>'+x.k+'<rt>'+x.r+'</rt></ruby></span><span class="tp-en">'+x.en+'</span><i aria-hidden="true">✓</i></li>';}).join("")+'</ol>'+
+    '<button type="button" class="btn small tp-close">Close</button></div>';
+  document.body.appendChild(d); requestAnimationFrame(function(){ d.classList.add("in"); });
+  var btn=d.querySelector(".tp-close"); setTimeout(function(){ try{btn.focus({preventScroll:true});}catch(e){} },50);
+  function bye(){ document.removeEventListener("keydown",esc1); d.classList.remove("in"); setTimeout(function(){ d.remove(); },450); }
+  function esc1(e){ if(e.key==="Escape") bye(); }
+  d.addEventListener("click",bye); document.addEventListener("keydown",esc1);
+}
 /* Top of a path reached: a short celebration card. */
 function sageCelebrate(R,line){
   var d=document.createElement("div"); d.className="sage-cel"; d.setAttribute("role","status");
@@ -2081,6 +2124,7 @@ function animateLevel(full){
   var lv=document.querySelector("#review .level"); if(!lv) return;
   var seal=lv.querySelector(".seal"); if(seal){seal.classList.remove("spin");void seal.offsetWidth;seal.classList.add("spin");}
   var sx=lv.querySelector(".lv-sum .xp"); if(sx){sx.classList.remove("shine");void sx.offsetWidth;sx.classList.add("shine");}
+  var md=lv.querySelector(".tea-medal"); if(md){md.classList.remove("shine");void md.offsetWidth;md.classList.add("shine");}
   var bars=lv.querySelectorAll(full?".xp, .skill .lv-bar i":".lv-sum .xp");
   bars.forEach(function(i){var w=i.dataset.w||parseFloat(i.style.width)||0; i.style.transition="none"; i.style.width="0%"; void i.offsetWidth; i.style.transition="width 1.3s cubic-bezier(.22,.9,.24,1) .25s"; i.style.width=w+"%";});
   var num=lv.querySelector(".xp-num"), bar=lv.querySelector(".lv-sum .xp");
@@ -2099,8 +2143,8 @@ function levelHtml(){
   var seg=["New","Learning","Reviewing","Mastered"].map(function(k){return st[k]?'<i class="lv-'+k+'" style="flex:'+st[k]+'" title="'+k+': '+st[k]+'"></i>':'';}).join("");
   var RI=rankInfo(), R=RI.L[RI.idx], NX=RI.L[RI.idx+1], inRank=RI.idx>=5?100:Math.round((RI.score-RI.lo)/(RI.hi-RI.lo)*100);
   rankUpCheck(RI);
-  var badge='<summary class="lv-sum"><div class="badge-row"><div class="seal" lang="ja" aria-hidden="true">'+R.k+'</div><div class="badge-txt">'+
-    '<div class="rank-name" lang="ja"><ruby>'+R.k+'<rt>'+R.r+'</rt></ruby> <span lang="en">'+R.en+'</span>'+(RI.teaDone?'<span class="tea-done" lang="ja" title="Tea path complete">茶聖</span>':'')+'</div>'+
+  var badge='<summary class="lv-sum">'+(RI.teaDone?'<button type="button" class="tea-medal" data-act="tea-medal" title="Tea path complete" aria-label="Tea path complete. Show the tea ranks.">'+teaMedalSvg("b")+'</button>':'')+'<div class="badge-row'+(RI.teaDone?' has-medal':'')+'"><div class="seal" lang="ja" aria-hidden="true">'+R.k+'</div><div class="badge-txt">'+
+    '<div class="rank-name" lang="ja"><ruby>'+R.k+'<rt>'+R.r+'</rt></ruby> <span lang="en">'+R.en+'</span></div>'+
     '<div class="rank-sub">'+R.d+'</div>'+
     '<div class="xp-wrap"><div class="xp-bar"><i class="xp" data-w="'+inRank+'" style="width:'+inRank+'%"></i></div><span class="xp-num">'+inRank+'%</span></div>'+
     (NX?'<div class="rank-sub">'+Math.max(1,Math.ceil(RI.hi-RI.score))+'% more to '+NX.k+', '+NX.en+'</div>':'<div class="rank-sub">Top rank reached</div>')+
@@ -2299,6 +2343,7 @@ $("#review").addEventListener("toggle",function(e){ if(e.target.classList&&e.tar
 $("#review").addEventListener("click",function(e){
   var a=e.target.closest("[data-act]"); if(!a) return;
   var act=a.dataset.act;
+  if(act==="tea-medal"){ e.preventDefault(); teaMedalPop(); return; }
   if(act==="start") startReview();
   else if(act==="scrub") startReview("tricky");
   else if(act==="quiz") startEntryReview(a.dataset.key);
@@ -3360,22 +3405,29 @@ function rankHtml(){
     '<div class="gr-body"><div class="gr-ladder">'+METALS.map(function(m,i){return '<span class="gr-rung'+(i<=R.idx?' got':'')+(i===R.idx?' now':'')+'" style="--mt:'+m.c+'" title="'+m.en+'"><b lang="ja">'+m.k+'</b><small>'+m.en+'</small></span>';}).join("")+'</div>'+
     '<div class="lv-stats"><div><b>'+mast+'</b><span>of '+pts.length+' points mastered</span></div><div><b>'+Math.round(R.pct)+'%</b><span>toward gold</span></div><div><b>'+tarn+'</b><span>tarnished</span></div></div>'+
     '<p class="hint" style="margin:6px 0 0">Points are earned, not clicked. Each point is worth 100: up to 45 from drill answers (15 each), up to 30 from your own examples that pass Check it, and 25 for using it in a journal entry (put the pattern in the entry’s Grammar focus). 70 or more is mastered. A mastered point left unpractised for '+TARNISH_DAYS+' days tarnishes and loses a quarter of its value until you drill it again.</p></div></details>'+
-    '<div class="gd-start"><button class="btn primary" data-act="gd-start"'+(sample?'':' disabled')+'><span lang="ja">錬成</span> Transmute: 5-point drill</button><span class="hint">'+(sample?(tarn?tarn+' tarnished point'+(tarn===1?'':'s')+' first, then Reinforce, then what you’re working on.':'Reinforce points first, then what you’re working on, then what’s next.'):(window.KC_DEMO?'Uses AI. Off in this demo.':'Needs your API key. Add it to your Apps Script to turn this on.'))+'</span></div>';
+    '<div class="gd-start"><button class="btn primary" data-act="gd-start"'+(sample?'':' disabled')+'><span lang="ja">錬成</span> Transmute: 5-point drill</button><span class="hint">'+(sample?(tarn?tarn+' tarnished point'+(tarn===1?'':'s')+' first, then Reinforce, then what you’re working on.':'Reinforce points first, then what you’re working on, then what’s next.')+maxedHint():(window.KC_DEMO?'Uses AI. Off in this demo.':'Needs your API key. Add it to your Apps Script to turn this on.'))+'</span></div>';
 }
 function drillPick(){
   var pts=allPoints().filter(function(p){return p.p;}), sc={}; pts.forEach(function(p){sc[p.id]=gScore(p);});
   var used={}, out=[];
   function take(list){ list.forEach(function(p){ if(out.length<5&&!used[p.id]){used[p.id]=1;out.push(p);} }); }
-  take(pts.filter(function(p){return sc[p.id].tarn;}));
-  take(pts.filter(function(p){return gStatus(p.id)==="rf"&&!sc[p.id].mastered;}));
-  take(pts.filter(function(p){return sc[p.id].raw>0&&!sc[p.id].mastered;}).sort(function(a,b){return sc[b.id].raw-sc[a.id].raw;}));
-  take(pts.filter(function(p){return sc[p.id].raw===0;}));
-  take(pts.filter(function(p){return !sc[p.id].mastered;}));
+  /* Oct 2026: skip points whose drill share is full (3 drills = 45), since drills can't raise them. Shuffle within each group so the same five don't repeat. Tarnished points still come first: a drill polishes them. */
+  var open=pts.filter(function(p){return !drillMaxed(p,sc[p.id]);});
+  take(shuffle(pts.filter(function(p){return sc[p.id].tarn;})));
+  take(shuffle(open.filter(function(p){return gStatus(p.id)==="rf"&&!sc[p.id].mastered;})));
+  take(shuffle(open.filter(function(p){return sc[p.id].raw>0&&!sc[p.id].mastered;})));
+  take(shuffle(open.filter(function(p){return sc[p.id].raw===0;}).slice(0,8)));
+  take(shuffle(open.filter(function(p){return !sc[p.id].mastered;})));
   return out;
+}
+function drillMaxed(p,s){ s=s||gScore(p); return !s.tarn && !s.mastered && gxPeek(p.id).d>=3; }
+function maxedHint(){
+  var m=allPoints().filter(function(p){return p.p&&drillMaxed(p);}); if(!m.length) return "";
+  return '<br>Drills are done for <span lang="ja">'+esc(stripFuri(m[0].p))+'</span>'+(m.length>1?' and '+(m.length-1)+' more':'')+'. To finish '+(m.length>1?'them':'it')+', write two examples with Check it, or use '+(m.length>1?'them':'it')+' in a journal entry.';
 }
 async function drillStart(){
   if(!sample){toast(aiOffText());return;}
-  var picks=drillPick(); if(!picks.length){toast("Nothing left to drill. Everything is gold.");return;}
+  var picks=drillPick(); if(!picks.length){toast(maxedHint()?"Drills are done for now. Write examples to finish the rest.":"Nothing left to drill. Everything is gold.");return;}
   S.drill={items:picks.map(function(p){return {id:p.id,p:p.p,m:p.m,f:p.f||"",prompt:"",hint:""};}),i:0,busy:true,res:null,good:0,startRank:gRank().idx};
   renderGrammar();
   try{
