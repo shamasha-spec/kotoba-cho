@@ -662,6 +662,7 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .gq-dots button{width:8px;height:8px;padding:0;border:0;border-radius:4px;background:var(--line);cursor:pointer;transition:width .25s,background .25s}
 .gq-dots button.on{width:22px;background:var(--t-grammar)}
 .gq-count{margin-left:8px;font-size:.75rem;color:var(--muted)}
+.cv-pick{display:flex;align-items:center;gap:6px;flex:1;min-width:0}.cv-pick select{flex:1;min-width:0;max-width:300px}
 .gs-quiz{display:inline-flex;align-items:center;gap:5px;margin-right:4px;padding:6px 12px;min-height:34px;font-size:.82rem}
 .gs-quiz svg{width:16px;height:16px}
 @media (max-width:480px){.gs-quiz span{display:none}.gs-quiz{padding:6px 9px}}
@@ -2032,23 +2033,46 @@ $("#list").addEventListener("click",function(e){
 });
 
 /* ---------- VOICE ---------- */
-var TTS="speechSynthesis" in window, voiceJa=null;
+var TTS="speechSynthesis" in window, voiceJa=null, jaVoices=[];
 function pickVoice(){
   if(!TTS) return; var vs=speechSynthesis.getVoices()||[];
-  var ja=vs.filter(function(v){return /^ja/i.test(v.lang);});
+  var ja=vs.filter(function(v){return /^ja/i.test(v.lang);}); jaVoices=ja;
   voiceJa=ja.find(function(v){return /Kyoko|O-ren|Otoya|Google|Nanami|Haruka/i.test(v.name);})||ja[0]||null;
 }
 if(TTS){pickVoice(); speechSynthesis.addEventListener("voiceschanged",function(){pickVoice(); if(S.tab==="review"&&!S.deck) renderReview();});}
+/* Two voices for chats (Oct 2026): アンちゃん： and Me： lines each get their own voice, picked per device in Review settings.
+   With only one Japanese voice on the device, the same voice is used at two pitches. */
+S.cv=recall("kc-chatvoice")||{an:"auto",me:"auto"};
+var SPEAKER_RE=/^(Me|アンちゃん)[：:]\s*/;
+function speakerOf(t){ var m=String(t||"").match(SPEAKER_RE); return m?{who:m[1]==="Me"?"me":"an",text:String(t).slice(m[0].length)}:null; }
+function chatVoice(who){
+  var byName=function(n){ return n&&n!=="auto"?jaVoices.find(function(v){return v.name===n;})||null:null; };
+  var an=byName(S.cv.an)||voiceJa, me=byName(S.cv.me)||jaVoices.find(function(v){return v!==an;})||an;
+  return {v:who==="me"?me:an,pitch:an===me?(who==="me"?0.8:1.25):1};
+}
+function voiceFor(u,who){ if(who){ var c=chatVoice(who); if(c.v) u.voice=c.v; u.pitch=c.pitch; } else if(voiceJa) u.voice=voiceJa; }
+function chatVoiceHtml(){
+  if(!TTS||!voiceJa||window.KC_LEARNER) return "";
+  function sel(who,label){ return '<div class="setrow"><span class="setlabel">'+label+'</span><div class="cv-pick"><select id="cv-'+who+'" aria-label="'+label+'"><option value="auto">Auto</option>'+
+    jaVoices.map(function(v){return '<option value="'+esc(v.name)+'"'+(S.cv[who]===v.name?' selected':'')+'>'+esc(v.name)+'</option>';}).join("")+'</select>'+
+    '<button class="say" data-act="cv-try" data-who="'+who+'" aria-label="Try this voice" title="Try this voice">'+SPK+'</button></div></div>'; }
+  var c=chatVoice("an"), d=chatVoice("me");
+  return '<div class="cv-box"><p class="lv-label" style="margin:12px 0 4px">Chat voices <span class="hint">for journal chats with アンちゃん, on this device</span></p>'+
+    sel("an","アンちゃん")+sel("me","You (Me)")+
+    (c.v===d.v?'<p class="hint">'+(jaVoices.length<2?'This device has one Japanese voice, so ':'Same voice picked, so ')+'アンちゃん speaks a little higher and you a little lower.</p>':'')+'</div>';
+}
+document.addEventListener("change",function(e){ var m=e.target.id&&e.target.id.match(/^cv-(an|me)$/); if(!m) return; S.cv[m[1]]=e.target.value; store("kc-chatvoice",S.cv); speak(m[1]==="an"?"アンちゃん：こんにちは！今日(きょう)もがんばろうね。":"Me：こんにちは。よろしくお願(ねが)いします。"); if(typeof renderReview==="function"&&S.tab==="review"&&!S.deck) renderReview(); });
+document.addEventListener("click",function(e){ var b=e.target.closest('[data-act="cv-try"]'); if(!b) return; e.stopPropagation(); speak(b.dataset.who==="an"?"アンちゃん：こんにちは！今日(きょう)もがんばろうね。":"Me：こんにちは。よろしくお願(ねが)いします。"); },true);
 var speakTimer=null;
-function speak(text){
+function speak(text,who){
   if(!TTS||!text) return;
-  var t=stripFuri(text).trim(); if(!t) return;
+  var t=stripFuri(text).trim(); var sp=speakerOf(t); if(sp){ t=sp.text.trim(); who=sp.who; } if(!t) return;
   // a sentence ending tells the engine to finish the last sound instead of clipping it
   if(!/[。！？!?、．.]$/.test(t)) t+="。";
   var busy=speechSynthesis.speaking||speechSynthesis.pending;
   speechSynthesis.cancel(); clearTimeout(speakTimer);
   speakTimer=setTimeout(function(){
-    var u=new SpeechSynthesisUtterance(t); u.lang="ja-JP"; if(voiceJa) u.voice=voiceJa; u.rate=S.rate==="slow"?0.65:0.95;
+    var u=new SpeechSynthesisUtterance(t); u.lang="ja-JP"; voiceFor(u,who); u.rate=S.rate==="slow"?0.65:0.95;
     speak._u=u; // keep a reference so the browser can't drop it mid-word
     u.onend=u.onerror=function(){ if(speak._u===u) speak._u=null; };
     try{ speechSynthesis.resume(); }catch(e){}
@@ -2056,8 +2080,8 @@ function speak(text){
   },busy?140:40);
 }
 var SPK='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
-function sayBtn(text,label){ if(!TTS) return ""; return '<button class="say" data-act="say" data-say="'+esc(text)+'" aria-label="'+esc(label||"Play audio")+'" title="'+esc(label||"Play audio")+'">'+SPK+'</button>'; }
-document.addEventListener("click",function(e){ var b=e.target.closest('[data-act="say"]'); if(b){ e.stopPropagation(); if(S.play) playStop(); speak(b.dataset.say); } },true);
+function sayBtn(text,label,who){ if(!TTS) return ""; return '<button class="say" data-act="say"'+(who?' data-who="'+who+'"':'')+' data-say="'+esc(text)+'" aria-label="'+esc(label||"Play audio")+'" title="'+esc(label||"Play audio")+'">'+SPK+'</button>'; }
+document.addEventListener("click",function(e){ var b=e.target.closest('[data-act="say"]'); if(b){ e.stopPropagation(); if(S.play) playStop(); speak(b.dataset.say,b.dataset.who); } },true);
 
 /* ---------- REVIEW STATS ---------- */
 S.stats={}; var statsTimer;
@@ -2246,7 +2270,7 @@ function renderReview(){
       '</div><div class="settings">'+SETTINGS.filter(function(x){return TTS||(x[0]!=="voice"&&x[0]!=="rate");}).map(function(x){
         var opts=x[2]; if(x[0]==="front"&&!TTS) opts=opts.filter(function(o){return o[0]!=="listen";});
         return segHtml(x[0],x[1],opts);}).join("")+
-      (voiceNote?'<p class="hint">'+voiceNote+'</p>':'')+
+      (voiceNote?'<p class="hint">'+voiceNote+'</p>':'')+chatVoiceHtml()+
       '</div><div class="row" style="margin-top:18px"><button class="btn primary startbtn" data-act="start">Start review</button><span class="hint">Space flips, 1 is Again, 2 is Got it, P plays audio</span></div><div class="msg" id="deck-msg"></div></details>'+journalDecksHtml();
     if(S.animLevel){S.animLevel=false; requestAnimationFrame(function(){animateLevel(S.levelOpen);});}
     return;
@@ -2826,7 +2850,7 @@ function playStep(){
   p.turn=false; playMark(true); renderPlayer();
   try{ speechSynthesis.cancel(); }catch(e){}
   var t=text; if(!/[。！？!?、．.]$/.test(t)) t+="。";
-  var u=new SpeechSynthesisUtterance(t); u.lang="ja-JP"; if(voiceJa) u.voice=voiceJa; u.rate=S.rate==="slow"?0.65:0.95;
+  var u=new SpeechSynthesisUtterance(t); u.lang="ja-JP"; var spk=speakerOf(stripFuri(String(en.lines[li].jp||"")).trim()); voiceFor(u,spk&&spk.who); u.rate=S.rate==="slow"?0.65:0.95;
   var t0=0; u.onstart=function(){ t0=Date.now(); };
   u.onend=u.onerror=function(){
     if(playU!==u||S.play!==p||p.paused) return;
@@ -4054,7 +4078,7 @@ function chatHtml(){
       (m.fix?'<div class="hc-fix"><span>More natural</span><b lang="ja">'+rubyText(m.fix)+'</b>'+(m.note?'<small>'+esc(m.note)+'</small>':'')+'</div>':(m.fix===""?'<div class="hc-fix ok"><span>Natural</span></div>':''))+
       (m.credit?'<div class="hc-credit">+15 '+m.credit.map(esc).join(", ")+'</div>':'')+'</div>';
     var open=!!S.chatOpenEn[i];
-    return '<div class="hc-row"><div class="hc-av" aria-hidden="true">'+HAV+'</div><div class="hc-col"><button class="hc-b them" data-act="hc-en" data-i="'+i+'" aria-expanded="'+open+'" title="Tap for English"><span lang="ja">'+rubyText(m.jp)+'</span>'+(open&&m.en?'<span class="hc-en">'+esc(m.en)+'</span>':'')+'</button>'+sayBtn(stripFuri(m.jp),"Play message")+'</div></div>';
+    return '<div class="hc-row"><div class="hc-av" aria-hidden="true">'+HAV+'</div><div class="hc-col"><button class="hc-b them" data-act="hc-en" data-i="'+i+'" aria-expanded="'+open+'" title="Tap for English"><span lang="ja">'+rubyText(m.jp)+'</span>'+(open&&m.en?'<span class="hc-en">'+esc(m.en)+'</span>':'')+'</button>'+sayBtn(stripFuri(m.jp),"Play message","an")+'</div></div>';
   }).join("");
   if(S.chatBusy||(!c.msgs.length&&!c.err)) rows+='<div class="hc-row"><div class="hc-av" aria-hidden="true">'+HAV+'</div><div class="hc-b them hc-typing" aria-label="'+CHAT_NAME+' is typing"><i></i><i></i><i></i></div></div>';
   var foot='';
