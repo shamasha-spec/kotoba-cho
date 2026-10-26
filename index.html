@@ -419,17 +419,17 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .no-ai .addmore{grid-template-rows:1fr}
 /* playlist-style home cards */
 :root{--cv-cards:#2C4870;--cv-journal:#2B7A78;--cv-grammar:#A63A4A;--cv-r0:#5E8C31;--cv-r1:#A3822A;--cv-r2:#8B5A3C;--cv-r3:#3F6187;--cv-r4:#6A4C93;--cv-r5:#B3362F;--cv-k0:#8C7B2E;--cv-k1:#8A5A2B;--cv-k2:#33507F;--cv-k3:#24385E;--cv-k4:#5B3A78;--cv-k5:#A3262B}
-.tea-medal{position:absolute;top:10px;right:12px;z-index:2;width:46px;height:46px;padding:0;border:0;border-radius:50%;background:none;cursor:pointer;overflow:hidden;filter:drop-shadow(0 4px 5px rgba(0,0,0,.35));transform:rotate(-8deg);transition:transform .3s cubic-bezier(.34,1.6,.6,1)}
+.tea-medal{position:absolute;top:12px;right:14px;z-index:2;width:40px;height:40px;padding:0;border:0;border-radius:50%;background:none;cursor:pointer;overflow:hidden;box-shadow:0 3px 8px -2px rgba(0,0,0,.4);transform:rotate(-8deg);transition:transform .3s cubic-bezier(.34,1.6,.6,1)}
 .tea-medal svg{display:block;width:100%;height:100%}
 .tea-medal:hover{transform:rotate(0) scale(1.1)}
 .tea-medal:focus-visible{outline:2px solid var(--slip,#fff);outline-offset:2px;transform:rotate(0) scale(1.1)}
-.tea-medal::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.8) 50%,transparent 70%);transform:translateX(-130%)}
+.tea-medal::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.55) 50%,transparent 70%);transform:translateX(-130%)}
 .tea-medal.shine::after{animation:medalShine 1.1s ease-out .5s}
 @keyframes medalShine{to{transform:translateX(130%)}}
-.badge-row.has-medal .rank-name{padding-right:46px}
-@media (max-width:600px){.tea-medal{width:32px;height:32px;top:7px;right:8px}.badge-row.has-medal .rank-name{padding-right:30px}.level>.lv-sum:has(.tea-medal)::after{align-self:flex-end;margin-bottom:8px}}
+.badge-row.has-medal .rank-name{padding-right:40px}
+@media (max-width:600px){.tea-medal{width:28px;height:28px;top:8px;right:9px}.badge-row.has-medal .rank-name{padding-right:28px}.level>.lv-sum:has(.tea-medal)::after{align-self:flex-end;margin-bottom:8px}}
 .tea-pop .sage-card{max-width:340px;width:100%}
-.tp-medal{width:92px;height:92px;filter:drop-shadow(0 8px 10px rgba(0,0,0,.3));animation:tpIn .75s cubic-bezier(.34,1.45,.6,1) .1s both}
+.tp-medal{width:80px;height:80px;border-radius:50%;box-shadow:0 6px 14px -4px rgba(0,0,0,.35);animation:tpIn .75s cubic-bezier(.34,1.45,.6,1) .1s both}
 .tp-medal svg{display:block;width:100%;height:100%}
 @keyframes tpIn{0%{opacity:0;transform:scale(.3) rotate(-220deg)}100%{opacity:1;transform:none}}
 .sage-card .tp-otsu{font-family:var(--serif);font-size:1.05rem;color:var(--ink,inherit)}
@@ -2051,16 +2051,12 @@ function rankUpCheck(RI){
 }
 /* Tea path medal (Oct 2026): sits in the banner's top right once 茶聖 is reached. Tap for the finished tea ladder. */
 function teaMedalSvg(id){
-  var g="tmg-"+id, m="tmm-"+id, dots="";
-  for(var i=0;i<12;i++){ var a=i*Math.PI/6; dots+='<circle cx="'+(32+27*Math.cos(a)).toFixed(2)+'" cy="'+(32+27*Math.sin(a)).toFixed(2)+'" r="1.3" fill="#FFF3C9" opacity=".85"/>'; }
-  return '<svg viewBox="0 0 64 64" aria-hidden="true"><defs>'+
-    '<linearGradient id="'+g+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F0D684"/><stop offset=".55" stop-color="#C79A35"/><stop offset="1" stop-color="#8E6A1E"/></linearGradient>'+
-    '<radialGradient id="'+m+'" cx=".38" cy=".32" r=".8"><stop offset="0" stop-color="#A9C96B"/><stop offset=".6" stop-color="#6E9236"/><stop offset="1" stop-color="#3F5E1C"/></radialGradient></defs>'+
-    '<circle cx="32" cy="32" r="31" fill="url(#'+g+')"/>'+dots+
-    '<circle cx="32" cy="32" r="22.5" fill="url(#'+m+')" stroke="#FFF3C9" stroke-width="1.4"/>'+
+  var dots=""; for(var i=0;i<12;i++){ var a=i*Math.PI/6; dots+='<circle cx="'+(32+27*Math.cos(a)).toFixed(2)+'" cy="'+(32+27*Math.sin(a)).toFixed(2)+'" r="1.4" fill="#F7F2E7"/>'; }
+  return '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="#C29A3B"/>'+dots+
+    '<circle cx="32" cy="32" r="22.5" fill="#6E9236" stroke="#F7F2E7" stroke-width="1.5"/>'+
     '<g transform="rotate(-28 32 32)"><path d="M32 15 C42.5 21 44 36 32 48 C20 36 21.5 21 32 15 Z" fill="#F7F2E7"/>'+
-    '<path d="M32 19 V50" stroke="#5E8231" stroke-width="1.6" stroke-linecap="round" fill="none"/>'+
-    '<path d="M32 27 L37 23 M32 33 L38.5 28.5 M32 39 L37.5 35 M32 27 L27 23 M32 33 L25.5 28.5 M32 39 L26.5 35" stroke="#5E8231" stroke-width="1.1" stroke-linecap="round" fill="none"/></g></svg>';
+    '<path d="M32 19 V50" stroke="#6E9236" stroke-width="1.7" stroke-linecap="round" fill="none"/>'+
+    '<path d="M32 27 L37 23 M32 33 L38.5 28.5 M32 39 L37.5 35 M32 27 L27 23 M32 33 L25.5 28.5 M32 39 L26.5 35" stroke="#6E9236" stroke-width="1.2" stroke-linecap="round" fill="none"/></g></svg>';
 }
 function teaMedalPop(){
   if(document.querySelector(".tea-pop")) return;
