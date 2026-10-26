@@ -662,6 +662,9 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .gq-dots button{width:8px;height:8px;padding:0;border:0;border-radius:4px;background:var(--line);cursor:pointer;transition:width .25s,background .25s}
 .gq-dots button.on{width:22px;background:var(--t-grammar)}
 .gq-count{margin-left:8px;font-size:.75rem;color:var(--muted)}
+.gs-quiz{display:inline-flex;align-items:center;gap:5px;margin-right:4px;padding:6px 12px;min-height:34px;font-size:.82rem}
+.gs-quiz svg{width:16px;height:16px}
+@media (max-width:480px){.gs-quiz span{display:none}.gs-quiz{padding:6px 9px}}
 .qz .q-prompt{margin-top:6px;padding:14px 16px;border-radius:12px;background:var(--paper);border-left:3px solid var(--t-grammar);display:grid;gap:4px}
 .q-word{font-family:var(--serif);font-size:1.6rem;font-weight:700;line-height:1.6}
 .q-sent{font-size:1.25rem;line-height:2}
@@ -3393,7 +3396,7 @@ var GTOPIC={1:"New Friends",2:"Shopping",3:"Making a Date",4:"The First Date",5:
     else if(!rf.length&&!tn.length) prev+='<span class="gs-line"><b>All done</b><span>Every point mastered.</span></span>';
     var open=autoOpen||!!S.glopen["sec-"+sec];
     html+='<details class="gsecd" data-s="'+sec+'"'+(open?' open':'')+'><summary><span class="gs-top"><span class="gsec'+(sd[1]?'':' gsec-ja')+'">'+sd[1]+'<span lang="ja">'+sd[2]+'</span></span>'+
-      '<span class="gs-circ">'+circleSvg(frac,done)+'<span class="gs-cn"><b>'+got+'/'+secPts.length+'</b><small>mastered</small></span></span></span>'+
+      '<span class="gs-circ"><button type="button" class="btn small gs-quiz ai-only" data-act="g-secquiz" data-s="'+sec+'" title="Transmute drill from '+sd[1]+'">'+QZ+'<span>Quiz</span></button>'+circleSvg(frac,done)+'<span class="gs-cn"><b>'+got+'/'+secPts.length+'</b><small>mastered</small></span></span></span>'+
       '<span class="gs-prev">'+prev+'</span></summary><div class="gs-body">'+(sd[3]?'<p class="hint gsec-hint">'+sd[3]+'</p>':'');
     keys.forEach(function(k){
       var list=groups[k], all=GALL(k);
@@ -3760,7 +3763,7 @@ function quizStart(t){
     if(kind==="pt"||!it) it=qChoose(qMakePart,q.pt.weak,used);
     if(it) items.push(it);
   }
-  S.quiz={t:t,items:items,i:0,good:0,note:note,start:{fm:qLevel(q.fm.ok).idx,pt:qLevel(q.pt.ok).idx,mx:qLevel(q.fm.ok+q.pt.ok).idx}};
+  S.quiz={t:t,items:items,i:0,good:0,note:note,en:S.qs[t].en==="on",start:{fm:qLevel(q.fm.ok).idx,pt:qLevel(q.pt.ok).idx,mx:qLevel(q.fm.ok+q.pt.ok).idx}};
   renderGrammar(); window.scrollTo({top:0,behavior:"smooth"});
 }
 function quizAnswer(given){
@@ -3799,11 +3802,11 @@ function quizHtml(){
   var it=Q.items[Q.i], body='';
   if(Q.note&&Q.i===0) body+='<p class="hint" style="margin:0 0 4px">'+esc(Q.note)+'</p>';
   if(it.kind==="fm"){
-    body+='<div class="q-prompt"><div class="q-word" lang="ja">'+(it.back?it.from:rubyWord(it.W.jp,it.W.kana))+'</div><div class="q-en">'+(it.back?'':esc(it.W.en))+'</div><div class="q-to"><span aria-hidden="true">→</span> <b>'+esc(it.label)+'</b></div></div>';
+    body+='<div class="q-prompt"><div class="q-word" lang="ja">'+(it.back?it.from:rubyWord(it.W.jp,it.W.kana))+'</div>'+((Q.en||it.res)&&!it.back&&it.W.en?'<div class="q-en">'+esc(it.W.en)+'</div>':'')+'<div class="q-to"><span aria-hidden="true">→</span> <b>'+esc(it.label)+'</b></div></div>';
     if(!it.res) body+='<label for="q-ans">Your answer</label><input type="text" id="q-ans" lang="ja" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Kana or kanji">'+
       '<div class="row" style="margin-top:10px"><button class="btn primary" data-act="q-check">Check</button></div><div class="msg" id="q-msg"></div>';
   } else {
-    body+='<div class="q-prompt"><div class="q-sent" lang="ja">'+qBlank(it,!!it.res)+'</div><div class="q-en">'+esc(it.en)+'</div></div>'+
+    body+='<div class="q-prompt"><div class="q-sent" lang="ja">'+qBlank(it,!!it.res)+'</div>'+(Q.en||it.res?'<div class="q-en">'+esc(it.en)+'</div>':'')+'</div>'+
       '<div class="q-opts">'+it.opts.map(function(o){var c=it.res?(it.ok.indexOf(o)>-1?' right':o===it.res.given?' wrong':''):''; return '<button class="q-opt'+c+'" data-act="q-pick" data-v="'+o+'" lang="ja"'+(it.res?' disabled':'')+'>'+o+'</button>';}).join("")+'</div>';
   }
   if(it.res){
@@ -3817,7 +3820,7 @@ function quizHtml(){
 function qBlank(it,fill){ var h=rubyText(it.s); return h.replace("＿",'<span class="q-blank'+(fill?' fill':'')+'">'+(fill?it.ok[0]:'＿＿')+'</span>'); }
 function quizFocus(){ var a=$("#q-ans"); if(a){ a.focus({preventScroll:true}); return; } var b=$("#q-next"); if(b) b.focus({preventScroll:true}); }
 /* ---- carousel: overall banner on top, then quiz cards two at a time. Settings fold away (Oct 2026). ---- */
-var QSET_DEF={tr:{src:"all",les:"all"},fm:{size:"10",words:"rf"},pt:{size:"10"},mx:{size:"10",words:"rf"}};
+var QSET_DEF={tr:{src:"all",les:"all"},fm:{size:"10",words:"rf",en:"off"},pt:{size:"10",en:"off"},mx:{size:"10",words:"rf",en:"off"}};
 S.qs=(function(){ var s=recall("kc-qset")||{}, o={}; Object.keys(QSET_DEF).forEach(function(k){ o[k]=Object.assign({},QSET_DEF[k],s[k]||{}); }); return o; })();
 var QSRC={all:"All sources",genki:"Genki",pp:"Preply",my:"Mine"};
 function qSrcOf(p){ return p.custom||p.l==="my"?"my":p.l==="pp"?"pp":"genki"; }
@@ -3825,7 +3828,7 @@ function qInSource(p){ var s=S.qs.tr; if(s.src==="all") return true; if(qSrcOf(p
 function qSum(t){
   var s=S.qs[t];
   if(t==="tr") return (s.src==="genki"&&s.les!=="all"?(s.les==="gx"?"More Genki":"Genki, Lesson "+s.les):QSRC[s.src])+" · 5 points";
-  return s.size+" questions"+(s.words?" · "+(s.words==="rf"?"Reinforce":"New words"):"");
+  return s.size+" questions"+(s.words?" · "+(s.words==="rf"?"Reinforce":"New words"):"")+(s.en==="on"?" · English":"");
 }
 function qStartLabel(t){
   if(t!=="tr") return "Start";
@@ -3854,6 +3857,7 @@ function qPanel(t){
   } else {
     if(t!=="pt") h+=qSeg(t,"words",[["rf","Reinforce"],["new","New words"]],"Words");
     h+=qSeg(t,"size",[["5","5"],["10","10"],["20","20"]],"Questions");
+    h+=qSeg(t,"en",[["off","Hide"],["on","Show"]],"English");
     if(t==="fm") h+=qWeakLine(q.fm); if(t==="pt") h+=qWeakLine(q.pt,true);
   }
   return '<div class="panel gq-set" id="gq-set"><div class="gq-set-h"><b><span lang="ja">'+T[0]+'</span> '+T[1]+' settings</b><button class="linkbtn" data-act="q-change" data-c="'+t+'">Done</button></div>'+h+'</div>';
@@ -3863,7 +3867,7 @@ function quizCarouselHtml(){
   var cards=[qCard("tr",q.tr.ok),qCard("fm",q.fm.ok),qCard("pt",q.pt.ok),qCard("mx",q.fm.ok+q.pt.ok)], pages=Math.ceil(cards.length/2), cur=Math.max(0,Math.min(pages-1,S.gqi||0));
   var dots=''; for(var i=0;i<pages;i++) dots+='<button data-act="q-go" data-i="'+i+'" class="'+(i===cur?'on':'')+'" aria-label="Page '+(i+1)+'"></button>';
   return overall+'<div class="gq"><div class="gq-track" id="gq-track" aria-label="Grammar quizzes">'+cards.map(function(c){return '<div class="gq-slide">'+c+'</div>';}).join("")+'</div>'+
-    '<button class="gq-arrow prev" data-act="q-nav" data-d="-1" aria-label="Previous"'+(cur===0?' disabled':'')+'>‹</button><button class="gq-arrow next" data-act="q-nav" data-d="1" aria-label="Next"'+(cur===pages-1?' disabled':'')+'>›</button>'+
+    '<button class="gq-arrow prev" data-act="q-nav" data-d="-1" aria-label="Previous">‹</button><button class="gq-arrow next" data-act="q-nav" data-d="1" aria-label="Next">›</button>'+
     '<div class="gq-dots">'+dots+'<span class="gq-count">'+(cur+1)+' of '+pages+'</span></div></div>'+qPanel(S.qopen);
 }
 function gqPages(tr){ return Math.ceil(tr.children.length/2); }
@@ -3877,9 +3881,9 @@ function gqMark(i){
   var tr=$("#gq-track"); if(!tr) return; var P=gqPages(tr), wrap=tr.parentNode;
   wrap.querySelectorAll(".gq-dots button").forEach(function(b,j){ b.classList.toggle("on",j===i); });
   var c=wrap.querySelector(".gq-count"); if(c) c.textContent=(i+1)+" of "+P;
-  var p=wrap.querySelector(".gq-arrow.prev"), x=wrap.querySelector(".gq-arrow.next"); if(p) p.disabled=i===0; if(x) x.disabled=i===P-1;
 }
-function gqGo(i){ var tr=$("#gq-track"); if(!tr) return; var sl=tr.children; i=Math.max(0,Math.min(gqPages(tr)-1,i)); S.gqi=i; store("kc-gqi",i); gqMark(i); tr.scrollTo({left:sl[i*2].offsetLeft-sl[0].offsetLeft,behavior:"smooth"}); }
+/* arrows and edge swipes loop around (Oct 2026) */
+function gqGo(i){ var tr=$("#gq-track"); if(!tr) return; var sl=tr.children, P=gqPages(tr); i=((i%P)+P)%P; S.gqi=i; store("kc-gqi",i); gqMark(i); tr.scrollTo({left:sl[i*2].offsetLeft-sl[0].offsetLeft,behavior:"smooth"}); }
 var QPL={"wa-topic":"は (topic)","no":"の (linking nouns)","mo":"も (also)","de-place":"で (place)","ni-dest":"に・へ (destination)","ni-time":"に (time)","wo":"を (object)","to-with":"と (with)","ni-exist":"に (location)","ga-exist":"が (with あります・います)","ga-q":"が (question words)","de-means":"で (means)","kara":"から (from)","made":"まで (until)","ga-suki":"が (with 好き)","ga-body":"が (body part)","ni-person":"に (person)","de-range":"で (range)","ga-subj":"が (subject)","to-and":"と (and)"};
 function qWeakLine(st,pt){ var k=Object.keys(st.weak).sort(function(a,b){return st.weak[b]-st.weak[a];}).slice(0,2); return k.length?'<p class="gq-weak"><b>Working on</b> <span lang="ja">'+k.map(function(x){return rubyText(pt?(QPL[x]||x):qKeyLabel(x));}).join(" · ")+'</span></p>':''; }
 function qSave(){ store("kc-qset",S.qs); }
@@ -3892,6 +3896,7 @@ function qSave(){ store("kc-qset",S.qs); }
     else if(act==="q-change"){ S.qopen=S.qopen===a.dataset.c?null:a.dataset.c; renderGrammar(); var sp=$("#gq-set"); if(sp&&sp.scrollIntoView) sp.scrollIntoView({block:"nearest",behavior:"smooth"}); }
     else if(act==="q-set"){ var c=a.dataset.c; S.qs[c][a.dataset.k]=a.dataset.v; if(c==="tr"&&a.dataset.k==="src") S.qs.tr.les="all"; qSave(); renderGrammar(); }
     else if(act==="q-start"){ S.qopen=null; quizStart(a.dataset.t); }
+    else if(act==="g-secquiz"){ e.preventDefault(); S.qs.tr.src={genki:"genki",preply:"pp",mine:"my"}[a.dataset.s]||"all"; S.qs.tr.les="all"; qSave(); drillStart(); }
     else if(act==="q-check"){ var inp=$("#q-ans"); quizAnswer(inp?inp.value:""); }
     else if(act==="q-pick"){ quizAnswer(a.dataset.v); }
     else if(act==="q-next"){ S.quiz.i++; if(S.quiz.i>=S.quiz.items.length) quizFinish(); else renderGrammar(); }
@@ -3899,6 +3904,13 @@ function qSave(){ store("kc-qset",S.qs); }
   });
   el.addEventListener("change",function(e){ if(e.target.id==="q-les"){ S.qs.tr.les=e.target.value; qSave(); renderGrammar(); } });
   el.addEventListener("keydown",function(e){ if(e.target.id==="q-ans"&&e.key==="Enter"&&!e.isComposing){ e.preventDefault(); quizAnswer(e.target.value); } });
+  var sw=null;
+  el.addEventListener("touchstart",function(e){ var tr=e.target.closest&&e.target.closest("#gq-track"); sw=tr&&e.touches.length===1?{x:e.touches[0].clientX,y:e.touches[0].clientY,p:S.gqi||0,P:gqPages(tr)}:null; },{passive:true});
+  el.addEventListener("touchend",function(e){ if(!sw) return; var t2=e.changedTouches[0], dx=t2.clientX-sw.x, dy=t2.clientY-sw.y, s=sw; sw=null;
+    if(Math.abs(dx)<40||Math.abs(dx)<Math.abs(dy)) return;
+    if(dx<0&&s.p===s.P-1) setTimeout(function(){ if((S.gqi||0)===s.P-1) gqGo(0); },120);
+    else if(dx>0&&s.p===0) setTimeout(function(){ if((S.gqi||0)===0) gqGo(s.P-1); },120);
+  },{passive:true});
   el.addEventListener("scroll",function(e){ if(e.target.id!=="gq-track") return; clearTimeout(t); t=setTimeout(function(){ gqSync(false); },90); },true);
 })();
 /* ---------- home: daily chat with ハル ---------- */
