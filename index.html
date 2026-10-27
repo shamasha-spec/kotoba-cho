@@ -4201,10 +4201,10 @@ function chatWords(){
 function chatTranscript(c){ return c.msgs.map(function(m){return (m.me?"Pete: ":CHAT_NAME+": ")+stripFuri(m.me?m.text:m.jp);}).join("\n"); }
 /* Oct 2026: the AI once wrote ベート. Belt and braces: the prompt names ピート, and replies are corrected here too. */
 function fixName(t){ return String(t||"").replace(/[ベペ]ート(?!ー)/g,"ピート"); }
-var CHAT_SYS="You are アン, a cheerful Japanese university student (her friends call her アンちゃん) texting her friend Pete. In Japanese, Pete's name is always written ピート (never ベート or ペート). Pete is a beginner (finished Genki 1, about N5) practising casual Japanese. Always write casual spoken Japanese: plain form, natural endings like よ, ね, の？, じゃん, sparingly. Keep each message short (one or two sentences, under 20 words) and use mostly Genki 1 vocabulary. Put the hiragana reading in half-width parentheses right after every kanji part, like 今日(きょう). No emoji. No em dashes.";
+var CHAT_SYS="You are アン, a cheerful Japanese university student (her friends call her アンちゃん) texting her friend Pete. In Japanese, Pete's name is always written ピート (never ベート or ペート). Pete is a beginner (finished Genki 1, about N5) practising casual Japanese. Always write casual spoken Japanese: plain form, natural endings like よ, ね, の？, じゃん, sparingly. Use at most one time word per message (今日, 昨日, 明日, 週末...), and make it match what you ask; never mix two, like 今日 with 昨日. Keep each message short (one or two sentences, under 20 words) and use mostly Genki 1 vocabulary. Put the hiragana reading in half-width parentheses right after every kanji part, like 今日(きょう). No emoji. No em dashes.";
 CHAT_SYS+=" Do not start replies with ねえ or ねえねえ. Vary how each message begins.";
 /* Openers are picked here, not by the model, so they rotate. The last 4 used are skipped. "" = straight to the question. */
-var CHAT_OPENERS=["ねえねえ、","ちょっと聞いて！","ね、ピート！","あ、ピート！","やっほー！","おつかれ！","ねえ、ピート、","そういえば、","ピート、聞いてもいい？","今日(きょう)さ、","",""];
+var CHAT_OPENERS=["ねえねえ、","ちょっと聞いて！","ね、ピート！","あ、ピート！","やっほー！","おつかれ！","ねえ、ピート、","そういえば、","ピート、聞いてもいい？","あのさ、","",""]; /* Oct 2026: 今日さ、 replaced with あのさ、 (it clashed with questions about yesterday or the weekend) */
 function chatOpener(){
   var used=recall("kc-chat-open")||[], pool=CHAT_OPENERS.map(function(o,i){return i;}).filter(function(i){return used.indexOf(i)<0;});
   var i=pool[Math.floor(Math.random()*pool.length)]; store("kc-chat-open",used.concat(i).slice(-4));
