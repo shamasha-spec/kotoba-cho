@@ -662,6 +662,13 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .gq-dots button{width:8px;height:8px;padding:0;border:0;border-radius:4px;background:var(--line);cursor:pointer;transition:width .25s,background .25s}
 .gq-dots button.on{width:22px;background:var(--t-grammar)}
 .gq-count{margin-left:8px;font-size:.75rem;color:var(--muted)}
+.comp-mode{margin:16px 0 4px;width:max-content;max-width:100%}
+.comp-free{margin-top:10px}.comp-free textarea{width:100%;min-height:180px;font-size:1.05rem;line-height:1.8}
+.comp-all{margin:12px 0 0;gap:8px;flex-wrap:wrap}
+#j-allmsg:empty{display:none}
+.kc-leave .sage-card b{font-size:1.15rem}
+.ga-fillrow{display:flex;gap:8px;align-items:center}.ga-fillrow input{flex:1;min-width:0}.ga-fillrow .btn{flex:none}
+#ga-fmsg:empty{display:none}
 .h2row{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .snd-btn{flex:none;width:32px;height:32px;display:grid;place-items:center;padding:0;border:0;border-radius:9px;background:none;color:var(--muted);cursor:pointer;transition:background .2s,color .2s}
 .snd-btn:hover,.snd-btn.on,.snd-btn:focus-visible{background:color-mix(in srgb,var(--ai) 10%,transparent);color:var(--ai)}
@@ -1737,7 +1744,7 @@ body.kc-locked{overflow:hidden}
 
   <section id="v-journal" role="tabpanel" hidden>
     <div class="h2row"><h2>Journal</h2><span id="j-snd"></span></div>
-    <p class="lede">Write one sentence at a time. Add furigana and get a check before you save it to your Journal tab.</p>
+    <p class="lede">Write one sentence at a time, or write freely and split it into sentences. Add furigana and get a check before you save it to your Journal tab.</p>
     <p class="demo-ai"><b>AI</b><span>Add furigana puts hiragana readings after kanji. Check sentence corrects your Japanese and explains the grammar. Chats with アンちゃん can be saved here as entries. All three use AI and are off in this demo.</span></p>
     <div id="composer"></div>
     <h2 style="margin-top:32px">Past entries</h2>
@@ -1925,6 +1932,7 @@ function renderTab(t){
 function setTab(t,opts){
   opts=opts||{};
   if(window.KC_LEARNER&&(t==="journal"||t==="grammar")) t="add";
+  S.nav=S.nav||[]; if(!opts.fromBack&&S.prevTab&&S.prevTab!==t){ S.nav.push(S.prevTab); if(S.nav.length>30) S.nav.shift(); }
   if(t!=="journal"&&S.play) playStop();
   S.tab=t; store("kc-tab",t);
   document.querySelectorAll(".tab").forEach(function(b){b.setAttribute("aria-selected",String(b.dataset.tab===t));});
@@ -2560,11 +2568,66 @@ function renderComposer(){
     '<div><label for="j-date">Date</label><input type="date" id="j-date" data-k="date" value="'+esc(d.date)+'"></div>'+
     '<div><label for="j-grammar">Grammar focus</label><input type="text" id="j-grammar" data-k="grammar" lang="ja" value="'+esc(d.grammar)+'" placeholder="〜ていました, と思う"></div>'+
     '<div class="full"><label for="j-title">Entry title</label><input type="text" id="j-title" data-k="title" lang="ja" value="'+esc(d.title)+'" placeholder="週末 (My weekend)"></div></div>'+
-    d.lines.map(lineHtml).join("")+
-    '<div class="row" style="margin-top:14px"><button class="btn" data-act="addline">Add sentence</button></div>'+
+    compModeHtml(d)+
+    (d.mode==="free"?compFreeHtml(d):compAllHtml(d)+d.lines.map(lineHtml).join("")+
+    '<div class="row" style="margin-top:14px"><button class="btn" data-act="addline">Add sentence</button></div>')+
     '<div class="row" style="margin-top:20px;border-top:1px solid var(--line);padding-top:16px"><button class="btn primary" data-act="saveentry">Save entry</button>'+
     (S.confirmDiscard?'<span class="confirm"><span>Delete this draft for good?</span><button class="btn small danger" data-act="discard-yes">Delete</button><button class="btn small" data-act="discard-no">Keep</button></span>':'<button class="linkbtn" data-act="discard">Discard draft</button>')+'</div>'+
     '<div class="msg" id="j-msg"></div></div>';
+}
+/* Oct 2026: two ways to write. One by one (the line editor) or Write freely (one box, split into sentences), plus Check all and furigana for all. */
+function compModeHtml(d){ var m=d.mode==="free"?"free":"lines"; return '<div class="seg comp-mode" role="radiogroup" aria-label="How to write"><button role="radio" data-act="cmode" data-m="lines" aria-checked="'+(m==="lines")+'">One by one</button><button role="radio" data-act="cmode" data-m="free" aria-checked="'+(m==="free")+'">Write freely</button></div>'; }
+function splitSentences(t){
+  var out=[];
+  String(t||"").split(/\n+/).forEach(function(par){
+    if(/\t/.test(par)){ var cols=par.split("\t").map(function(c){return c.trim();}).filter(Boolean); par=cols.find(function(c){return /[\u3040-\u30ff\u3400-\u9fff]/.test(c);})||cols[0]||""; }
+    par=par.replace(/^\s*(\d+[.)、．:]?|[-•*])\s+/,"").trim(); if(!par) return;
+    (par.match(/[^。！？!?]+[。！？!?]+[」』）)]*|[^。！？!?]+$/g)||[par]).forEach(function(s){ s=s.trim(); if(s) out.push(s); });
+  });
+  return out;
+}
+function compFreeHtml(d){
+  var n=splitSentences(d.free).length;
+  return '<div class="comp-free"><label for="j-free">Your entry</label><textarea id="j-free" data-k="free" lang="ja" rows="8" placeholder="Type or paste your whole entry. Each sentence ending in 。！？ or a new line becomes its own sentence.">'+esc(d.free||"")+'</textarea>'+
+    '<div class="row" style="margin-top:8px"><button class="btn primary small" data-act="split"'+(n?'':' disabled')+'>Split into sentences</button><span class="hint" id="j-free-n">'+n+(n===1?' sentence':' sentences')+' found</span></div>'+
+    (d.lines.some(function(l){return l.jp.trim();})?'<p class="hint" style="margin:6px 0 0">New sentences go after the ones you already have.</p>':'')+'</div>';
+}
+function compSplit(){
+  var d=S.draft, ss=splitSentences(d.free); if(!ss.length) return 0;
+  d.lines=d.lines.filter(function(l){return l.jp.trim()||l.en.trim()||l.notes.trim();}).concat(ss.map(function(s){return {jp:s,en:"",notes:"",words:""};}));
+  d.free=""; d.mode="lines"; saveDraft(); return ss.length;
+}
+function compAllHtml(d){
+  var have=d.lines.filter(function(l){return l.jp.trim();}).length; if(have<2) return "";
+  var fixes=d.lines.filter(function(l){return l.check;}).length;
+  return '<div class="row ai-only comp-all"><button class="btn small" data-act="checkall">Check all</button><button class="btn small" data-act="furiall">Add furigana to all</button>'+(fixes?'<button class="btn small primary" data-act="useall">Use all '+fixes+' suggestions</button>':'')+'</div><div class="msg" id="j-allmsg"></div>';
+}
+async function checkAll(btn){
+  var d=S.draft, m=$("#j-allmsg"), idx=[]; d.lines.forEach(function(l,i){ if(l.jp.trim()) idx.push(i); });
+  if(!sample){ msg(m,"err",aiOffText()); return; }
+  btn.disabled=true; msg(m,"info","Checking "+idx.length+" sentences…");
+  var list=idx.map(function(i,k){ var l=d.lines[i]; return (k+1)+". "+stripFuri(l.jp).trim()+(l.en.trim()?"  (meant: "+l.en.trim()+")":""); }).join("\n");
+  var prompt="You are a kind, direct Japanese tutor. The learner finished Genki 1 and is starting Genki 2. Check each sentence of their journal entry. Read them together, since they form one entry.\n"+
+    "Entry title: "+(d.title||"")+"\nGrammar focus (may be empty): "+(d.grammar||"")+"\nSentences:\n"+list+"\n"+
+    "Keep their wording when it is already correct and natural. Return only JSON: {\"items\":[{\"ok\": true or false, \"corrected\": the corrected sentence (or the original if ok) with the hiragana reading in half-width parentheses right after every kanji part, like 毎日(まいにち), \"english\": a natural English translation, \"note\": one or two short plain-English sentences naming the grammar point behind the fix, or what they did well if ok}]} with one item per sentence, in the same order. No em dashes.";
+  try{
+    var r=await sample.json(prompt,{modelTier:"default"}); var it=r&&Array.isArray(r.items)?r.items:null; if(!it) throw {code:"bad"};
+    var n=0; idx.forEach(function(i,k){ var x=it[k]; if(!x||!x.corrected) return; var l=d.lines[i]; l.check={ok:!!x.ok,corrected:String(x.corrected),english:String(x.english||""),note:String(x.note||""),draft:stripFuri(l.jp).trim()}; n++; });
+    saveDraft(); renderComposer(); var bad=d.lines.filter(function(l){return l.check&&!l.check.ok;}).length;
+    msg($("#j-allmsg"),"ok","Checked "+n+" sentences. "+(bad?bad+(bad===1?" has a suggested fix.":" have a suggested fix."):"All look correct."));
+  }catch(e){ msg(m,"err",aiErr(e)); btn.disabled=false; }
+}
+async function furiAll(btn){
+  var d=S.draft, m=$("#j-allmsg"), idx=[]; d.lines.forEach(function(l,i){ if(l.jp.trim()) idx.push(i); });
+  if(!sample){ msg(m,"err",aiOffText()); return; }
+  btn.disabled=true; msg(m,"info","Adding furigana…");
+  var prompt="Add furigana to each Japanese sentence below. Right after every word written with kanji, put its hiragana reading in half-width parentheses, for example: 私(わたし)の高校(こうこう)は神学校(しんがっこう)でした。 Put the reading only after the kanji part of a word, so 食べました becomes 食(た)べました. Keep readings that are already there. Do not change, fix or translate anything else.\n"+
+    idx.map(function(i,k){ return (k+1)+". "+d.lines[i].jp.trim(); }).join("\n")+"\nReturn only JSON: {\"items\":[\"sentence 1 with furigana\", ...]} in the same order.";
+  try{
+    var r=await sample.json(prompt,{modelTier:"default"}); var it=r&&Array.isArray(r.items)?r.items:null; if(!it) throw {code:"bad"};
+    var ok=0, skip=0; idx.forEach(function(i,k){ var out=String(it[k]||"").trim(), l=d.lines[i]; if(out&&stripFuri(out).replace(/\s/g,"")===stripFuri(l.jp).replace(/\s/g,"")){ l.jp=out; ok++; } else skip++; });
+    saveDraft(); renderComposer(); msg($("#j-allmsg"),skip?"info":"ok","Added furigana to "+ok+" sentence"+(ok===1?"":"s")+"."+(skip?" "+skip+" came back changed, so I left "+(skip===1?"it":"them")+" as is.":""));
+  }catch(e){ msg(m,"err",aiErr(e)); btn.disabled=false; }
 }
 function lineHtml(l,i){
   var words=String(l.words||"").split(/[,、，]/).map(function(s){return s.trim();}).filter(Boolean).slice(0,3);
@@ -2586,7 +2649,7 @@ function lineHtml(l,i){
 }
 $("#composer").addEventListener("input",function(e){
   var t=e.target, d=S.draft; if(!d) return;
-  if(t.dataset.k){d[t.dataset.k]=t.value;}
+  if(t.dataset.k){d[t.dataset.k]=t.value; if(t.id==="j-free"){ var n=splitSentences(t.value).length, c=$("#j-free-n"), sb=document.querySelector('[data-act="split"]'); if(c) c.textContent=n+(n===1?" sentence":" sentences")+" found"; if(sb) sb.disabled=!n; }}
   else if(t.dataset.l){var i=+t.dataset.i; d.lines[i][t.dataset.l]=t.value; if(t.dataset.l==="jp") $("#pv-"+i).innerHTML=rubyText(t.value);}
   saveDraft();
 });
@@ -2607,7 +2670,12 @@ $("#composer").addEventListener("click",function(e){
   else if(act==="usefix") useFix(i);
   else if(act==="dismiss"){d.lines[i].check=null;saveDraft();renderComposer();}
   else if(act==="toadd") toAdd(i,a.dataset.w);
-  else if(act==="saveentry") saveEntry();
+  else if(act==="cmode"){ d.mode=a.dataset.m; saveDraft(); renderComposer(); var f=$(d.mode==="free"?"#j-free":"#l-jp-0"); if(f) f.focus(); }
+  else if(act==="split"){ var n=compSplit(); renderComposer(); toast("Split into "+n+(n===1?" sentence.":" sentences.")); }
+  else if(act==="checkall") checkAll(a);
+  else if(act==="furiall") furiAll(a);
+  else if(act==="useall"){ d.lines.forEach(function(l,k){ if(l.check) useFix(k); }); }
+  else if(act==="saveentry"){ if(d.mode==="free"&&String(d.free||"").trim()){ compSplit(); renderComposer(); } saveEntry(); }
 });
 async function furigana(i,btn){
   var l=S.draft.lines[i], m=$("#lm-"+i);
@@ -3446,10 +3514,27 @@ function gCard(pt){
         (pt.custom?'<button class="linkbtn" data-act="g-del" data-id="'+pt.id+'">Delete point</button>':'')+
       '</div></div></details>';
 }
+/* Auto-fill for Add a grammar point (Oct 2026): type a pattern, romaji or an English description; AI fills the rest. */
+async function gAutoFill(btn){
+  var q=$("#ga-p").value.trim(), m=$("#ga-fmsg");
+  if(!q){ msg(m,"err","Type a pattern first."); $("#ga-p").focus(); return; }
+  if(!sample){ msg(m,"err",aiOffText()); return; }
+  btn.disabled=true; msg(m,"info","Thinking…");
+  try{
+    var d=await sample.json('You fill in a grammar card for a beginner Japanese learner (finished Genki 1, starting Genki 2). The learner typed: "'+q.replace(/"/g,"'")+'". It may be a Japanese pattern, romaji, or an English description. Pick the most common beginner-relevant pattern.\n'+
+      'Return only JSON with keys: p (the pattern, like 〜ながら; put the hiragana reading in half-width parentheses after any kanji, like 〜と思(おも)う), m (short English meaning), f (how to form it, like "Verb stem + ながら"), n (one or two short plain-English sentences: the key rule or a common mistake), ex (one short natural example sentence in polite form, Genki level, with the hiragana reading in half-width parentheses after every kanji, like 毎日(まいにち)), en (its English translation), lesson (the Genki lesson number if it is taught in Genki I or II, else empty). No em dashes.',{modelTier:"default"});
+    if(!d||!d.p) throw {code:"bad"};
+    $("#ga-p").value=d.p||q; $("#ga-m").value=d.m||""; $("#ga-f").value=d.f||""; $("#ga-n").value=d.n||""; $("#ga-ex").value=d.ex||""; $("#ga-en").value=d.en||"";
+    var key=stripFuri(d.p).replace(/[〜~\s]/g,""), dup=allPoints().find(function(p){ return stripFuri(p.p).replace(/[〜~\s]/g,"")===key; });
+    msg(m,dup?"info":"ok",dup?'You already have this point'+(/^\d+$/.test(String(dup.l))?' in Lesson '+dup.l:'')+'. You can still add your own copy.':'Filled in'+(d.lesson?' (Genki lesson '+esc(String(d.lesson))+')':'')+'. Check it, then press Add point.');
+  }catch(err){ msg(m,"err",aiErr(err)); }
+  btn.disabled=false;
+}
 function GADD_HTML(){ return '<details class="panel gadd"'+(S.gaddOpen?' open':'')+'><summary><span>+ Add a grammar point</span><span class="hint">From a lesson, Preply, or anywhere</span></summary><div class="grid" style="margin-top:12px">'+
-    '<div class="full"><label for="ga-p">Pattern</label><input type="text" id="ga-p" lang="ja" placeholder="〜ながら"></div>'+
+    '<div class="full"><label for="ga-p">Pattern</label><div class="ga-fillrow"><input type="text" id="ga-p" lang="ja" placeholder="〜ながら, nagara, or &quot;while doing&quot;"><button type="button" class="btn small ai-only" data-act="g-afill" id="ga-fill">Auto-fill</button></div><div class="msg" id="ga-fmsg"></div></div>'+
     '<div class="full"><label for="ga-m">Meaning</label><input type="text" id="ga-m" placeholder="while doing …"></div>'+
     '<div class="full"><label for="ga-f">How to form <span class="hint">optional</span></label><input type="text" id="ga-f" lang="ja" placeholder="Verb stem + ながら"></div>'+
+    '<div class="full"><label for="ga-n">Notes <span class="hint">optional</span></label><input type="text" id="ga-n"></div>'+
     '<div class="full"><label for="ga-ex">Example <span class="hint">optional</span></label><input type="text" id="ga-ex" lang="ja"></div>'+
     '<div class="full"><label for="ga-en">Example in English <span class="hint">optional</span></label><input type="text" id="ga-en"></div>'+
     '</div><div class="row" style="margin-top:12px"><button class="btn small primary" data-act="g-add">Add point</button></div><div class="msg" id="ga-msg"></div></details>';}
@@ -4037,6 +4122,34 @@ function qSave(){ store("kc-qset",S.qs); }
   },{passive:true});
   el.addEventListener("scroll",function(e){ if(e.target.id!=="gq-track") return; clearTimeout(t); t=setTimeout(function(){ gqSync(false); },90); },true);
 })();
+/* ---------- back button (Oct 2026): back closes what's open, steps back through the tabs you visited, and asks before leaving a quiz.
+   One "guard" history entry sits on top; each back press pops it, the app handles it, then puts the guard back. ---------- */
+S.nav=S.nav||[];
+function navGuard(){ try{ history.pushState({kc:"guard"},""); }catch(e){} }
+function leaveAsk(what,leave){
+  if(document.querySelector(".kc-leave")) return;
+  var d=document.createElement("div"); d.className="sage-cel kc-leave"; d.setAttribute("role","dialog"); d.setAttribute("aria-modal","true"); d.setAttribute("aria-label","Leave the "+what+"?");
+  d.innerHTML='<div class="sage-card"><b>Leave the '+what+'?</b><span>Your answers so far are saved.</span><div class="row" style="justify-content:center;margin-top:6px"><button class="btn primary small" data-k="stay">Keep going</button><button class="btn small" data-k="leave">Leave</button></div></div>';
+  document.body.appendChild(d); requestAnimationFrame(function(){ d.classList.add("in"); });
+  var s=d.querySelector('[data-k="stay"]'); setTimeout(function(){ try{ s.focus({preventScroll:true}); }catch(e){} },50);
+  d.addEventListener("click",function(e){ var b=e.target.closest("[data-k]"); if(!b&&e.target!==d) return; d.remove(); if(b&&b.dataset.k==="leave") leave(); });
+}
+function quitQuiz(){ S.quiz=null; renderGrammar(); renderHome(); }
+function quitDrill(){ S.drill=null; checkRankUp(); renderGrammar(); renderHome(); }
+function quitDeck(){ S.deck=null; renderReview(); renderHome(); }
+window.addEventListener("popstate",function(){
+  var lv=document.querySelector(".kc-leave"); if(lv){ lv.remove(); navGuard(); return; }
+  var pop=document.querySelector(".tea-pop,.sage-cel"); if(pop){ pop.click(); navGuard(); return; }
+  if(SND.el){ sndClose(); navGuard(); return; }
+  if(S.quiz){ if(S.quiz.done) quitQuiz(); else leaveAsk("quiz",quitQuiz); navGuard(); return; }
+  if(S.drill){ if(S.drill.i>=S.drill.items.length) quitDrill(); else leaveAsk("drill",quitDrill); navGuard(); return; }
+  if(S.deck){ if(S.deck.i>=S.deck.cards.length) quitDeck(); else leaveAsk("review",quitDeck); navGuard(); return; }
+  if(S.tab==="journal"&&anyOpen()){ if(S.play) playStop(); S.openEntry={}; renderEntries(); navGuard(); return; }
+  if(S.tab==="journal"&&S.composerOpen){ S.composerOpen=false; S.confirmDiscard=false; renderComposer(); navGuard(); return; }
+  if(S.nav.length){ setTab(S.nav.pop(),{fromBack:true}); window.scrollTo(0,0); navGuard(); return; }
+  history.back();
+});
+try{ history.replaceState({kc:"base"},""); }catch(e){} navGuard();
 /* ---------- home: daily chat with ハル ---------- */
 var HAV='<svg viewBox="0 0 40 40" class="hav"><defs><clipPath id="havc"><circle cx="20" cy="20" r="20"/></clipPath></defs><g clip-path="url(#havc)"><rect width="40" height="40" fill="#D8EADF"/><path d="M8.6 21.5c0-7.8 5.1-12.6 11.4-12.6s11.4 4.8 11.4 12.6v7.6c0 1.1-.9 1.9-1.9 1.9H10.5c-1 0-1.9-.8-1.9-1.9z" fill="#3A2A22"/><path d="M7 41c1-6 6-8.6 13-8.6S32 35 33 41z" fill="#B8613E"/><path d="M17 29.5h6v4.2c-1 1.4-5 1.4-6 0z" fill="#CF9A70"/><circle cx="20" cy="22" r="9.6" fill="#E2AC82"/><path d="M10.2 21c.3-6.6 4.4-10.4 9.8-10.4 5.9 0 9.8 3.9 10 10.4-1.6-2.8-4.3-4.8-7.8-5.4-1 2-3.8 3.4-7.3 3.7-1.9.2-3.4.7-4.7 1.7z" fill="#3A2A22"/><circle class="eye" cx="16.2" cy="23.1" r="1" fill="#2A1E18"/><circle class="eye" cx="23.8" cy="23.1" r="1" fill="#2A1E18"/><circle cx="16.2" cy="23" r="3.2" fill="rgba(255,255,255,.22)" stroke="#2A1E18" stroke-width="1.05"/><circle cx="23.8" cy="23" r="3.2" fill="rgba(255,255,255,.22)" stroke="#2A1E18" stroke-width="1.05"/><path d="M19.4 22.7q.6-.7 1.2 0M13 22.4l-2.4-.8M27 22.4l2.4-.8" stroke="#2A1E18" stroke-width="1" fill="none" stroke-linecap="round"/><circle cx="13.8" cy="26.6" r="1.7" fill="#E98C7E" opacity=".5"/><circle cx="26.2" cy="26.6" r="1.7" fill="#E98C7E" opacity=".5"/><path d="M18.1 27.3q1.9 1.8 3.8 0" stroke="#7A3F2E" stroke-width="1.1" fill="none" stroke-linecap="round"/></g></svg>';
 var EXPRS=[["まじで？","for real?"],["なるほど","I see, makes sense"],["いいね！","nice!"],["やばい！","whoa! (good or bad)"],["よかった！","that's great, phew"],["おつかれ！","good work, you must be tired"],["ほんと？","really?"],["そうなんだ","oh, I see"],["がんばって！","good luck, hang in there"],["だいじょうぶ？","are you okay?"],["うそ！","no way!"],["すごい！","amazing!"],["ちょっと待って","wait a sec"],["またね！","see ya!"],["なんで？","why?"],["たしかに","true, good point"],["いいなあ","I'm jealous, lucky you"],["おめでとう！","congrats!"]];
@@ -4086,7 +4199,9 @@ function chatWords(){
   return ws.map(function(w){return w.jp+" ("+w.en+")";}).join(", ");
 }
 function chatTranscript(c){ return c.msgs.map(function(m){return (m.me?"Pete: ":CHAT_NAME+": ")+stripFuri(m.me?m.text:m.jp);}).join("\n"); }
-var CHAT_SYS="You are アン, a cheerful Japanese university student (her friends call her アンちゃん) texting her friend Pete. Pete is a beginner (finished Genki 1, about N5) practising casual Japanese. Always write casual spoken Japanese: plain form, natural endings like よ, ね, の？, じゃん, sparingly. Keep each message short (one or two sentences, under 20 words) and use mostly Genki 1 vocabulary. Put the hiragana reading in half-width parentheses right after every kanji part, like 今日(きょう). No emoji. No em dashes.";
+/* Oct 2026: the AI once wrote ベート. Belt and braces: the prompt names ピート, and replies are corrected here too. */
+function fixName(t){ return String(t||"").replace(/[ベペ]ート(?!ー)/g,"ピート"); }
+var CHAT_SYS="You are アン, a cheerful Japanese university student (her friends call her アンちゃん) texting her friend Pete. In Japanese, Pete's name is always written ピート (never ベート or ペート). Pete is a beginner (finished Genki 1, about N5) practising casual Japanese. Always write casual spoken Japanese: plain form, natural endings like よ, ね, の？, じゃん, sparingly. Keep each message short (one or two sentences, under 20 words) and use mostly Genki 1 vocabulary. Put the hiragana reading in half-width parentheses right after every kanji part, like 今日(きょう). No emoji. No em dashes.";
 CHAT_SYS+=" Do not start replies with ねえ or ねえねえ. Vary how each message begins.";
 /* Openers are picked here, not by the model, so they rotate. The last 4 used are skipped. "" = straight to the question. */
 var CHAT_OPENERS=["ねえねえ、","ちょっと聞いて！","ね、ピート！","あ、ピート！","やっほー！","おつかれ！","ねえ、ピート、","そういえば、","ピート、聞いてもいい？","今日(きょう)さ、","",""];
@@ -4104,7 +4219,7 @@ async function chatOpen(){
   try{
     var d=await sample.json(CHAT_SYS+"\nStart a new chat like a friend texting: "+(op?"start with exactly \""+op+"\" and then":"skip any attention-getter (no ねえ or ねえねえ) and")+" ask Pete about "+topic+". Make the question easy to answer in one short casual sentence.\nWords he is learning, use one if it fits naturally: "+chatWords()+"\nReturn only JSON: {\"jp\": your message, \"en\": natural English translation}",{modelTier:"default"});
     if(!d||!d.jp) throw {code:"bad"};
-    c.msgs.push({me:false,jp:d.jp,en:d.en||""}); chatSave();
+    c.msgs.push({me:false,jp:fixName(d.jp),en:d.en||""}); chatSave();
   }catch(err){ c.err=aiErr(err); }
   S.chatBusy=false; renderChat();
 }
@@ -4126,7 +4241,7 @@ async function chatSend(){
       if(p&&!(c.credit||[]).includes(p.id)){ c.credit=(c.credit||[]).concat(p.id); gPractised(p.id,true); credited.push(stripFuri(p.p)); }
     });
     if(credited.length) mine.credit=credited;
-    c.msgs.push({me:false,jp:d.reply,en:d.reply_en||""});
+    c.msgs.push({me:false,jp:fixName(d.reply),en:d.reply_en||""});
     if(last) c.done=true;
     chatSave(); if(credited.length) checkRankUp();
   }catch(err){ c.msgs.pop(); c.turn--; S.chatDraft=text; c.err=aiErr(err); }
@@ -4204,6 +4319,7 @@ function chatHtml(){
 }
 function renderChat(){
   var old=$("#hchat-slot"); if(!old||window.KC_LEARNER) return;
+  if(S.chat&&S.chat.msgs) S.chat.msgs.forEach(function(m){ if(!m.me&&m.jp) m.jp=fixName(m.jp); });
   var focused=document.activeElement&&document.activeElement.id==="hc-in";
   old.innerHTML=chatHtml();
   var nb=old.querySelector(".hc-badge"); if(nb&&S.lastBadge!==nb.textContent){ S.lastBadge=nb.textContent; nb.animate([{transform:"scale(0)"},{transform:"scale(1.3)",offset:.6},{transform:"scale(1)"}],{duration:450,easing:"ease-out"}); }
@@ -4267,10 +4383,11 @@ gEl.addEventListener("click",async function(e){
     var gf=(S.draft.grammar||"").trim(); if(gf.indexOf(pat)<0) S.draft.grammar=gf?gf+", "+pat:pat;
     saveDraft(); S.composerOpen=true; setTab("journal"); toast("Added "+pat+" to your draft’s grammar focus.");
   }
+  else if(act==="g-afill"){ gAutoFill(a); }
   else if(act==="g-add"){
     var P=$("#ga-p").value.trim(), M=$("#ga-m").value.trim();
     if(!P||!M){msg($("#ga-msg"),"err","Pattern and meaning are required.");return;}
-    S.gram.custom.push({id:"c"+Date.now().toString(36),l:"Mine",custom:true,p:P,m:M,f:$("#ga-f").value.trim(),ex:$("#ga-ex").value.trim(),en:$("#ga-en").value.trim(),k:stripFuri(P).replace(/^〜/,"")});
+    S.gram.custom.push({id:"c"+Date.now().toString(36),l:"Mine",custom:true,p:P,m:M,f:$("#ga-f").value.trim(),n:$("#ga-n").value.trim(),ex:$("#ga-ex").value.trim(),en:$("#ga-en").value.trim(),k:stripFuri(P).replace(/^〜/,"")});
     S.gaddOpen=false; S.glopen.mine=true; store("kc-glopen",S.glopen); saveGrammar(); renderGrammar(); renderHome(); toast("Grammar point added.");
   }
   else if(act==="g-del"){
