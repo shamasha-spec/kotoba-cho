@@ -3469,6 +3469,8 @@ function animateG(){
   bar.style.transition="width 1.3s cubic-bezier(.22,.9,.24,1) .25s"; bar.style.width=w+"%"; bar.classList.add("shine");
   if(num){ var t0=performance.now()+250; (function tick(now){ var p=Math.max(0,Math.min(1,(now-t0)/1300)); p=1-Math.pow(1-p,3); num.textContent=Math.round(w*p)+"%"; if(p<1) requestAnimationFrame(tick); })(t0); }
 }
+/* Genki 1 lesson themes, shown next to each lesson number (Oct 2026: moved out of renderGrammar so the Transmute lesson picker can use it) */
+var GTOPIC={1:"New Friends",2:"Shopping",3:"Making a Date",4:"The First Date",5:"A Trip to Okinawa",6:"A Day in Robert's Life",7:"Family Picture",8:"Barbecue",9:"Kabuki",10:"Winter Vacation Plans",11:"After the Vacation",12:"Feeling Ill"};
 function renderGrammar(){
   var el=$("#grammar"); if(!el) return;
   if(S.drill){ el.innerHTML=drillHtml(); var gi=$("#gd-ans"); if(gi&&!gi.disabled) gi.focus({preventScroll:true}); return; }
@@ -3483,8 +3485,6 @@ function renderGrammar(){
   order.sort(function(a,b){ return GRANK(a)-GRANK(b); });
   var GSEC=function(k){return (k==="mine"||k==="my")?"mine":k==="pp"?"preply":"genki";};
   var GNAME=function(k){return k==="mine"?'Added in the app <span lang="ja">自分の</span>':k==="my"?'From your sheet <span lang="ja">シート</span>':k==="gx"?'More Genki points <span lang="ja">その他</span>':k==="pp"?'Preply lessons <span lang="ja">レッスン</span>':'Lesson '+k+(GTOPIC[k]?' <span class="gl-topic">'+GTOPIC[k]+'</span>':'')+' <span lang="ja">第'+k+'課</span>';};
-/* Genki 1 lesson themes, shown next to each lesson number */
-var GTOPIC={1:"New Friends",2:"Shopping",3:"Making a Date",4:"The First Date",5:"A Trip to Okinawa",6:"A Day in Robert's Life",7:"Family Picture",8:"Barbecue",9:"Kabuki",10:"Winter Vacation Plans",11:"After the Vacation",12:"Feeling Ill"};
   var GALL=function(k){return k==="mine"?(S.gram.custom||[]):(k==="gx"||k==="pp"||k==="my")?(S.sheetG||[]).filter(function(p){return p.l===k;}):GENKI.filter(function(p){return String(p.l)===k;});};
   var autoOpen=f!=="all";
   var html='<div class="chips">'+[["all","All"],["rf","Reinforce"],["got","Got it"],["mine","Mine"]].map(function(c){return '<button class="chip" data-act="g-filter" data-f="'+c[0]+'" aria-pressed="'+(f===c[0])+'">'+c[1]+' <span class="chip-n">'+cnt[c[0]]+'</span></button>';}).join("")+'</div>';
