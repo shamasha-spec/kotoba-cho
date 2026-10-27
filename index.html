@@ -662,6 +662,37 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .gq-dots button{width:8px;height:8px;padding:0;border:0;border-radius:4px;background:var(--line);cursor:pointer;transition:width .25s,background .25s}
 .gq-dots button.on{width:22px;background:var(--t-grammar)}
 .gq-count{margin-left:8px;font-size:.75rem;color:var(--muted)}
+/* Practice card + wide Grammar layout (Oct 2026) */
+.prac{display:grid;gap:14px;margin-bottom:12px}
+.prac-h b{font-size:1.05rem}
+.prac-seg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:4px;border-radius:14px;background:var(--paper);border:1px solid var(--line)}
+.prac-seg button{display:grid;justify-items:center;gap:1px;padding:7px 4px;border:0;border-radius:10px;background:none;color:var(--muted);cursor:pointer;font:inherit;transition:background .2s,color .2s}
+.prac-seg button b{font-family:var(--serif);font-size:1rem;color:var(--ink,inherit)}
+.prac-seg button small{font-size:.7rem}
+.prac-seg button[aria-selected="true"]{background:var(--ai);color:rgba(255,255,255,.85)}
+.prac-seg button[aria-selected="true"] b{color:#fff}
+.prac-cur{display:flex;gap:14px;align-items:center}
+.prac-seal{flex:none;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;font-family:var(--serif);font-weight:700;font-size:1.15rem;color:var(--mt);border:2px solid var(--mt);background:var(--surface)}
+.prac-t{flex:1;min-width:0;display:grid;gap:4px}
+.prac-lv{font-size:.8rem;color:var(--muted)}
+.prac-d{font-size:.85rem;color:var(--muted)}
+.prac-bar{height:5px;border-radius:3px;background:var(--line);overflow:hidden}.prac-bar i{display:block;height:100%;background:var(--mt);border-radius:3px}
+.prac-go{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.prac-sum{font-size:.82rem;color:var(--muted)}
+.prac .prac-chg{font-size:.82rem;padding:0;min-height:0;border:0;background:none;box-shadow:none;color:var(--ai);text-decoration:underline;text-underline-offset:2px}
+.prac .prac-chg::before,.prac .prac-chg::after{content:none}
+.prac .gq-set{margin:0;padding:14px 0 0;border:0;border-top:1px solid var(--line);border-radius:0;background:none;box-shadow:none}
+.prac-work{margin-bottom:12px;display:grid;gap:8px}
+.prac-chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip-s{font-size:.8rem;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--paper)}
+@media (max-width:420px){.prac-seg button small{font-size:.62rem}}
+@media (min-width:1100px){
+  body[data-tab="grammar"] main.wrap{max-width:1240px}
+  .g-cols{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:24px;align-items:start}
+  .g-left{position:sticky;top:72px}
+  #grammar>.panel.gdrill{max-width:760px;margin-left:auto;margin-right:auto}
+}
+
 .comp-mode{margin:16px 0 4px;width:max-content;max-width:100%}
 .comp-free{margin-top:10px}.comp-free textarea{width:100%;min-height:180px;font-size:1.05rem;line-height:1.8}
 .comp-all{margin:12px 0 0;gap:8px;flex-wrap:wrap}
@@ -1934,7 +1965,7 @@ function setTab(t,opts){
   if(window.KC_LEARNER&&(t==="journal"||t==="grammar")) t="add";
   S.nav=S.nav||[]; if(!opts.fromBack&&S.prevTab&&S.prevTab!==t){ S.nav.push(S.prevTab); if(S.nav.length>30) S.nav.shift(); }
   if(t!=="journal"&&S.play) playStop();
-  S.tab=t; store("kc-tab",t);
+  S.tab=t; store("kc-tab",t); document.body.setAttribute("data-tab",t);
   document.querySelectorAll(".tab").forEach(function(b){b.setAttribute("aria-selected",String(b.dataset.tab===t));});
   var order=["add","words","review","journal","grammar"], from=order.indexOf(S.prevTab), to=order.indexOf(t);
   order.forEach(function(k){$("#v-"+k).hidden=(k!==t);});
@@ -3573,7 +3604,7 @@ function renderGrammar(){
   var GALL=function(k){return k==="mine"?(S.gram.custom||[]):(k==="gx"||k==="pp"||k==="my")?(S.sheetG||[]).filter(function(p){return p.l===k;}):GENKI.filter(function(p){return String(p.l)===k;});};
   var autoOpen=f!=="all";
   var html='<div class="chips">'+[["all","All"],["rf","Reinforce"],["got","Got it"],["mine","Mine"]].map(function(c){return '<button class="chip" data-act="g-filter" data-f="'+c[0]+'" aria-pressed="'+(f===c[0])+'">'+c[1]+' <span class="chip-n">'+cnt[c[0]]+'</span></button>';}).join("")+'</div>';
-  html=quizCarouselHtml()+html;
+  var gLeft=quizCarouselHtml();
   html+=GADD_HTML();
   if(!show.length) html+='<p class="empty">'+(f==="rf"?"Nothing marked to reinforce. Tap Reinforce on any point you want to practise.":f==="got"?"No points marked Got it yet.":f==="mine"?"You haven’t added any points yet. Use Add a grammar point above.":"No grammar points.")+'</p>';
   var SECS=[["genki","Genki","げんき",""],["preply","Preply","プレプリー","From the Preply section of the Grammar tab in your sheet. Add rows there and sync."],["mine","Mine","じぶん","From the My Grammar section of the Grammar tab in your sheet, plus any points you add in the app."]];
@@ -3608,7 +3639,7 @@ function renderGrammar(){
     });
     html+='</div></details>';
   });
-  el.innerHTML=html; gqSync(true);
+  el.innerHTML='<div class="g-cols"><div class="g-left">'+gLeft+'</div><div class="g-right">'+html+'</div></div>';
   if(S.animG){ S.animG=false; requestAnimationFrame(animateG); }
   if(S.gex){var inp=$("#gx-jp"); if(inp) inp.focus();}
 }
@@ -4066,17 +4097,35 @@ function qPanel(t){
     if(t!=="pt") h+=qSeg(t,"words",[["rf","Reinforce"],["new","New words"]],"Words");
     h+=qSeg(t,"size",[["5","5"],["10","10"],["20","20"]],"Questions");
     h+=qSeg(t,"en",[["off","Hide"],["on","Show"]],"English");
-    if(t==="fm") h+=qWeakLine(q.fm); if(t==="pt") h+=qWeakLine(q.pt,true);
   }
   return '<div class="panel gq-set" id="gq-set"><div class="gq-set-h"><b><span lang="ja">'+T[0]+'</span> '+T[1]+' settings</b><button class="linkbtn" data-act="q-change" data-c="'+t+'">Done</button></div>'+h+'</div>';
 }
+/* Grammar left column (Oct 2026): overall rank, one Practice card (switch between the four quizzes, one Start), Working on.
+   Replaced the swipeable quiz cards. On wide screens it sits beside the lesson list. */
+S.qsel=recall("kc-qsel")||"fm";
+var QDESC={tr:"AI writes situations for the points you need most, then checks your sentences.",fm:"Change verbs and adjectives into other forms. Checked instantly, no AI.",pt:"Pick the right particle for each Genki sentence. Checked instantly, no AI.",mx:"Forms and Particles shuffled together. Answers count toward both."};
+function practiceHtml(){
+  var q=qStats(), t=["tr","fm","pt","mx"].indexOf(S.qsel)>-1?S.qsel:"fm", ok=t==="tr"?q.tr.ok:t==="mx"?q.fm.ok+q.pt.ok:q[t].ok;
+  var T=t==="tr"?["錬成","れんせい","Transmute"]:QT_NAME[t], L=qLevel(ok), M=METALS[L.idx], N=METALS[L.idx+1], off=t==="tr"&&!sample, open=S.qopen===t;
+  var seg='<div class="prac-seg" role="tablist" aria-label="Quizzes">'+["tr","fm","pt","mx"].map(function(k){ var X=k==="tr"?["錬成","れんせい","Transmute"]:QT_NAME[k]; return '<button role="tab" data-act="q-sel" data-t="'+k+'" aria-selected="'+(k===t)+'"><b lang="ja">'+X[0]+'</b><small>'+X[2]+'</small></button>'; }).join("")+'</div>';
+  return '<div class="panel prac" style="--mt:'+M.c+'"><div class="prac-h"><b>Practice</b></div>'+seg+
+    '<div class="prac-cur"><div class="prac-seal" lang="ja">'+M.k+'</div><div class="prac-t"><div><b>'+T[2]+'</b> <span class="prac-lv"><span lang="ja">'+M.k+'</span> '+M.en+' · '+ok+' right'+(N?' · '+L.toNext+' more to <span lang="ja">'+N.k+'</span>':' · top rank')+'</span></div>'+
+    '<div class="prac-d">'+QDESC[t]+'</div><div class="prac-bar"><i style="width:'+L.inRank+'%"></i></div></div></div>'+
+    '<div class="prac-go"><button class="btn primary" data-act="'+(t==="tr"?'gd-start':'q-start')+'" data-t="'+t+'"'+(off?' disabled':'')+'>'+(t==="tr"?(S.qs.tr.src==="all"?"Start Transmute":qStartLabel("tr")):"Start "+T[2])+'</button>'+
+    '<span class="prac-sum">'+(off?(window.KC_DEMO?'AI is off in this demo':'Needs your API key'):esc(qSum(t))+' · <button class="linkbtn prac-chg" data-act="q-change" data-c="'+t+'" aria-expanded="'+open+'">'+(open?'Close':'Change')+'</button>')+'</span></div>'+
+    (open&&!off?qPanel(t):'')+'</div>';
+}
+function workingOnHtml(){
+  var q=qStats(), all=[];
+  Object.keys(q.fm.weak).forEach(function(k){ all.push([q.fm.weak[k],qKeyLabel(k)]); });
+  Object.keys(q.pt.weak).forEach(function(k){ all.push([q.pt.weak[k],QPL[k]||k]); });
+  if(!all.length) return "";
+  all.sort(function(a,b){return b[0]-a[0];});
+  return '<div class="panel prac-work"><b>Working on</b><div class="prac-chips">'+all.slice(0,4).map(function(x){return '<span class="chip-s" lang="ja">'+rubyText(x[1])+'</span>';}).join("")+'</div></div>';
+}
 function quizCarouselHtml(){
-  var q=qStats(), rk=rankHtml(), cut=rk.indexOf('<div class="gd-start">'), overall=cut>-1?rk.slice(0,cut):rk;
-  var cards=[qCard("tr",q.tr.ok),qCard("fm",q.fm.ok),qCard("pt",q.pt.ok),qCard("mx",q.fm.ok+q.pt.ok)], pages=Math.ceil(cards.length/2), cur=Math.max(0,Math.min(pages-1,S.gqi||0));
-  var dots=''; for(var i=0;i<pages;i++) dots+='<button data-act="q-go" data-i="'+i+'" class="'+(i===cur?'on':'')+'" aria-label="Page '+(i+1)+'"></button>';
-  return overall+'<div class="gq"><div class="gq-track" id="gq-track" aria-label="Grammar quizzes">'+cards.map(function(c){return '<div class="gq-slide">'+c+'</div>';}).join("")+'</div>'+
-    '<button class="gq-arrow prev" data-act="q-nav" data-d="-1" aria-label="Previous">‹</button><button class="gq-arrow next" data-act="q-nav" data-d="1" aria-label="Next">›</button>'+
-    '<div class="gq-dots">'+dots+'<span class="gq-count">'+(cur+1)+' of '+pages+'</span></div></div>'+qPanel(S.qopen);
+  var rk=rankHtml(), cut=rk.indexOf('<div class="gd-start">');
+  return (cut>-1?rk.slice(0,cut):rk)+practiceHtml()+workingOnHtml();
 }
 function gqPages(tr){ return Math.ceil(tr.children.length/2); }
 function gqSync(jump){
@@ -4099,13 +4148,14 @@ function qSave(){ store("kc-qset",S.qs); }
   var el=$("#grammar"), t=0;
   el.addEventListener("click",function(e){
     var a=e.target.closest("[data-act]"); if(!a) return; var act=a.dataset.act;
-    if(act==="q-nav") gqGo((S.gqi||0)+(+a.dataset.d));
+    if(act==="q-sel"){ S.qsel=a.dataset.t; store("kc-qsel",S.qsel); if(S.qopen&&S.qopen!==S.qsel) S.qopen=null; renderGrammar(); var sb=document.querySelector('[data-act="q-sel"][aria-selected="true"]'); if(sb) sb.focus({preventScroll:true}); }
+    else if(act==="q-nav") gqGo((S.gqi||0)+(+a.dataset.d));
     else if(act==="q-go") gqGo(+a.dataset.i);
     else if(act==="q-change"){ S.qopen=S.qopen===a.dataset.c?null:a.dataset.c; renderGrammar(); var sp=$("#gq-set"); if(sp&&sp.scrollIntoView) sp.scrollIntoView({block:"nearest",behavior:"smooth"}); }
     else if(act==="q-set"){ var c=a.dataset.c; S.qs[c][a.dataset.k]=a.dataset.v; if(c==="tr"&&a.dataset.k==="src") S.qs.tr.les="all"; qSave(); renderGrammar(); }
     else if(act==="q-start"){ S.qopen=null; quizStart(a.dataset.t); }
-    else if(act==="g-lesquiz"){ e.preventDefault(); S.qs.tr.src="genki"; S.qs.tr.les=a.dataset.l; qSave(); drillStart(); }
-    else if(act==="g-secquiz"){ e.preventDefault(); S.qs.tr.src={genki:"genki",preply:"pp",mine:"my"}[a.dataset.s]||"all"; S.qs.tr.les="all"; qSave(); drillStart(); }
+    else if(act==="g-lesquiz"){ e.preventDefault(); S.qsel="tr"; store("kc-qsel","tr"); S.qs.tr.src="genki"; S.qs.tr.les=a.dataset.l; qSave(); drillStart(); }
+    else if(act==="g-secquiz"){ e.preventDefault(); S.qsel="tr"; store("kc-qsel","tr"); S.qs.tr.src={genki:"genki",preply:"pp",mine:"my"}[a.dataset.s]||"all"; S.qs.tr.les="all"; qSave(); drillStart(); }
     else if(act==="q-check"){ var inp=$("#q-ans"); quizAnswer(inp?inp.value:""); }
     else if(act==="q-pick"){ quizAnswer(a.dataset.v); }
     else if(act==="q-next"){ S.quiz.i++; if(S.quiz.i>=S.quiz.items.length) quizFinish(); else renderGrammar(); }
