@@ -530,7 +530,7 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .gex-form{background:var(--paper);border-radius:10px;padding:10px;margin-top:4px}
 .gsecd{border:1px solid var(--line);border-radius:14px;background:var(--surface);margin-top:12px;overflow:hidden}
 .gsecd[open]{border-color:color-mix(in srgb,var(--t-grammar) 35%,var(--line))}
-.gsecd>summary{list-style:none;cursor:pointer;display:grid;gap:8px;padding:14px 16px;position:relative}
+.gsecd>summary{list-style:none;cursor:pointer;display:grid;gap:8px;padding:14px 16px;position:relative;align-content:start;box-sizing:border-box}
 .gsecd>summary::-webkit-details-marker{display:none}
 .gsecd>summary:hover{background:color-mix(in srgb,var(--t-grammar) 6%,transparent)}
 .gs-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-right:22px}
@@ -662,6 +662,31 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .gq-dots button{width:8px;height:8px;padding:0;border:0;border-radius:4px;background:var(--line);cursor:pointer;transition:width .25s,background .25s}
 .gq-dots button.on{width:22px;background:var(--t-grammar)}
 .gq-count{margin-left:8px;font-size:.75rem;color:var(--muted)}
+/* Journal extras + wide layout (Oct 2026) */
+.j-nw{margin-top:14px;display:grid;gap:8px}
+.j-nw-chips{display:flex;flex-wrap:wrap;gap:6px}
+.j-nw-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:inherit;font:inherit;font-size:.9rem;cursor:pointer}
+.j-nw-chip i{font-style:normal;font-size:.8rem;color:var(--ai)}
+.j-nw-chip.has{cursor:default;color:var(--muted)}.j-nw-chip.has i{color:var(--matcha)}
+.j-look{margin-top:16px;padding:0}
+@media (min-width:1100px){.j-right>.j-look{margin-top:0;margin-bottom:24px}}
+.j-look>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:10px;padding:14px 16px;font-weight:600}
+.j-look>summary::-webkit-details-marker{display:none}
+.j-look>summary .hint{font-weight:400}
+.j-look-in{padding:0 16px 14px}
+.j-look-in input{width:100%}
+.j-hit{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid var(--line)}
+.j-hit:last-child{border-bottom:0}
+.j-hit-jp{font-family:var(--serif);font-size:1.15rem;min-width:5.5em}
+.j-hit-en{flex:1;min-width:0;font-size:.88rem;color:var(--muted)}
+.j-hit .stamp{width:22px;height:22px;font-size:.66rem;flex:none}
+.j-past-h{margin-top:32px}
+@media (min-width:1100px){
+  body[data-tab="journal"] main.wrap{max-width:1240px}
+  .j-cols{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:0 24px;align-items:start}
+  .j-past-h{margin-top:0}
+}
+
 /* Words on wide screens (Oct 2026) */
 .w-right{display:none}
 @media (min-width:1100px){
@@ -1809,9 +1834,15 @@ body.kc-locked{overflow:hidden}
     <div class="h2row"><h2>Journal</h2><span id="j-snd"></span></div>
     <p class="lede">Write one sentence at a time, or write freely and split it into sentences. Add furigana and get a check before you save it to your Journal tab.</p>
     <p class="demo-ai"><b>AI</b><span>Add furigana puts hiragana readings after kanji. Check sentence corrects your Japanese and explains the grammar. Chats with アンちゃん can be saved here as entries. All three use AI and are off in this demo.</span></p>
+    <div class="j-cols"><div class="j-left">
     <div id="composer"></div>
-    <h2 style="margin-top:32px">Past entries</h2>
+    <div id="j-newwords"></div>
+    </div><div class="j-right">
+    <details class="panel j-look" id="j-look"><summary><span>Look up a word</span><span class="hint">in your Vocab Bank</span></summary>
+      <div class="j-look-in"><input type="search" id="j-lq" lang="ja" autocomplete="off" placeholder="Kanji, kana, romaji or English" aria-label="Look up a word"><div id="j-lres"></div></div></details>
+    <h2 class="j-past-h">Past entries</h2>
     <div id="entries"></div>
+    </div></div>
   </section>
 </main>
 
@@ -2660,7 +2691,7 @@ function renderComposer(){
       var n=S.draft.lines.filter(function(l){return l.jp.trim();}).length;
       el.innerHTML='<div class="draftbar"><div><b lang="ja">'+(S.draft.title?rubyText(S.draft.title):"Untitled draft")+'</b><div class="hint">Unsaved draft on this device, '+n+(n===1?" sentence":" sentences")+'</div></div><button class="btn primary small" data-act="open">Continue</button></div>';
     } else el.innerHTML='<button class="btn primary" data-act="new">Write a new entry</button>';
-    return;
+    jNewWords(); return;
   }
   var d=S.draft;
   el.innerHTML='<div class="panel"><div class="comp-head"><b>New entry</b><button class="btn small" data-act="hide" aria-label="Close and keep draft">Close</button></div><div class="grid">'+
@@ -2673,8 +2704,28 @@ function renderComposer(){
     '<div class="row" style="margin-top:20px;border-top:1px solid var(--line);padding-top:16px"><button class="btn primary" data-act="saveentry">Save entry</button>'+
     (S.confirmDiscard?'<span class="confirm"><span>Delete this draft for good?</span><button class="btn small danger" data-act="discard-yes">Delete</button><button class="btn small" data-act="discard-no">Keep</button></span>':'<button class="linkbtn" data-act="discard">Discard draft</button>')+'</div>'+
     '<div class="msg" id="j-msg"></div></div>';
+  jNewWords();
 }
 /* Oct 2026: two ways to write. One by one (the line editor) or Write freely (one box, split into sentences), plus Check all and furigana for all. */
+/* Journal extras (Oct 2026): New words in this entry, and a word lookup that searches your own Vocab Bank (no AI). */
+function jNewWords(){
+  var el=$("#j-newwords"); if(!el) return; var d=S.draft;
+  if(!d||!S.composerOpen){ el.innerHTML=""; return; }
+  var seen={}, list=[]; d.lines.forEach(function(l,i){ String(l.words||"").split(/[,、，]/).map(function(s){return s.trim();}).filter(Boolean).forEach(function(w){ if(!seen[w]){ seen[w]=1; list.push([w,i]); } }); });
+  if(!list.length){ el.innerHTML=""; return; }
+  el.innerHTML='<div class="panel j-nw"><b>New words in this entry</b><div class="j-nw-chips">'+list.map(function(x){ var has=inBank(x[0],""); return '<button class="j-nw-chip'+(has?' has':'')+'" lang="ja"'+(has?' disabled title="In your Vocab Bank"':' data-act="nw-add" data-w="'+esc(x[0])+'" data-i="'+x[1]+'" title="Add to Vocab Bank"')+'>'+esc(x[0])+'<i aria-hidden="true">'+(has?'✓':'＋')+'</i></button>'; }).join("")+'</div></div>';
+}
+function jLookup(){
+  var box=$("#j-lres"), q=($("#j-lq")||{}).value; if(!box) return; q=String(q||"").trim().toLowerCase();
+  if(!q){ box.innerHTML=""; return; }
+  var hits=S.words.filter(function(w){ return (w.jp+" "+w.kana+" "+w.romaji+" "+w.en).toLowerCase().indexOf(q)>-1; }).slice(0,6);
+  box.innerHTML=hits.length?hits.map(function(w){ return '<div class="j-hit"><span class="j-hit-jp" lang="ja">'+rubyWord(w.jp,w.kana)+'</span><span class="j-hit-en">'+esc(w.en)+'</span>'+sayBtn(w.kana||w.jp,"Play "+w.jp)+'<span class="stamp st-'+w.mastery+'" lang="ja" title="'+w.mastery+'">'+STAMP[w.mastery]+'</span></div>'; }).join(""):
+    '<p class="hint" style="margin:8px 0 0">Not in your Vocab Bank. <button class="linkbtn" data-act="lq-add">Add it with Auto-fill</button></p>';
+}
+$("#j-lq").addEventListener("input",jLookup);
+$("#j-look").addEventListener("click",function(e){ if(e.target.closest('[data-act="lq-add"]')){ var q=$("#j-lq").value.trim(); clearForm(false); F.lookup.value=q; openAdd(true); openAddBox(true); setTab("words"); window.scrollTo(0,0); } });
+$("#j-newwords").addEventListener("click",function(e){ var b=e.target.closest('[data-act="nw-add"]'); if(b) toAdd(+b.dataset.i,b.dataset.w); });
+if(window.matchMedia&&matchMedia("(min-width:1100px)").matches) $("#j-look").open=true;
 function compModeHtml(d){ var m=d.mode==="free"?"free":"lines"; return '<div class="seg comp-mode" role="radiogroup" aria-label="How to write"><button role="radio" data-act="cmode" data-m="lines" aria-checked="'+(m==="lines")+'">One by one</button><button role="radio" data-act="cmode" data-m="free" aria-checked="'+(m==="free")+'">Write freely</button></div>'; }
 function splitSentences(t){
   var out=[];
@@ -3659,9 +3710,11 @@ var GTOPIC={1:"New Friends",2:"Shopping",3:"Making a Date",4:"The First Date",5:
    When the two columns end within a short distance of each other, the shorter one's last card is stretched so they end together too. */
 function gAlign(){
   var L=document.querySelector("#grammar .g-left"), R=document.querySelector("#grammar .g-right"); if(!L||!R) return;
-  var cards=[L.lastElementChild,R.lastElementChild]; cards.forEach(function(c){ if(c) c.style.minHeight=""; });
+  [L.lastElementChild,R.lastElementChild].forEach(function(c){ if(!c) return; c.style.minHeight=""; var s=c.querySelector(":scope>summary"); if(s) s.style.minHeight=""; });
   if(!(window.matchMedia&&matchMedia("(min-width:1100px)").matches)) return;
   var d=R.offsetHeight-L.offsetHeight, c=d>0?L.lastElementChild:R.lastElementChild;
+  /* a closed section banner grows through its summary, so the hover tint covers the whole card */
+  if(c&&c.matches(".gsecd:not([open])")) c=c.querySelector("summary");
   if(c&&Math.abs(d)>1&&Math.abs(d)<320) c.style.minHeight=(c.offsetHeight+Math.abs(d))+"px";
 }
 window.addEventListener("resize",function(){ if(S.tab==="grammar") gAlign(); });
