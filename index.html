@@ -681,12 +681,26 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .j-hit-en{flex:1;min-width:0;font-size:.88rem;color:var(--muted)}
 .j-hit .stamp{width:22px;height:22px;font-size:.66rem;flex:none}
 .j-past-h{margin-top:32px}
+.j-list{display:none;padding:0;overflow:hidden}
+.jl-h{display:flex;align-items:center;justify-content:space-between;padding:12px 16px}
+.jl-row{display:grid;gap:2px;width:100%;text-align:left;padding:10px 16px;border:0;border-top:1px solid var(--line);background:none;color:inherit;font:inherit;cursor:pointer}
+.jl-row:hover{background:color-mix(in srgb,var(--ai) 5%,transparent)}
+.jl-row.on{background:color-mix(in srgb,var(--ai) 9%,transparent);box-shadow:inset 3px 0 0 var(--ai)}
+.jl-t{font-family:var(--serif);font-size:.95rem}
+.jl-row small{color:var(--muted);font-size:.75rem}
+.comp-acts{display:flex;gap:6px}
+
 @media (min-width:1100px){
   body[data-tab="journal"] main.wrap{max-width:1240px}
-  .j-cols{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);grid-template-areas:"comp look" "comp past";grid-template-rows:auto 1fr;gap:0 24px;align-items:start}
-  .j-comp{grid-area:comp}.j-look{grid-area:look}.j-past{grid-area:past}
-  .j-cols.reading{grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);grid-template-areas:"past look" "past comp"}
-  .j-cols.reading .j-comp{margin-top:0}
+  .j-cols{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);grid-template-areas:"comp look" "comp list";grid-template-rows:auto 1fr;gap:0 24px;align-items:start}
+  .j-comp{grid-area:comp}.j-look{grid-area:look}.j-list{grid-area:list;display:block}
+  .j-past{display:none}
+  .j-cols.reading{grid-template-areas:"past look" "past list"}
+  .j-cols.reading .j-comp{display:none}
+  .j-cols.reading .j-past{display:block;grid-area:past;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px 22px 16px}
+  .j-cols.reading .j-past-h{display:none}
+  .j-cols.reading #entries .entry:not([data-open]){display:none}
+  .j-cols.reading #entries .entry[data-open]{border-bottom:0}
   .j-past-h{margin-top:0}
 }
 
@@ -774,6 +788,28 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .snd-sep{height:1px;background:var(--line);margin:5px 8px}
 .snd-note{font-size:.75rem;color:var(--muted);padding:4px 10px 6px;line-height:1.4}
 .snd-back{color:var(--muted)}
+/* Journal settings (Oct 2026): Focus mode + Hide English */
+.snd-tg{display:flex;align-items:center;gap:12px;width:100%;padding:8px 10px;border:0;border-radius:9px;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer;min-height:44px}
+.snd-tg:hover,.snd-tg:focus-visible{background:color-mix(in srgb,var(--ai) 8%,transparent);outline:none}
+.snd-tg span{flex:1;display:grid;gap:1px}.snd-tg small{font-size:.75rem;color:var(--muted)}
+.snd-tg i{flex:none;position:relative;width:36px;height:20px;border-radius:999px;background:var(--line);transition:background .2s}
+.snd-tg i::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .2s}
+.snd-tg[aria-checked="true"] i{background:var(--ai)}.snd-tg[aria-checked="true"] i::after{transform:translateX(16px)}
+body.j-noen #entries .jline .en,body.j-noen #entries .jline .note{display:none}
+.jf-tabs{display:none}
+@media (min-width:1100px){
+  body.j-focus .j-cols.reading{display:block;max-width:820px;margin:0 auto}
+  body.j-focus .j-cols.reading>.j-look,body.j-focus .j-cols.reading>.j-list{display:block;position:fixed;right:0;top:80px;width:360px;max-height:calc(100vh - 110px);overflow:auto;margin:0;z-index:160;border-radius:14px 0 0 14px;border-right:0;box-shadow:-14px 0 34px -16px rgba(0,0,0,.3);transform:translateX(105%);visibility:hidden;transition:transform .25s ease,visibility 0s .25s}
+  body.j-focus .j-cols.reading.jf-look>.j-look,body.j-focus .j-cols.reading.jf-list>.j-list{transform:none;visibility:visible;transition:transform .25s ease}
+  body.j-focus .j-cols.reading>.j-look>summary{pointer-events:none}
+  body.j-focus .j-cols.reading .jf-tabs{display:flex;flex-direction:column;gap:8px;position:fixed;right:0;top:38vh;z-index:161;transition:right .25s ease}
+  body.j-focus .j-cols.reading.jf-look .jf-tabs,body.j-focus .j-cols.reading.jf-list .jf-tabs{right:360px}
+  .jf-tab span{display:block;line-height:1.25}
+  .jf-tab{box-sizing:border-box;width:42px;display:block;text-align:center;padding:14px 0;border:1px solid var(--line);border-right:0;border-radius:12px 0 0 12px;background:var(--surface);color:var(--ink);font:inherit;font-size:1rem;letter-spacing:.1em;cursor:pointer;box-shadow:-4px 4px 12px -8px rgba(0,0,0,.25)}
+  .jf-tab small{font-size:.68rem;letter-spacing:.04em;color:var(--muted)}
+  .jf-tab:hover,.jf-tab.on{background:var(--ai);color:#fff;border-color:var(--ai)}.jf-tab:hover small,.jf-tab.on small{color:rgba(255,255,255,.8)}
+  body.j-focus .j-cols.reading.jf-look::before,body.j-focus .j-cols.reading.jf-list::before{content:"";position:fixed;inset:0;background:rgba(40,32,20,.08);z-index:150;pointer-events:none}
+}
 .hchat.slim .hc-notif{gap:10px;padding:8px 14px 8px 10px}
 .hchat.slim .hc-av{width:28px;height:28px;flex:none}
 .hchat.slim .hc-notif>b,.hc-slim-x{flex:none;white-space:nowrap}
@@ -1843,9 +1879,10 @@ body.kc-locked{overflow:hidden}
     </div>
     <details class="panel j-look" id="j-look"><summary><span>Look up a word</span><span class="hint">in your Vocab Bank</span></summary>
       <div class="j-look-in"><input type="search" id="j-lq" lang="ja" autocomplete="off" placeholder="Kanji, kana, romaji or English" aria-label="Look up a word"><div id="j-lres"></div></div></details>
+    <div class="panel j-list" id="j-list"></div>
     <div class="j-past"><h2 class="j-past-h">Past entries</h2>
     <div id="entries"></div>
-    </div></div>
+    </div><div class="jf-tabs" id="jf-tabs"><button type="button" class="jf-tab" data-jf="look" aria-label="Look up a word" title="Look up a word"><span lang="ja">辞<br>書</span></button><button type="button" class="jf-tab" data-jf="list" aria-label="Past entries" title="Past entries"><span lang="ja">日<br>記</span></button></div></div>
   </section>
 </main>
 
@@ -2248,12 +2285,20 @@ function sndBtn(){ return TTS?'<button type="button" class="snd-btn" data-snd ar
 function vShort(n){ var s=String(n||"").replace(/^(Microsoft|Google|Apple)\s+/i,"").replace(/\s*[-(].*$/,"").replace(/\s+Online.*$/i,""); return s||n; }
 function sndNarrow(){ return window.innerWidth<640; }
 function sndMain(){
-  if(!voiceJa) return '<div class="snd-cap">Chat voices</div><div class="snd-note">No Japanese voice found on this device. Add one in your device’s speech settings.</div>';
+  var jr=SND.anchor&&SND.anchor.closest&&SND.anchor.closest("#v-journal");
+  if(!jr) return sndVoices();
+  return sndVoices(true).replace(/<div class="snd-sep"><\/div>$/,"")+'<div class="snd-sep"></div><div class="snd-cap">Reading</div>'+
+    (jWide()?jsetRow("focus","Focus mode","Open entries in the centre"):'')+jsetRow("noen","Hide English","Japanese only in entries")+
+    '<div class="snd-sep"></div><div class="snd-note">Saved on this device.</div>';
+}
+function jsetRow(k,t,sub){ return '<button type="button" class="snd-tg" role="menuitemcheckbox" aria-checked="'+!!S.js[k]+'" data-jset="'+k+'"><span>'+t+'<small>'+sub+'</small></span><i aria-hidden="true"></i></button>'; }
+function sndVoices(jr){
+  if(!TTS||!voiceJa) return '<div class="snd-cap">Chat voices</div><div class="snd-note">No Japanese voice found on this device. Add one in your device’s speech settings.</div>';
   var a=chatVoice("an"), m=chatVoice("me");
   function row(who,label){ var cur=S.cv[who]&&S.cv[who]!=="auto"?vShort(S.cv[who]):"Auto"; return '<button type="button" class="snd-mi'+(SND.sub===who?' on':'')+'" data-snd-sub="'+who+'" role="menuitem" aria-haspopup="menu" aria-expanded="'+(SND.sub===who)+'">'+SND_PERSON+'<span lang="ja">'+label+'</span><span class="snd-v">'+esc(cur)+' ›</span></button>'; }
   return '<div class="snd-cap">Chat voices</div>'+row("an","アンちゃん")+row("me","You")+'<div class="snd-sep"></div>'+
     '<button type="button" class="snd-mi" data-snd-both role="menuitem">'+ICO_PLAY+'<span>Hear both voices</span></button><div class="snd-sep"></div>'+
-    '<div class="snd-note">'+(a.v===m.v?(jaVoices.length<2?'One Japanese voice on this device, so ':'Same voice for both, so ')+'アンちゃん speaks higher and you lower. ':'')+'Saved on this device.</div>';
+    (jr&&a.v!==m.v?'':'<div class="snd-note">'+(a.v===m.v?(jaVoices.length<2?'One Japanese voice on this device, so ':'Same voice for both, so ')+'アンちゃん speaks higher and you lower. ':'')+(jr?'':'Saved on this device.')+'</div>');
 }
 function sndSub(who){
   var cur=S.cv[who]||"auto", items=[{v:"auto",n:"Auto"}].concat(jaVoices.map(function(v){return {v:v.name,n:vShort(v.name)};}));
@@ -2293,10 +2338,39 @@ document.addEventListener("click",function(e){
   else if(e.target.closest("[data-snd-back]")){ SND.sub=null; sndRender(); }
   else if((t=e.target.closest("[data-snd-pick]"))){ var who=t.dataset.who; S.cv[who]=t.dataset.sndPick; store("kc-chatvoice",S.cv); if(S.play) playStop(); speak(SND_SAMPLE[who]); sndRender(); }
   else if(e.target.closest("[data-snd-both]")){ sndBoth(); }
+  else if((t=e.target.closest("[data-jset]"))){ var k=t.dataset.jset; S.js[k]=!S.js[k]; store("kc-jset",S.js); jsetApply(); sndRender(); }
 },true);
 document.addEventListener("keydown",function(e){ if(e.key==="Escape"&&SND.el){ var a=SND.anchor; sndClose(); if(a) a.focus(); } });
 window.addEventListener("resize",function(){ if(SND.el) sndClose(); });
-(function(){ var js=document.getElementById("j-snd"); if(js) js.outerHTML=sndBtn(); })();
+(function(){ var js=document.getElementById("j-snd"); if(js) js.outerHTML='<button type="button" class="snd-btn" data-snd aria-haspopup="menu" aria-expanded="false" aria-label="Journal settings" title="Journal settings">'+SND_ICO+'</button>'; })();
+/* Journal settings (Oct 2026): Focus mode centres the open entry on wide screens and turns lookup and the entries list into
+   tabs on the right edge. Hide English removes the English lines and Explanation notes from past entries. Saved on this device. */
+S.js=recall("kc-jset")||{focus:false,noen:false};
+function jsetApply(){ document.body.classList.toggle("j-focus",!!S.js.focus); document.body.classList.toggle("j-noen",!!S.js.noen); jfSet(null); }
+function jfSet(w){
+  var c=$("#j-cols"); if(!c) return; c.classList.toggle("jf-look",w==="look"); c.classList.toggle("jf-list",w==="list"); S.jf=w;
+  document.querySelectorAll(".jf-tab").forEach(function(b){ b.classList.toggle("on",b.dataset.jf===w); b.setAttribute("aria-expanded",String(b.dataset.jf===w)); });
+  if(w==="look"){ $("#j-look").open=true; setTimeout(function(){ try{ $("#j-lq").focus({preventScroll:true}); }catch(e){} },260); }
+}
+function jfOn(){ return !!(S.js.focus&&jWide()&&$("#j-cols")&&$("#j-cols").classList.contains("reading")); }
+var jfTimer=null;
+(function(){
+  var tabs=$("#jf-tabs"), hov=window.matchMedia&&matchMedia("(hover:hover)").matches;
+  tabs.addEventListener("click",function(e){ var b=e.target.closest("[data-jf]"); if(!b) return; jfSet(S.jf===b.dataset.jf&&!hov?null:b.dataset.jf); });
+  if(hov){
+    tabs.addEventListener("mouseover",function(e){ var b=e.target.closest("[data-jf]"); if(!b||!jfOn()) return; clearTimeout(jfTimer); jfTimer=null; if(S.jf!==b.dataset.jf) jfSet(b.dataset.jf); });
+    // close when the pointer moves well away from the open panel and the tabs (the tabs slide with the panel, so leaving a tab alone doesn't close it)
+    document.addEventListener("mousemove",function(e){
+      if(!S.jf||!jfOn()) return; var pn=$(S.jf==="look"?"#j-look":"#j-list").getBoundingClientRect(), tb=$("#jf-tabs").getBoundingClientRect();
+      var near=(e.clientX>=tb.left-24&&e.clientY>=Math.min(pn.top,tb.top)-24&&e.clientY<=Math.max(pn.bottom,tb.bottom)+24);
+      if(near){ clearTimeout(jfTimer); jfTimer=null; return; }
+      if(!jfTimer) jfTimer=setTimeout(function(){ jfTimer=null; if(document.activeElement&&document.activeElement.id==="j-lq"&&$("#j-lq").value) return; jfSet(null); },350);
+    });
+  }
+  document.addEventListener("click",function(e){ if(S.jf&&!e.target.closest("#j-look,#j-list,#jf-tabs")) jfSet(null); });
+  document.addEventListener("keydown",function(e){ if(e.key==="Escape"&&S.jf) jfSet(null); });
+})();
+jsetApply();
 var speakTimer=null;
 function speak(text,who){
   if(!TTS||!text) return;
@@ -2697,7 +2771,8 @@ function renderComposer(){
     jNewWords(); return;
   }
   var d=S.draft;
-  el.innerHTML='<div class="panel"><div class="comp-head"><b>New entry</b><button class="btn small" data-act="hide" aria-label="Close and keep draft">Close</button></div><div class="grid">'+
+  el.innerHTML='<div class="panel"><div class="comp-head"><b>'+(d.title.trim()||d.lines.some(function(l){return l.jp.trim();})?'Your draft':'New entry')+'</b><span class="comp-acts"><button class="btn small" data-act="newentry">New entry</button><button class="btn small" data-act="hide" aria-label="Close and keep draft">Close</button></span></div>'+
+    (S.confirmNew?'<div class="confirm" style="margin:10px 0 0"><span>Clear this draft and start a new entry?</span><button class="btn small danger" data-act="newentry">Clear and start</button><button class="btn small" data-act="newentry-no">Keep</button></div>':'')+'<div class="grid">'+
     '<div><label for="j-date">Date</label><input type="date" id="j-date" data-k="date" value="'+esc(d.date)+'"></div>'+
     '<div><label for="j-grammar">Grammar focus</label><input type="text" id="j-grammar" data-k="grammar" lang="ja" value="'+esc(d.grammar)+'" placeholder="〜ていました, と思う"></div>'+
     '<div class="full"><label for="j-title">Entry title</label><input type="text" id="j-title" data-k="title" lang="ja" value="'+esc(d.title)+'" placeholder="週末 (My weekend)"></div></div>'+
@@ -2713,7 +2788,19 @@ function renderComposer(){
 /* Journal extras (Oct 2026): New words in this entry, and a word lookup that searches your own Vocab Bank (no AI). */
 /* Wide Journal reading mode (Oct 2026): while an entry is open (and the composer is closed), past entries move to the
    wide left column so you read from the left; lookup and the draft sit on the right. */
-function jMode(){ var c=$("#j-cols"); if(c) c.classList.toggle("reading",anyOpen()&&!S.composerOpen); }
+/* Wide Journal (Oct 2026, option 2): a list of titles on the right, one "page" on the left. The page shows the entry you pick,
+   or the composer when no entry is open (the default). Below 1,100px the Journal works as before. */
+function jWide(){ return !!(window.matchMedia&&matchMedia("(min-width:1100px)").matches); }
+function jMode(){
+  var c=$("#j-cols"); if(!c) return; var reading=anyOpen(); c.classList.toggle("reading",reading);
+  if(jWide()&&!reading&&!S.composerOpen&&!S.jClosed&&S.tab==="journal"){ if(!S.draft) S.draft=newDraft(); S.composerOpen=true; renderComposer(); }
+  jList();
+}
+function jList(){
+  var el=$("#j-list"); if(!el) return;
+  el.innerHTML='<div class="jl-h"><b>Past entries</b><button class="btn small primary" data-act="jl-write">✎ Write</button></div>'+
+    (S.entries.length?S.entries.map(function(en){ var k=entryKey(en); return '<button class="jl-row'+(S.openEntry[k]?' on':'')+'" data-k="'+k+'"><span class="jl-t" lang="ja">'+rubyText(en.title||"Untitled")+'</span><small>'+esc(en.date)+' · '+en.lines.length+'</small></button>'; }).join(""):'<p class="hint" style="margin:8px 16px 14px">No entries yet.</p>');
+}
 function jNewWords(){
   var el=$("#j-newwords"); if(!el) return; var d=S.draft;
   jMode(); if(!d||!S.composerOpen){ el.innerHTML=""; return; }
@@ -2730,6 +2817,12 @@ function jLookup(){
 }
 $("#j-lq").addEventListener("input",jLookup);
 $("#j-look").addEventListener("click",function(e){ if(e.target.closest('[data-act="lq-add"]')){ var q=$("#j-lq").value.trim(); clearForm(false); F.lookup.value=q; openAdd(true); openAddBox(true); setTab("words"); window.scrollTo(0,0); } });
+$("#j-list").addEventListener("click",function(e){
+  if(e.target.closest('[data-act="jl-write"]')){ if(S.play) playStop(); S.openEntry={}; S.jClosed=false; if(!S.draft) S.draft=newDraft(); S.composerOpen=true; renderEntries(); renderComposer(); $("#j-cols").scrollIntoView({block:"start",behavior:"smooth"}); return; }
+  var r=e.target.closest(".jl-row"); if(!r) return; var k=r.dataset.k; if(S.play) playStop();
+  var was=!!S.openEntry[k]; S.openEntry={}; if(!was) S.openEntry[k]=true; if(S.jf) jfSet(null); renderEntries(); $("#j-cols").scrollIntoView({block:"start",behavior:"smooth"});
+});
+window.addEventListener("resize",function(){ if(S.tab==="journal") jMode(); });
 $("#j-newwords").addEventListener("click",function(e){ var b=e.target.closest('[data-act="nw-add"]'); if(b) toAdd(+b.dataset.i,b.dataset.w); });
 if(window.matchMedia&&matchMedia("(min-width:1100px)").matches) $("#j-look").open=true;
 function compModeHtml(d){ var m=d.mode==="free"?"free":"lines"; return '<div class="seg comp-mode" role="radiogroup" aria-label="How to write"><button role="radio" data-act="cmode" data-m="lines" aria-checked="'+(m==="lines")+'">One by one</button><button role="radio" data-act="cmode" data-m="free" aria-checked="'+(m==="free")+'">Write freely</button></div>'; }
@@ -2813,9 +2906,11 @@ $("#composer").addEventListener("change",function(e){ if(e.target.dataset.l==="w
 $("#composer").addEventListener("click",function(e){
   var a=e.target.closest("[data-act]"); if(!a) return;
   var act=a.dataset.act, i=+a.dataset.i, d=S.draft;
-  if(act==="new"){S.draft=newDraft();S.composerOpen=true;saveDraft();renderComposer();$("#j-title").focus();}
-  else if(act==="open"){S.composerOpen=true;renderComposer();}
-  else if(act==="hide"){S.composerOpen=false;S.confirmDiscard=false;renderComposer();}
+  if(act==="new"){S.jClosed=false;S.draft=newDraft();S.composerOpen=true;saveDraft();renderComposer();$("#j-title").focus();}
+  else if(act==="open"){S.jClosed=false;S.composerOpen=true;renderComposer();}
+  else if(act==="newentry"){ var has=d.title.trim()||d.lines.some(function(l){return l.jp.trim()||l.en.trim();})||String(d.free||"").trim(); if(has&&!S.confirmNew){ S.confirmNew=true; renderComposer(); return; } S.confirmNew=false; S.draft=newDraft(); saveDraft(); renderComposer(); var t=$("#j-title"); if(t) t.focus(); }
+  else if(act==="newentry-no"){ S.confirmNew=false; renderComposer(); }
+  else if(act==="hide"){S.composerOpen=false;S.confirmDiscard=false;S.jClosed=true;renderComposer();}
   else if(act==="addline"){d.lines.push({jp:"",en:"",notes:"",words:""});saveDraft();renderComposer();$("#l-jp-"+(d.lines.length-1)).focus();}
   else if(act==="rmline"){d.lines.splice(i,1);saveDraft();renderComposer();}
   else if(act==="discard"){S.confirmDiscard=true;renderComposer();}
@@ -4330,11 +4425,12 @@ window.addEventListener("popstate",function(){
   var lv=document.querySelector(".kc-leave"); if(lv){ lv.remove(); navGuard(); return; }
   var pop=document.querySelector(".tea-pop,.sage-cel"); if(pop){ pop.click(); navGuard(); return; }
   if(SND.el){ sndClose(); navGuard(); return; }
+  if(S.jf){ jfSet(null); navGuard(); return; }
   if(S.quiz){ if(S.quiz.done) quitQuiz(); else leaveAsk("quiz",quitQuiz); navGuard(); return; }
   if(S.drill){ if(S.drill.i>=S.drill.items.length) quitDrill(); else leaveAsk("drill",quitDrill); navGuard(); return; }
   if(S.deck){ if(S.deck.i>=S.deck.cards.length) quitDeck(); else leaveAsk("review",quitDeck); navGuard(); return; }
   if(S.tab==="journal"&&anyOpen()){ if(S.play) playStop(); S.openEntry={}; renderEntries(); navGuard(); return; }
-  if(S.tab==="journal"&&S.composerOpen){ S.composerOpen=false; S.confirmDiscard=false; renderComposer(); navGuard(); return; }
+  if(S.tab==="journal"&&S.composerOpen){ S.composerOpen=false; S.confirmDiscard=false; S.jClosed=true; renderComposer(); navGuard(); return; }
   if(S.nav.length){ setTab(S.nav.pop(),{fromBack:true}); window.scrollTo(0,0); navGuard(); return; }
   history.back();
 });
