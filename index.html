@@ -797,18 +797,45 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .snd-tg[aria-checked="true"] i{background:var(--ai)}.snd-tg[aria-checked="true"] i::after{transform:translateX(16px)}
 body.j-noen #entries .jline .en,body.j-noen #entries .jline .note{display:none}
 .jf-tabs{display:none}
+.dock-hint:empty{display:none}
+@keyframes jfPage{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @media (min-width:1100px){
-  body.j-focus .j-cols.reading{display:block;max-width:820px;margin:0 auto}
-  body.j-focus .j-cols.reading>.j-look,body.j-focus .j-cols.reading>.j-list{display:block;position:fixed;right:0;top:80px;width:360px;max-height:calc(100vh - 110px);overflow:auto;margin:0;z-index:160;border-radius:14px 0 0 14px;border-right:0;box-shadow:-14px 0 34px -16px rgba(0,0,0,.3);transform:translateX(105%);visibility:hidden;transition:transform .25s ease,visibility 0s .25s}
-  body.j-focus .j-cols.reading.jf-look>.j-look,body.j-focus .j-cols.reading.jf-list>.j-list{transform:none;visibility:visible;transition:transform .25s ease}
+  /* Focus mode = ebook page: the entry sits on the page background in one calm column, Japanese only */
+  body.j-focus .j-cols.reading{display:block;max-width:700px;margin:0 auto}
+  body.j-focus #v-journal:has(.j-cols.reading) .lede{display:none}
+  body.j-focus #v-journal:has(.j-cols.reading) .h2row{justify-content:flex-end}
+  body.j-focus #v-journal:has(.j-cols.reading) .h2row>h2{visibility:hidden;width:0;overflow:hidden;margin:0}
+  body.j-focus .j-cols.reading .j-past{background:none;border:0;padding:8px 0 40px;box-shadow:none}
+  body.j-focus .j-cols.reading .entry[data-open]{animation:jfPage .5s cubic-bezier(.22,.9,.24,1)}
+  body.j-focus .j-cols.reading .entry-slide{flex-wrap:wrap;justify-content:center;gap:4px 6px;background:none}
+  body.j-focus .j-cols.reading .entry-slide .entry-head{flex:1 0 100%}
+  body.j-focus .j-cols.reading .entry-head{flex-direction:column;align-items:center;gap:6px;text-align:center;padding:18px 0 4px}
+  body.j-focus .j-cols.reading .entry-head b{font-family:var(--serif);font-size:2rem;font-weight:600;line-height:1.6;letter-spacing:.04em}
+  body.j-focus .j-cols.reading .entry-head span{font-size:.8rem;letter-spacing:.06em}
+  body.j-focus .j-cols.reading .playbtn,body.j-focus .j-cols.reading .quizbtn{background:none;border-color:transparent;opacity:.75;transition:opacity .25s,background .25s,border-color .25s}
+  body.j-focus .j-cols.reading .playbtn:hover,body.j-focus .j-cols.reading .quizbtn:hover{opacity:1;border-color:var(--line)}
+  body.j-focus .j-cols.reading .entry-row{margin-bottom:6px}
+  body.j-focus .j-cols.reading .entry-row::after{content:"";display:block;width:36px;height:1px;margin:14px auto 0;background:var(--muted);opacity:.45}
+  body.j-focus .j-cols.reading .entry-body>.hint{text-align:center;font-size:.8rem;margin:10px 0 18px}
+  body.j-focus .j-cols.reading .jline{border-top:0;padding:4px 0}
+  body.j-focus .j-cols.reading .jline .jp{font-family:var(--serif);font-size:1.4rem;line-height:2.4;padding-right:44px}
+  body.j-focus .j-cols.reading .jline .en,body.j-focus .j-cols.reading .jline .note{display:none}
+  body.j-focus .j-cols.reading .jsay{opacity:0;transition:opacity .25s}
+  body.j-focus .j-cols.reading .jline:hover .jsay,body.j-focus .j-cols.reading .jline.playing .jsay,body.j-focus .j-cols.reading .jsay:focus-within{opacity:1}
+  body.j-focus .j-cols.reading .sheetlink{display:flex;width:max-content;margin:28px auto 0;background:none;border-color:transparent;color:var(--muted);font-size:.8rem}
+  body.j-focus .j-cols.reading .sheetlink:hover{color:var(--ai);border-color:var(--line)}
+  /* slide-out panels and edge tabs: one easing for everything, the app's ease-out */
+  body.j-focus .j-cols.reading>.j-look,body.j-focus .j-cols.reading>.j-list{display:block;position:fixed;right:0;top:80px;width:360px;max-height:calc(100vh - 110px);overflow:auto;margin:0;z-index:160;border-radius:16px 0 0 16px;border-right:0;box-shadow:-18px 0 40px -22px rgba(40,30,15,.35);transform:translateX(calc(100% + 24px));opacity:0;visibility:hidden;transition:transform .45s cubic-bezier(.22,.9,.24,1),opacity .3s ease,visibility 0s .45s}
+  body.j-focus .j-cols.reading.jf-look>.j-look,body.j-focus .j-cols.reading.jf-list>.j-list{transform:none;opacity:1;visibility:visible;transition:transform .45s cubic-bezier(.22,.9,.24,1),opacity .25s ease,visibility 0s}
   body.j-focus .j-cols.reading>.j-look>summary{pointer-events:none}
-  body.j-focus .j-cols.reading .jf-tabs{display:flex;flex-direction:column;gap:8px;position:fixed;right:0;top:38vh;z-index:161;transition:right .25s ease}
-  body.j-focus .j-cols.reading.jf-look .jf-tabs,body.j-focus .j-cols.reading.jf-list .jf-tabs{right:360px}
+  body.j-focus .j-cols.reading .jf-tabs{display:flex;flex-direction:column;gap:8px;position:fixed;right:0;top:38vh;z-index:161;transition:transform .45s cubic-bezier(.22,.9,.24,1)}
+  body.j-focus .j-cols.reading.jf-look .jf-tabs,body.j-focus .j-cols.reading.jf-list .jf-tabs{transform:translateX(-360px)}
   .jf-tab span{display:block;line-height:1.25}
-  .jf-tab{box-sizing:border-box;width:42px;display:block;text-align:center;padding:14px 0;border:1px solid var(--line);border-right:0;border-radius:12px 0 0 12px;background:var(--surface);color:var(--ink);font:inherit;font-size:1rem;letter-spacing:.1em;cursor:pointer;box-shadow:-4px 4px 12px -8px rgba(0,0,0,.25)}
-  .jf-tab small{font-size:.68rem;letter-spacing:.04em;color:var(--muted)}
-  .jf-tab:hover,.jf-tab.on{background:var(--ai);color:#fff;border-color:var(--ai)}.jf-tab:hover small,.jf-tab.on small{color:rgba(255,255,255,.8)}
-  body.j-focus .j-cols.reading.jf-look::before,body.j-focus .j-cols.reading.jf-list::before{content:"";position:fixed;inset:0;background:rgba(40,32,20,.08);z-index:150;pointer-events:none}
+  .jf-tab{box-sizing:border-box;width:40px;display:block;text-align:center;padding:14px 0;border:1px solid var(--line);border-right:0;border-radius:12px 0 0 12px;background:var(--surface);color:var(--muted);font:inherit;font-family:var(--serif);font-size:1rem;cursor:pointer;box-shadow:-6px 6px 14px -10px rgba(40,30,15,.3);transform:translateX(4px);transition:transform .3s cubic-bezier(.22,.9,.24,1),background .25s,color .25s,border-color .25s}
+  .jf-tab:hover{transform:none;color:var(--ink)}
+  .jf-tab.on{transform:none;background:var(--ai);color:#fff;border-color:var(--ai)}
+  body.j-focus .j-cols.reading::before{content:"";position:fixed;inset:0;background:rgba(40,32,20,.07);z-index:150;pointer-events:none;opacity:0;transition:opacity .45s ease}
+  body.j-focus .j-cols.reading.jf-look::before,body.j-focus .j-cols.reading.jf-list::before{opacity:1}
 }
 .hchat.slim .hc-notif{gap:10px;padding:8px 14px 8px 10px}
 .hchat.slim .hc-av{width:28px;height:28px;flex:none}
@@ -2288,7 +2315,7 @@ function sndMain(){
   var jr=SND.anchor&&SND.anchor.closest&&SND.anchor.closest("#v-journal");
   if(!jr) return sndVoices();
   return sndVoices(true).replace(/<div class="snd-sep"><\/div>$/,"")+'<div class="snd-sep"></div><div class="snd-cap">Reading</div>'+
-    (jWide()?jsetRow("focus","Focus mode","Open entries in the centre"):'')+jsetRow("noen","Hide English","Japanese only in entries")+
+    (jWide()?jsetRow("focus","Focus mode","Open entries in the centre"):'')+(jWide()&&S.js.focus?'<button type="button" class="snd-tg" role="menuitemcheckbox" aria-checked="true" aria-disabled="true" disabled style="cursor:default;opacity:.6"><span>Hide English<small>Always on in Focus mode</small></span><i aria-hidden="true"></i></button>':jsetRow("noen","Hide English","Japanese only in entries"))+
     '<div class="snd-sep"></div><div class="snd-note">Saved on this device.</div>';
 }
 function jsetRow(k,t,sub){ return '<button type="button" class="snd-tg" role="menuitemcheckbox" aria-checked="'+!!S.js[k]+'" data-jset="'+k+'"><span>'+t+'<small>'+sub+'</small></span><i aria-hidden="true"></i></button>'; }
@@ -2358,7 +2385,10 @@ var jfTimer=null;
   var tabs=$("#jf-tabs"), hov=window.matchMedia&&matchMedia("(hover:hover)").matches;
   tabs.addEventListener("click",function(e){ var b=e.target.closest("[data-jf]"); if(!b) return; jfSet(S.jf===b.dataset.jf&&!hov?null:b.dataset.jf); });
   if(hov){
-    tabs.addEventListener("mouseover",function(e){ var b=e.target.closest("[data-jf]"); if(!b||!jfOn()) return; clearTimeout(jfTimer); jfTimer=null; if(S.jf!==b.dataset.jf) jfSet(b.dataset.jf); });
+    var jfHover=null;
+    tabs.addEventListener("mouseover",function(e){ var b=e.target.closest("[data-jf]"); if(!b||!jfOn()) return; clearTimeout(jfTimer); jfTimer=null; if(S.jf===b.dataset.jf) return;
+      clearTimeout(jfHover); if(S.jf){ jfSet(b.dataset.jf); return; } jfHover=setTimeout(function(){ jfSet(b.dataset.jf); },120); });
+    tabs.addEventListener("mouseout",function(e){ if(!S.jf&&!tabs.contains(e.relatedTarget)) clearTimeout(jfHover); });
     // close when the pointer moves well away from the open panel and the tabs (the tabs slide with the panel, so leaving a tab alone doesn't close it)
     document.addEventListener("mousemove",function(e){
       if(!S.jf||!jfOn()) return; var pn=$(S.jf==="look"?"#j-look":"#j-list").getBoundingClientRect(), tb=$("#jf-tabs").getBoundingClientRect();
@@ -3358,7 +3388,7 @@ function updateDock(){
     sw.innerHTML=Object.keys(PENS).map(function(k){return '<button class="sw" style="background:var('+PENS[k][1]+')'+(k==="marker"?";border-radius:6px":"")+'" data-act="pen-color" data-c="'+k+'" aria-label="'+PENS[k][0]+'" aria-pressed="'+(S.pen===k)+'"></button>';}).join("");
     hint.textContent=S.sawPen?"Stylus draws. Finger scrolls.":"Draw on any sentence. Ink stays with the sentence as you scroll. With a stylus, your finger scrolls.";
   } else if(S.tool==="erase"){ sw.innerHTML=""; hint.textContent="Drag across ink, highlights, or notes to erase them."; }
-  else { sw.innerHTML=""; hint.textContent="Tap a highlight to read or edit its note."; }
+  else { sw.innerHTML=""; hint.textContent=""; }
   sw.previousElementSibling.style.display=sw.innerHTML?"":"none";
   var hasHist=S.hist.length>0||S.redo.length>0, hg=$("#histgrp");
   hg.classList.toggle("show",hasHist); hg.setAttribute("aria-hidden",String(!hasHist));
