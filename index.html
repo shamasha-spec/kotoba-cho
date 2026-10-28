@@ -55,7 +55,7 @@
 :root[data-theme="reading"] .jline{padding:16px 0}
 :root[data-theme="reading"] .lede{display:none}
 *,*::before,*::after{box-sizing:inherit}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scrollbar-gutter:stable} /* Oct 2026: keep room for the scrollbar so the page does not shift sideways when it grows tall enough to scroll */
 body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
 :lang(ja),.ja{font-family:var(--sans)}
