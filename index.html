@@ -828,8 +828,10 @@ body.j-noen #entries .jline .en,body.j-noen #entries .jline .note{display:none}
   body.j-focus .j-cols.reading>.j-look,body.j-focus .j-cols.reading>.j-list{display:block;position:fixed;right:0;top:80px;width:360px;max-height:calc(100vh - 110px);overflow:auto;margin:0;z-index:160;border-radius:16px 0 0 16px;border-right:0;box-shadow:-18px 0 40px -22px rgba(40,30,15,.35);transform:translateX(calc(100% + 24px));opacity:0;visibility:hidden;transition:transform .45s cubic-bezier(.22,.9,.24,1),opacity .3s ease,visibility 0s .45s}
   body.j-focus .j-cols.reading.jf-look>.j-look,body.j-focus .j-cols.reading.jf-list>.j-list{transform:none;opacity:1;visibility:visible;transition:transform .45s cubic-bezier(.22,.9,.24,1),opacity .25s ease,visibility 0s}
   body.j-focus .j-cols.reading>.j-look>summary{pointer-events:none}
-  body.j-focus .j-cols.reading .jf-tabs{display:flex;flex-direction:column;gap:8px;position:fixed;right:0;top:38vh;z-index:161;transition:transform .45s cubic-bezier(.22,.9,.24,1)}
+  body.j-focus .j-cols.reading .jf-tabs{display:flex;flex-direction:column;gap:8px;position:fixed;right:0;top:38vh;z-index:161;transition:transform .45s cubic-bezier(.22,.9,.24,1),opacity .3s ease}
   body.j-focus .j-cols.reading.jf-look .jf-tabs,body.j-focus .j-cols.reading.jf-list .jf-tabs{transform:translateX(-360px)}
+  body.j-focus .j-cols.reading:not(.jf-ready) .jf-tabs{transform:translateX(56px);opacity:0;pointer-events:none}
+  body.j-focus .j-cols.reading:not(.jf-ready)>.j-look,body.j-focus .j-cols.reading:not(.jf-ready)>.j-list{transition:none}
   .jf-tab span{display:block;line-height:1.25}
   .jf-tab{box-sizing:border-box;width:40px;display:block;text-align:center;padding:14px 0;border:1px solid var(--line);border-right:0;border-radius:12px 0 0 12px;background:var(--surface);color:var(--muted);font:inherit;font-family:var(--serif);font-size:1rem;cursor:pointer;box-shadow:-6px 6px 14px -10px rgba(40,30,15,.3);transform:translateX(4px);transition:transform .3s cubic-bezier(.22,.9,.24,1),background .25s,color .25s,border-color .25s}
   .jf-tab:hover{transform:none;color:var(--ink)}
@@ -2373,13 +2375,39 @@ window.addEventListener("resize",function(){ if(SND.el) sndClose(); });
 /* Journal settings (Oct 2026): Focus mode centres the open entry on wide screens and turns lookup and the entries list into
    tabs on the right edge. Hide English removes the English lines and Explanation notes from past entries. Saved on this device. */
 S.js=recall("kc-jset")||{focus:false,noen:false};
-function jsetApply(){ document.body.classList.toggle("j-focus",!!S.js.focus); document.body.classList.toggle("j-noen",!!S.js.noen); jfSet(null); }
+function jsetApply(){ var was=jfOn(), rl=was?null:jfRects(); document.body.classList.toggle("j-focus",!!S.js.focus); document.body.classList.toggle("j-noen",!!S.js.noen); jfSet(null); jfMorph(was,rl); }
+/* Entering Focus mode: the side cards fade out from where they were, and only then do the 辞書/日記 tabs slide in. */
+function jfRects(){
+  if(!jWide()) return null; var out=[];
+  ["#j-look","#j-list"].forEach(function(id){ var el=$(id); if(!el) return; var r=el.getBoundingClientRect(); if(r.width&&r.height&&getComputedStyle(el).display!=="none") out.push([el,r]); });
+  return out;
+}
+var jfReadyT=null;
+function jfMorph(was,rl){
+  var c=$("#j-cols"); if(!c) return; var now=jfOn();
+  if(now===was) return;
+  clearTimeout(jfReadyT); c.classList.remove("jf-ready");
+  if(!now) return;
+  var pg=document.querySelector("#entries .entry[data-open]"); if(pg){ pg.style.animation="none"; pg.getBoundingClientRect(); pg.style.animation=""; }
+  var wait=0;
+  (rl||[]).forEach(function(x){
+    var el=x[0], r=x[1];
+    el.style.cssText="position:fixed;left:"+r.left+"px;top:"+r.top+"px;width:"+r.width+"px;right:auto;max-height:"+r.height+"px;overflow:hidden;transform:none;opacity:1;visibility:visible;transition:none;border-radius:14px;border-right:1px solid var(--line);box-shadow:none";
+    el.getBoundingClientRect();
+    el.style.transition="opacity .3s ease,transform .35s cubic-bezier(.55,0,1,.45)"; el.style.transform="translateX(40px)"; el.style.opacity="0";
+    wait=380;
+  });
+  jfReadyT=setTimeout(function(){
+    (rl||[]).forEach(function(x){ x[0].style.cssText=""; });
+    requestAnimationFrame(function(){ if(jfOn()) c.classList.add("jf-ready"); });
+  },wait+20);
+}
 function jfSet(w){
   var c=$("#j-cols"); if(!c) return; c.classList.toggle("jf-look",w==="look"); c.classList.toggle("jf-list",w==="list"); S.jf=w;
   document.querySelectorAll(".jf-tab").forEach(function(b){ b.classList.toggle("on",b.dataset.jf===w); b.setAttribute("aria-expanded",String(b.dataset.jf===w)); });
   if(w==="look"){ $("#j-look").open=true; setTimeout(function(){ try{ $("#j-lq").focus({preventScroll:true}); }catch(e){} },260); }
 }
-function jfOn(){ return !!(S.js.focus&&jWide()&&$("#j-cols")&&$("#j-cols").classList.contains("reading")); }
+function jfOn(){ return !!(document.body.classList.contains("j-focus")&&jWide()&&$("#j-cols")&&$("#j-cols").classList.contains("reading")); }
 var jfTimer=null;
 (function(){
   var tabs=$("#jf-tabs"), hov=window.matchMedia&&matchMedia("(hover:hover)").matches;
@@ -2410,11 +2438,9 @@ function speak(text,who){
   var busy=speechSynthesis.speaking||speechSynthesis.pending;
   speechSynthesis.cancel(); clearTimeout(speakTimer);
   speakTimer=setTimeout(function(){
-    var u=new SpeechSynthesisUtterance(t); u.lang="ja-JP"; voiceFor(u,who); u.rate=S.rate==="slow"?0.65:0.95;
-    speak._u=u; // keep a reference so the browser can't drop it mid-word
-    u.onend=u.onerror=function(){ if(speak._u===u) speak._u=null; };
-    try{ speechSynthesis.resume(); }catch(e){}
-    speechSynthesis.speak(u);
+    var tok={}; speak._tok=tok; // keep a reference so the browser can't drop it mid-word
+    function cb(ok){ if(speak._tok!==tok) return; speak._tok=null; if(!ok) toast("No sound from this voice. Try another voice in Journal settings, or check your device’s speech settings."); }
+    ttsSay(t,who,S.rate==="slow"?0.65:0.95,function(u){ return speak._tok===tok&&(!cb.cur||cb.cur===u); },cb);
   },busy?140:40);
 }
 var SPK='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
@@ -2822,7 +2848,7 @@ function renderComposer(){
    or the composer when no entry is open (the default). Below 1,100px the Journal works as before. */
 function jWide(){ return !!(window.matchMedia&&matchMedia("(min-width:1100px)").matches); }
 function jMode(){
-  var c=$("#j-cols"); if(!c) return; var reading=anyOpen(); c.classList.toggle("reading",reading);
+  var c=$("#j-cols"); if(!c) return; var reading=anyOpen(), was=jfOn(), rl=was?null:jfRects(); c.classList.toggle("reading",reading); jfMorph(was,rl);
   if(jWide()&&!reading&&!S.composerOpen&&!S.jClosed&&S.tab==="journal"){ if(!S.draft) S.draft=newDraft(); S.composerOpen=true; renderComposer(); }
   jList();
 }
@@ -3272,6 +3298,28 @@ entriesEl.addEventListener("click",function(e){
    and puts player controls in the bottom toolbar. Shadowing leaves a gap after each line for you to repeat it. */
 S.play=null; S.playShadow=!!recall("kc-play-shadow"); S.playLoop=!!recall("kc-play-loop");
 var playU=null;
+/* Oct 2026 fix: some voices (often online ones) fail or end at once with no sound, which made Listen race through.
+   ttsSay notices that, retries once with an on-device Japanese voice (or the browser default), and reports failure. */
+var ttsLocal=false;
+function ttsSay(t,who,rate,live,cb){
+  function go(fb){
+    var u=new SpeechSynthesisUtterance(t); u.lang="ja-JP"; voiceFor(u,who);
+    if(fb){ var lv=jaVoices.find(function(v){ return v.localService&&v!==u.voice; }); u.voice=lv||null; }
+    u.rate=rate; var t0=0, t1=0, done=false;
+    u.onstart=function(){ t0=Date.now(); };
+    u.onend=u.onerror=function(ev){
+      if(done||!live(u)) return; done=true;
+      var err=ev&&ev.type==="error"&&ev.error!=="interrupted"&&ev.error!=="canceled";
+      var silent=!t0&&Date.now()-t1<500;
+      if((err||silent)&&!fb){ try{ speechSynthesis.cancel(); }catch(e){} setTimeout(function(){ if(live(u)) go(true); },250); return; }
+      if(fb&&!err&&!silent) ttsLocal=true;
+      cb(!(err||silent),t0?Date.now()-t0:0);
+    };
+    cb.cur=u; setTimeout(function(){ if(!live(u)) return; try{ speechSynthesis.resume(); }catch(e){} t1=Date.now(); speechSynthesis.speak(u); },60);
+    return u;
+  }
+  return go(ttsLocal);
+}
 function playLineText(l){ var t=stripFuri(String(l&&l.jp||"")).trim(); return t.replace(new RegExp("^(Me|"+CHAT_NAME+")[：:]\\s*"),"").trim(); }
 function playStart(key){
   var en=entryByKey(key); if(!en||!TTS) return;
@@ -3291,16 +3339,18 @@ function playStep(){
   p.turn=false; playMark(true); renderPlayer();
   try{ speechSynthesis.cancel(); }catch(e){}
   var t=text; if(!/[。！？!?、．.]$/.test(t)) t+="。";
-  var u=new SpeechSynthesisUtterance(t); u.lang="ja-JP"; var spk=speakerOf(stripFuri(String(en.lines[li].jp||"")).trim()); voiceFor(u,spk&&spk.who); u.rate=S.rate==="slow"?0.65:0.95;
-  var t0=0; u.onstart=function(){ t0=Date.now(); };
-  u.onend=u.onerror=function(){
-    if(playU!==u||S.play!==p||p.paused) return;
-    var took=t0?Date.now()-t0:1500;
+  var spk=speakerOf(stripFuri(String(en.lines[li].jp||"")).trim()), tok={};
+  playU=tok;
+  function live(u){ return playU===tok&&S.play===p&&!p.paused&&(!done.cur||done.cur===u); }
+  function done(ok,took0){
+    if(playU!==tok||S.play!==p||p.paused) return;
+    if(!ok){ playStop(); toast("No sound from this voice. Try another voice in Journal settings, or check your device’s speech settings."); return; }
+    var took=took0||1500;
     var gap=S.playShadow?Math.max(1500,Math.round(took*1.15)+500):650;
     if(S.playShadow){ p.turn=true; playMark(); renderPlayer(); }
     p.timer=setTimeout(function(){ if(S.play!==p||p.paused) return; p.idx++; playStep(); },gap);
-  };
-  playU=u; setTimeout(function(){ if(playU===u&&S.play===p&&!p.paused){ try{ speechSynthesis.resume(); }catch(e){} speechSynthesis.speak(u); } },60);
+  }
+  ttsSay(t,spk&&spk.who,S.rate==="slow"?0.65:0.95,live,done);
 }
 function playMark(scroll){
   document.querySelectorAll(".jline.playing,.jline.your-turn").forEach(function(x){ x.classList.remove("playing","your-turn"); });
