@@ -797,13 +797,28 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .snd-tg[aria-checked="true"] i{background:var(--ai)}.snd-tg[aria-checked="true"] i::after{transform:translateX(16px)}
 body.j-noen #entries .jline .en,body.j-noen #entries .jline .note{display:none}
 .jf-tabs{display:none}
+.focusbtn,.jf-back{display:none}
+.jf-back{align-items:center;gap:6px;border:0;background:none;color:var(--muted);font:inherit;font-size:.95rem;padding:6px 10px 6px 4px;border-radius:10px;cursor:pointer;transition:color .2s,background .2s}
+.jf-back:hover{color:var(--ink);background:color-mix(in srgb,var(--ai) 8%,transparent)}
+.jf-back b{font-size:1.3rem;font-weight:400;line-height:1}
+.entry:not([data-open]) .focusbtn{display:none!important}
+@media (hover:none){.focusbtn span{display:none}.focusbtn{padding:6px 9px}}
 .dock-hint:empty{display:none}
 @keyframes jfPage{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @media (min-width:1100px){
   /* Focus mode = ebook page: the entry sits on the page background in one calm column, Japanese only */
   body.j-focus .j-cols.reading{display:block;max-width:700px;margin:0 auto}
   body.j-focus #v-journal:has(.j-cols.reading) .lede{display:none}
-  body.j-focus #v-journal:has(.j-cols.reading) .h2row{justify-content:flex-end}
+  body.j-focus #v-journal:has(.j-cols.reading) .h2row{justify-content:space-between}
+  body.j-focus #v-journal:has(.j-cols.reading) .jf-back{display:inline-flex}
+  body.j-focus .j-cols.reading.jf-out .entry[data-open]{opacity:0;transform:translateY(6px);transition:opacity .25s ease,transform .25s ease}
+  body.j-focus .j-cols.reading.jf-out .jf-tabs{opacity:0;transform:translateX(56px)}
+  .j-cols.jf-in>.j-comp,.j-cols.jf-in>.j-look,.j-cols.jf-in>.j-list,.j-cols.jf-in>.j-past{animation:jfPage .45s cubic-bezier(.22,.9,.24,1) both}
+  .j-cols.jf-in>.j-look{animation-delay:.05s}.j-cols.jf-in>.j-list{animation-delay:.1s}
+  .focusbtn{flex:none;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;min-height:36px;font-size:.85rem;font-weight:500;cursor:pointer;transition:background .2s,border-color .2s,opacity .25s}
+  .focusbtn:hover{border-color:var(--ink)}
+  .focusbtn[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  body.j-focus .j-cols.reading .focusbtn{opacity:.75}body.j-focus .j-cols.reading .focusbtn:hover{opacity:1}
   body.j-focus #v-journal:has(.j-cols.reading) .h2row>h2{visibility:hidden;width:0;overflow:hidden;margin:0}
   body.j-focus .j-cols.reading .j-past{background:none;border:0;padding:8px 0 40px;box-shadow:none}
   body.j-focus .j-cols.reading .entry[data-open]{animation:jfPage .5s cubic-bezier(.22,.9,.24,1)}
@@ -2367,7 +2382,7 @@ document.addEventListener("click",function(e){
   else if(e.target.closest("[data-snd-back]")){ SND.sub=null; sndRender(); }
   else if((t=e.target.closest("[data-snd-pick]"))){ var who=t.dataset.who; S.cv[who]=t.dataset.sndPick; store("kc-chatvoice",S.cv); if(S.play) playStop(); speak(SND_SAMPLE[who]); sndRender(); }
   else if(e.target.closest("[data-snd-both]")){ sndBoth(); }
-  else if((t=e.target.closest("[data-jset]"))){ var k=t.dataset.jset; S.js[k]=!S.js[k]; store("kc-jset",S.js); jsetApply(); sndRender(); }
+  else if((t=e.target.closest("[data-jset]"))){ var k=t.dataset.jset; if(k==="focus"){ jfToggle(!S.js.focus); sndRender(); return; } S.js[k]=!S.js[k]; store("kc-jset",S.js); jsetApply(); sndRender(); }
 },true);
 document.addEventListener("keydown",function(e){ if(e.key==="Escape"&&SND.el){ var a=SND.anchor; sndClose(); if(a) a.focus(); } });
 window.addEventListener("resize",function(){ if(SND.el) sndClose(); });
@@ -2379,7 +2394,7 @@ function jsetApply(){ var was=jfOn(), rl=was?null:jfRects(); document.body.class
 /* Entering Focus mode: the side cards fade out from where they were, and only then do the 辞書/日記 tabs slide in. */
 function jfRects(){
   if(!jWide()) return null; var out=[];
-  ["#j-look","#j-list"].forEach(function(id){ var el=$(id); if(!el) return; var r=el.getBoundingClientRect(); if(r.width&&r.height&&getComputedStyle(el).display!=="none") out.push([el,r]); });
+  ["#j-look","#j-list","#j-cols>.j-comp"].forEach(function(id){ var el=$(id); if(!el) return; var r=el.getBoundingClientRect(); if(r.width&&r.height&&getComputedStyle(el).display!=="none") out.push([el,r]); });
   return out;
 }
 var jfReadyT=null;
@@ -2388,20 +2403,42 @@ function jfMorph(was,rl){
   if(now===was) return;
   clearTimeout(jfReadyT); c.classList.remove("jf-ready");
   if(!now) return;
-  var pg=document.querySelector("#entries .entry[data-open]"); if(pg){ pg.style.animation="none"; pg.getBoundingClientRect(); pg.style.animation=""; }
+  var pg=document.querySelector("#entries .entry[data-open]"); if(pg){ pg.style.animation="none"; pg.style.opacity="0"; }
   var wait=0;
   (rl||[]).forEach(function(x){
     var el=x[0], r=x[1];
-    el.style.cssText="position:fixed;left:"+r.left+"px;top:"+r.top+"px;width:"+r.width+"px;right:auto;max-height:"+r.height+"px;overflow:hidden;transform:none;opacity:1;visibility:visible;transition:none;border-radius:14px;border-right:1px solid var(--line);box-shadow:none";
+    el.style.cssText="display:block;position:fixed;left:"+r.left+"px;top:"+r.top+"px;width:"+r.width+"px;right:auto;max-height:"+r.height+"px;overflow:hidden;transform:none;opacity:1;visibility:visible;transition:none;border-radius:14px;border-right:1px solid var(--line);box-shadow:none";
     el.getBoundingClientRect();
     el.style.transition="opacity .3s ease,transform .35s cubic-bezier(.55,0,1,.45)"; el.style.transform="translateX(40px)"; el.style.opacity="0";
     wait=380;
   });
   jfReadyT=setTimeout(function(){
     (rl||[]).forEach(function(x){ x[0].style.cssText=""; });
-    requestAnimationFrame(function(){ if(jfOn()) c.classList.add("jf-ready"); });
+    var pg2=document.querySelector("#entries .entry[data-open]"); if(pg2){ pg2.style.opacity=""; pg2.getBoundingClientRect(); pg2.style.animation=""; }
+    jfReadyT=setTimeout(function(){ if(jfOn()) c.classList.add("jf-ready"); },220);
   },wait+20);
 }
+/* Leaving Focus mode (back, ‹, closing the entry, Write, or turning it off): the page and tabs fade out first,
+   then the normal Journal fades back in. */
+var jfBusy=false;
+function jfExit(fn){
+  var c=$("#j-cols"); if(!c||!jfOn()||jfBusy){ if(!jfBusy) fn(); return; }
+  jfBusy=true; jfSet(null); clearTimeout(jfReadyT); c.classList.add("jf-out");
+  setTimeout(function(){
+    c.classList.remove("jf-out","jf-ready"); fn(); jfBusy=false;
+    if(!jfOn()){ c.classList.remove("jf-in"); c.getBoundingClientRect(); c.classList.add("jf-in"); setTimeout(function(){ c.classList.remove("jf-in"); },600); }
+  },270);
+}
+function jfCloseEntry(){ if(S.play) playStop(); S.openEntry={}; renderEntries(); }
+function jfToggle(on){
+  function apply(){ S.js.focus=on; store("kc-jset",S.js); renderEntries(); jsetApply(); }
+  if(on) apply(); else jfExit(apply);
+}
+var ICO_FOCUS='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4"/></svg>';
+(function(){ var h=document.querySelector("#v-journal .h2row"); if(!h) return;
+  h.insertAdjacentHTML("afterbegin",'<button type="button" class="jf-back" data-act="jf-back" aria-label="Back to Journal" title="Back to Journal"><b aria-hidden="true">‹</b><span lang="ja">'+rubyText("日記(にっき)")+'</span></button>');
+  h.querySelector(".jf-back").addEventListener("click",function(){ jfExit(jfCloseEntry); });
+})();
 function jfSet(w){
   var c=$("#j-cols"); if(!c) return; c.classList.toggle("jf-look",w==="look"); c.classList.toggle("jf-list",w==="list"); S.jf=w;
   document.querySelectorAll(".jf-tab").forEach(function(b){ b.classList.toggle("on",b.dataset.jf===w); b.setAttribute("aria-expanded",String(b.dataset.jf===w)); });
@@ -2874,6 +2911,7 @@ function jLookup(){
 $("#j-lq").addEventListener("input",jLookup);
 $("#j-look").addEventListener("click",function(e){ if(e.target.closest('[data-act="lq-add"]')){ var q=$("#j-lq").value.trim(); clearForm(false); F.lookup.value=q; openAdd(true); openAddBox(true); setTab("words"); window.scrollTo(0,0); } });
 $("#j-list").addEventListener("click",function(e){
+  if(e.target.closest('[data-act="jl-write"]')&&jfOn()&&!S.jfx){ var wb=e.target.closest('[data-act="jl-write"]'); jfSet(null); jfExit(function(){ S.jfx=true; wb.click(); S.jfx=false; }); return; }
   if(e.target.closest('[data-act="jl-write"]')){ if(S.play) playStop(); S.openEntry={}; S.jClosed=false; if(!S.draft) S.draft=newDraft(); S.composerOpen=true; renderEntries(); renderComposer(); $("#j-cols").scrollIntoView({block:"start",behavior:"smooth"}); return; }
   var r=e.target.closest(".jl-row"); if(!r) return; var k=r.dataset.k; if(S.play) playStop();
   var was=!!S.openEntry[k]; S.openEntry={}; if(!was) S.openEntry[k]=true; if(S.jf) jfSet(null); renderEntries(); $("#j-cols").scrollIntoView({block:"start",behavior:"smooth"});
@@ -3117,7 +3155,7 @@ function renderEntries(){
   if(!S.entries.length){el.innerHTML='<p class="empty">No entries yet. Write your first one above.</p>';updateDock();return;}
   el.innerHTML=S.entries.map(function(en){
     var key=entryKey(en), open=S.openEntry[key];
-    return '<div class="entry"'+(open?" data-open":"")+' data-key="'+key+'"><div class="entry-row"><div class="swipe-act" aria-hidden="true">'+QZ+'<span>Quiz</span></div><div class="entry-slide"><button class="entry-head" aria-expanded="'+!!open+'"><b lang="ja">'+rubyText(en.title||"Untitled")+'</b><span>'+esc(en.date)+', '+en.lines.length+(en.lines.length===1?" sentence":" sentences")+'</span></button>'+(TTS?'<button class="playbtn" data-act="play-entry" data-key="'+key+'" aria-label="Listen to the whole entry" title="Listen to the whole entry">'+ICO_PLAY+'<span>Listen</span></button>':'')+'<button class="quizbtn" data-act="quiz" data-key="'+key+'" aria-label="Quiz me on this entry" title="Quiz me on this entry">'+QZ+'<span>Quiz</span></button></div></div>'+
+    return '<div class="entry"'+(open?" data-open":"")+' data-key="'+key+'"><div class="entry-row"><div class="swipe-act" aria-hidden="true">'+QZ+'<span>Quiz</span></div><div class="entry-slide"><button class="entry-head" aria-expanded="'+!!open+'"><b lang="ja">'+rubyText(en.title||"Untitled")+'</b><span>'+esc(en.date)+', '+en.lines.length+(en.lines.length===1?" sentence":" sentences")+'</span></button>'+(TTS?'<button class="playbtn" data-act="play-entry" data-key="'+key+'" aria-label="Listen to the whole entry" title="Listen to the whole entry">'+ICO_PLAY+'<span>Listen</span></button>':'')+'<button class="quizbtn" data-act="quiz" data-key="'+key+'" aria-label="Quiz me on this entry" title="Quiz me on this entry">'+QZ+'<span>Quiz</span></button>'+(open&&jWide()?'<button class="focusbtn" data-act="jfocus" aria-pressed="'+!!S.js.focus+'" aria-label="Focus mode" title="Focus mode">'+ICO_FOCUS+'<span>Focus</span></button>':'')+'</div></div>'+
       '<div class="entry-body">'+(open?bodyHtml(en):'')+'</div></div>';
   }).join("");
   jMode(); el.querySelectorAll(".entry[data-open]").forEach(function(b){decorate(b);});
@@ -3279,9 +3317,11 @@ $("#dock").addEventListener("input",function(e){
 });
 entriesEl.addEventListener("click",function(e){
   var qz=e.target.closest('[data-act="quiz"]'); if(qz){startEntryReview(qz.dataset.key);return;}
+  if(e.target.closest('[data-act="jfocus"]')){ jfToggle(!S.js.focus); return; }
   var pb=e.target.closest('[data-act="play-entry"]'); if(pb){ if(S.play&&S.play.key===pb.dataset.key) playToggle(); else playStart(pb.dataset.key); return; }
   if(Date.now()-(S.entrySwipedAt||0)<400) return;
   var head=e.target.closest(".entry-head");
+  if(head&&!S.jfx&&jfOn()&&S.openEntry[head.closest(".entry").dataset.key]){ jfExit(function(){ S.jfx=true; head.click(); S.jfx=false; }); return; }
   if(head){
     var box=head.closest(".entry"), key=box.dataset.key; S.openEntry[key]=!S.openEntry[key]; jMode();
     if(S.openEntry[key]){box.setAttribute("data-open","");box.querySelector(".entry-body").innerHTML=bodyHtml(entryByKey(key));decorate(box);}
@@ -4509,7 +4549,7 @@ window.addEventListener("popstate",function(){
   if(S.quiz){ if(S.quiz.done) quitQuiz(); else leaveAsk("quiz",quitQuiz); navGuard(); return; }
   if(S.drill){ if(S.drill.i>=S.drill.items.length) quitDrill(); else leaveAsk("drill",quitDrill); navGuard(); return; }
   if(S.deck){ if(S.deck.i>=S.deck.cards.length) quitDeck(); else leaveAsk("review",quitDeck); navGuard(); return; }
-  if(S.tab==="journal"&&anyOpen()){ if(S.play) playStop(); S.openEntry={}; renderEntries(); navGuard(); return; }
+  if(S.tab==="journal"&&anyOpen()){ jfExit(jfCloseEntry); navGuard(); return; }
   if(S.tab==="journal"&&S.composerOpen){ S.composerOpen=false; S.confirmDiscard=false; S.jClosed=true; renderComposer(); navGuard(); return; }
   if(S.nav.length){ setTab(S.nav.pop(),{fromBack:true}); window.scrollTo(0,0); navGuard(); return; }
   history.back();
