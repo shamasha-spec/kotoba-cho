@@ -662,8 +662,35 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .gq-dots button{width:8px;height:8px;padding:0;border:0;border-radius:4px;background:var(--line);cursor:pointer;transition:width .25s,background .25s}
 .gq-dots button.on{width:22px;background:var(--t-grammar)}
 .gq-count{margin-left:8px;font-size:.75rem;color:var(--muted)}
+/* Words on wide screens (Oct 2026) */
+.w-right{display:none}
+@media (min-width:1100px){
+  body[data-tab="words"] main.wrap{max-width:1240px}
+  .w-cols{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:24px;align-items:start}
+  .w-right{display:grid;gap:12px;position:sticky;top:72px}
+  #v-words #type-chips,#v-words #fm{display:none}
+  #v-words .w .w-body{display:none!important}
+  #v-words .w.sel{box-shadow:inset 3px 0 0 var(--ai);background:color-mix(in srgb,var(--ai) 5%,transparent)}
+  .w-filter{padding:14px 16px}
+  .wf-h{margin-bottom:6px}
+  .wf-cols{display:grid;grid-template-columns:1fr 1fr;gap:2px 20px}
+  .wf-row{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;padding:6px 8px;border:0;border-radius:8px;background:none;color:inherit;font:inherit;font-size:.88rem;cursor:pointer;text-align:left}
+  .wf-row span{display:inline-flex;align-items:center;gap:6px}
+  .wf-row .stamp{width:20px;height:20px;font-size:.62rem}
+  .wf-row small{color:var(--muted);font-size:.78rem}
+  .wf-row:hover{background:color-mix(in srgb,var(--ai) 6%,transparent)}
+  .wf-row[aria-pressed="true"]{background:color-mix(in srgb,var(--ai) 12%,transparent);color:var(--ai);font-weight:600}
+  .w-detail{display:grid;gap:8px}
+  .wd-top{display:flex;align-items:center;gap:10px}
+  .wd-jp{font-family:var(--serif);font-size:2.6rem;font-weight:700;line-height:1.5;flex:1;min-width:0}
+  .wd-en{font-size:1.1rem}
+  .wd-ex{margin:4px 0}
+  .w-detail dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:.88rem}.w-detail dt{color:var(--muted)}.w-detail dd{margin:0}
+}
+
 /* Practice card + wide Grammar layout (Oct 2026) */
-.prac{display:grid;gap:14px;margin-bottom:12px}
+.prac{display:grid;gap:14px;margin-bottom:12px;align-content:start}
+.g-cols{display:flex;flex-direction:column}.g-left{order:1}.g-chips{order:2}.g-right{order:3}
 .prac-h b{font-size:1.05rem}
 .prac-seg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:4px;border-radius:14px;background:var(--paper);border:1px solid var(--line)}
 .prac-seg button{display:grid;justify-items:center;gap:1px;padding:7px 4px;border:0;border-radius:10px;background:none;color:var(--muted);cursor:pointer;font:inherit;transition:background .2s,color .2s}
@@ -682,13 +709,16 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .prac .prac-chg{font-size:.82rem;padding:0;min-height:0;border:0;background:none;box-shadow:none;color:var(--ai);text-decoration:underline;text-underline-offset:2px}
 .prac .prac-chg::before,.prac .prac-chg::after{content:none}
 .prac .gq-set{margin:0;padding:14px 0 0;border:0;border-top:1px solid var(--line);border-radius:0;background:none;box-shadow:none}
-.prac-work{margin-bottom:12px;display:grid;gap:8px}
+.prac-work{margin-bottom:12px;display:grid;gap:8px;align-content:start}
 .prac-chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip-s{font-size:.8rem;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--paper)}
 @media (max-width:420px){.prac-seg button small{font-size:.62rem}}
 @media (min-width:1100px){
   body[data-tab="grammar"] main.wrap{max-width:1240px}
-  .g-cols{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:24px;align-items:start}
+  .g-cols{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);grid-template-areas:". chips" "left right";gap:0 24px;align-items:start}
+  .g-chips{grid-area:chips}.g-left{grid-area:left}.g-right{grid-area:right}
+  .g-chips .chips{margin-bottom:10px}
+  .g-left>:last-child,.g-right>:last-child{margin-bottom:0}
   .g-left{position:sticky;top:72px}
   #grammar>.panel.gdrill{max-width:760px;margin-left:auto;margin-right:auto}
 }
@@ -1702,6 +1732,7 @@ body.kc-locked{overflow:hidden}
 
   <!-- WORDS -->
   <section id="v-words" role="tabpanel" hidden>
+    <div class="w-cols"><div class="w-left">
     <details class="panel startbox addbox" id="addbox">
       <summary><span class="sb-jp" lang="ja"><ruby>単語<rt>たんご</rt></ruby>を<ruby>追加<rt>ついか</rt></ruby></span><span class="sb-en">Add a word</span></summary>
       <div class="addbox-in">
@@ -1756,6 +1787,7 @@ body.kc-locked{overflow:hidden}
     <div class="chips" id="type-chips"></div>
     <div class="count" id="count"></div>
     <ul class="words" id="list"></ul>
+    </div><aside class="w-right" aria-label="Filter and word details"><div class="panel w-filter" id="w-filter"></div><div class="panel w-detail" id="w-detail"></div></aside></div>
   </section>
 
   <!-- REVIEW -->
@@ -2072,12 +2104,46 @@ function renderWords(){
     if(q){var hay=(w.jp+" "+w.kana+" "+w.romaji+" "+w.en+" "+w.tags).toLowerCase(); if(hay.indexOf(q)<0) return false;}
     return true;
   }).sort(function(a,b){return b.row-a.row;});
-  if(!ws.length){$("#count").textContent="0 words";list.innerHTML='<li class="empty">No words match. Clear the search or add a new word.</li>';return;}
+  if(!ws.length){$("#count").textContent="0 words";list.innerHTML='<li class="empty">No words match. Clear the search or add a new word.</li>';wSide([]);return;}
   /* newest first, 10 words a page */
   var pages=Math.ceil(ws.length/WPER), p=Math.max(0,Math.min(S.wPage||0,pages-1)); S.wPage=p;
   $("#count").textContent=ws.length+(ws.length===1?" word":" words")+", newest first";
   list.innerHTML=ws.slice(p*WPER,p*WPER+WPER).map(wItem).join("")+pagerHtml(p,ws.length);
+  wSide(ws.slice(p*WPER,p*WPER+WPER));
 }
+/* Words on wide screens (Oct 2026): filter list and word details sit beside the list. Below 1,100px they're hidden
+   and the chips, mastery menu and tap-to-open rows work as before. */
+function wWide(){ return !!(window.matchMedia&&matchMedia("(min-width:1100px)").matches); }
+function wFilterHtml(){
+  var tc={all:S.words.length}, mc={all:S.words.length}, fm=$("#fm").value;
+  S.words.forEach(function(w){ var k=typeKey(w.type); tc[k]=(tc[k]||0)+1; mc[w.mastery]=(mc[w.mastery]||0)+1; });
+  function row(act,v,label,n,on,ja){ return '<button class="wf-row" data-wf="'+act+'" data-v="'+v+'" aria-pressed="'+on+'"><span'+(ja?' lang="ja"':'')+'>'+label+'</span><small>'+(n||0)+'</small></button>'; }
+  return '<div class="wf-h"><b>Filter</b></div><div class="wf-cols"><div>'+TYPES.map(function(t){return row("type",t[0],t[1],tc[t[0]],S.type===t[0]);}).join("")+'</div>'+
+    '<div>'+row("m","all","Any mastery",mc.all,fm==="all")+["New","Learning","Reviewing","Mastered"].map(function(k){return row("m",k,'<span class="stamp st-'+k+'" aria-hidden="true">'+STAMP[k]+'</span>'+k,mc[k],fm===k);}).join("")+'</div></div>';
+}
+function wDetailHtml(w){
+  if(!w) return '<p class="hint" style="margin:0">Tap a word to see its details here.</p>';
+  var dl=[["Romaji",w.romaji],["Type",w.type],["Verb group",w.group&&w.group!=="N/A"?w.group:""],["Te-form",w.te],["Tags",w.tags],["Source",w.source],["Added",w.date],["Last reviewed",w.last],["Next review",w.next]]
+    .filter(function(p){return p[1];}).map(function(p){return "<dt>"+p[0]+"</dt><dd>"+esc(p[1])+"</dd>";}).join("");
+  return '<div class="wd-top"><div class="wd-jp" lang="ja">'+rubyWord(w.jp,w.kana)+'</div>'+sayBtn(w.kana||w.jp,"Play the word")+'<span class="stamp st-'+w.mastery+'" lang="ja" title="'+w.mastery+'">'+STAMP[w.mastery]+'</span></div>'+
+    '<div class="wd-en">'+esc(w.en)+'</div><div class="hint">'+recText(w)+'</div>'+
+    (w.exJp?'<div class="ex wd-ex"><div class="row" style="gap:6px;flex-wrap:nowrap"><div lang="ja" style="flex:1">'+rubyText(w.exJp)+'</div>'+sayBtn(w.exJp,"Play the example")+'</div><div class="w-en">'+esc(w.exEn)+'</div></div>':'')+
+    '<dl>'+dl+'</dl><a class="sheetlink" href="'+rowLink(VOCAB_GID,w.row)+'" target="_blank" rel="noopener">'+ICO_SHEET+'<span>Open row '+w.row+' in sheet</span><span class="ext" aria-hidden="true">↗</span></a>';
+}
+function wSide(page){
+  var f=$("#w-filter"), d=$("#w-detail"); if(!f||!d) return;
+  f.innerHTML=wFilterHtml();
+  var sel=S.words.find(function(w){return w.row===S.wsel;});
+  if(!sel||(page&&page.length&&!page.some(function(w){return w.row===S.wsel;})&&!S.wselKeep)) sel=page&&page[0]||sel;
+  S.wsel=sel?sel.row:null; S.wselKeep=false;
+  d.innerHTML=wDetailHtml(sel);
+  document.querySelectorAll("#list .w").forEach(function(li){ li.classList.toggle("sel",+li.dataset.row===S.wsel); });
+}
+$("#w-filter").addEventListener("click",function(e){
+  var b=e.target.closest(".wf-row"); if(!b) return;
+  if(b.dataset.wf==="type") S.type=b.dataset.v; else $("#fm").value=b.dataset.v; S.wselKeep=false;
+  S.wPage=0; renderWords();
+});
 var WPER=10;
 function pagerHtml(p,total){
   var pages=Math.ceil(total/WPER); if(pages<2) return "";
@@ -2101,7 +2167,9 @@ $("#list").addEventListener("click",function(e){
   var pg=e.target.closest('[data-act="wpg"]');
   if(pg){ if(pg.disabled) return; S.wPage=Number(pg.dataset.p); renderWords(); $("#list").scrollIntoView({block:"start",behavior:"smooth"}); return; }
   var h=e.target.closest(".w-head"); if(!h) return;
-  var li=h.parentNode, r=li.dataset.row; S.open[r]=!S.open[r];
+  var li=h.parentNode, r=li.dataset.row;
+  if(wWide()){ S.wsel=+r; S.wselKeep=true; var w=S.words.find(function(x){return x.row===+r;}); $("#w-detail").innerHTML=wDetailHtml(w); document.querySelectorAll("#list .w").forEach(function(x){ x.classList.toggle("sel",x===li); }); return; }
+  S.open[r]=!S.open[r];
   if(S.open[r]) li.setAttribute("data-open",""); else li.removeAttribute("data-open");
   h.setAttribute("aria-expanded",String(!!S.open[r]));
 });
@@ -3587,6 +3655,17 @@ function animateG(){
 }
 /* Genki 1 lesson themes, shown next to each lesson number (Oct 2026: moved out of renderGrammar so the Transmute lesson picker can use it) */
 var GTOPIC={1:"New Friends",2:"Shopping",3:"Making a Date",4:"The First Date",5:"A Trip to Okinawa",6:"A Day in Robert's Life",7:"Family Picture",8:"Barbecue",9:"Kabuki",10:"Winter Vacation Plans",11:"After the Vacation",12:"Feeling Ill"};
+/* Wide Grammar (Oct 2026): filter chips sit above the right column so both columns start on the same line.
+   When the two columns end within a short distance of each other, the shorter one's last card is stretched so they end together too. */
+function gAlign(){
+  var L=document.querySelector("#grammar .g-left"), R=document.querySelector("#grammar .g-right"); if(!L||!R) return;
+  var cards=[L.lastElementChild,R.lastElementChild]; cards.forEach(function(c){ if(c) c.style.minHeight=""; });
+  if(!(window.matchMedia&&matchMedia("(min-width:1100px)").matches)) return;
+  var d=R.offsetHeight-L.offsetHeight, c=d>0?L.lastElementChild:R.lastElementChild;
+  if(c&&Math.abs(d)>1&&Math.abs(d)<320) c.style.minHeight=(c.offsetHeight+Math.abs(d))+"px";
+}
+window.addEventListener("resize",function(){ if(S.tab==="grammar") gAlign(); });
+document.getElementById("grammar").addEventListener("toggle",function(){ requestAnimationFrame(gAlign); },true);
 function renderGrammar(){
   var el=$("#grammar"); if(!el) return;
   if(S.drill){ el.innerHTML=drillHtml(); var gi=$("#gd-ans"); if(gi&&!gi.disabled) gi.focus({preventScroll:true}); return; }
@@ -3639,7 +3718,8 @@ function renderGrammar(){
     });
     html+='</div></details>';
   });
-  el.innerHTML='<div class="g-cols"><div class="g-left">'+gLeft+'</div><div class="g-right">'+html+'</div></div>';
+  var ce=html.indexOf('</div>')+6, gChips=html.slice(0,ce);
+  el.innerHTML='<div class="g-cols"><div class="g-chips">'+gChips+'</div><div class="g-left">'+gLeft+'</div><div class="g-right">'+html.slice(ce)+'</div></div>'; gAlign();
   if(S.animG){ S.animG=false; requestAnimationFrame(animateG); }
   if(S.gex){var inp=$("#gx-jp"); if(inp) inp.focus();}
 }
