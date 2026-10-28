@@ -802,6 +802,7 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .snd-tg[aria-checked="true"] i{background:var(--ai)}.snd-tg[aria-checked="true"] i::after{transform:translateX(16px)}
 body.j-noen #entries .jline .en,body.j-noen #entries .jline .note{display:none}
 .jf-tabs{display:none}
+.shelf-more{display:none}
 /* Desktop steps 4-6 (Oct 2026): Review, Home, and side panels for flashcards, quizzes and drills. Below 1,100px nothing changes. */
 .ps-side{display:none}
 .ps-p{padding:14px 16px}
@@ -829,13 +830,25 @@ body.j-noen #entries .jline .en,body.j-noen #entries .jline .note{display:none}
   nav.tabs .wrap{gap:6px}
   .tab{flex:0 0 auto;min-width:112px;padding-left:18px;padding-right:18px}
   /* one header row on desktop, like the mockups: brand left, tabs right, then the two round buttons (Oct 2026) */
-  body.hd-row header.top{position:sticky;top:0;z-index:6;padding:8px 0 0;box-shadow:0 6px 14px -12px rgba(0,0,0,.25)}
+  body.hd-row header.top{position:sticky;top:0;z-index:6;padding:8px 0 0;overflow:visible;box-shadow:0 6px 14px -12px rgba(0,0,0,.25)}
   body.hd-row header.top .wrap{display:flex;align-items:center;gap:24px}
   body.hd-row .brand{position:static;flex:none;padding-bottom:8px}
   body.hd-row .logo{width:32px;height:40px}
   body.hd-row .brand h1{font-size:2rem}
   body.hd-row .subtitle{font-size:.78rem}
   body.hd-row .pills{top:50%;transform:translateY(-50%);margin-top:-3px}
+  /* desktop: the two round buttons open a small dropdown below instead of growing sideways over the tabs (Oct 2026) */
+  body.hd-row .pills.both-open{top:50%}
+  body.hd-row .pills.both-open>#theme-pill{right:52px;top:0}
+  body.hd-row .pills>.pill{width:var(--face)!important;overflow:visible}
+  body.hd-row .pills:not(.both-open)>#sync-pill.open~#theme-pill{transform:none;opacity:1;pointer-events:auto}
+  body.hd-row .pill-body,body.hd-row .pill-body.themes{position:absolute;top:calc(100% + 8px);right:-1px;display:flex;flex-direction:column;align-items:stretch;gap:2px;padding:6px;min-width:190px;white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 34px -12px rgba(0,0,0,.3);transform:translateY(-6px) scale(.98);transform-origin:top right;transition:opacity .16s ease,transform .2s cubic-bezier(.22,.9,.24,1)}
+  body.hd-row .pill.open .pill-body{transform:none;transition-delay:0s}
+  body.hd-row .pill-body.themes button{display:flex;width:100%;justify-content:flex-start;padding:8px 10px;border-radius:9px;font-size:.9rem}
+  body.hd-row .pill-body.themes button span{display:inline!important}
+  body.hd-row .pill-body.themes button[aria-checked="true"]{background:color-mix(in srgb,var(--ai) 10%,transparent);color:var(--ink)}
+  body.hd-row .pill-body.themes button[aria-checked="true"]::after{content:"✓";margin-left:auto;padding-left:14px;color:var(--ai);font-weight:700}
+  body.hd-row #sync-pill .pill-body{flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 12px;min-width:250px}
   body.hd-row nav.tabs{position:static;margin-left:auto;margin-right:128px;background:none;border:0;box-shadow:none;align-self:flex-end}
   body.hd-row nav.tabs .wrap{padding:0;max-width:none}
   body.hd-row .w-right,body.hd-row .g-left,body.hd-row .ps-side,body.hd-row .rv-r,body.hd-row .hm-right{top:104px}
@@ -882,6 +895,10 @@ body.j-noen #entries .jline .en,body.j-noen #entries .jline .note{display:none}
   .hm-left .shelf>.mix.page .pg-cover::before,.hm-left .shelf>.mix.page .pg-tape,.hm-left .shelf>.mix.page .pg-stamp,.hm-left .shelf>.mix.page .pg-mark,.hm-left .shelf>.mix.page .pg-line{display:none}
   .hm-left .shelf>.mix.page .pg-title{font-size:1rem;-webkit-line-clamp:1}
   .hm-left .shelf>.mix.page .pg-title ruby rt{color:var(--muted)}
+  /* the journal list shows the 5 newest plus "All entries", so it ends level with Practice sets */
+  .hm-left .shelf>.mix.page:nth-child(n+6){display:none}
+  .hm-left .shelf-more{display:block;width:100%;text-align:left;padding:12px 16px;border:0;border-top:1px solid var(--line);background:none;color:var(--ai);font:inherit;font-size:.88rem;font-weight:500;cursor:pointer;border-radius:0 0 16px 16px}
+  .hm-left .shelf-more:hover{background:color-mix(in srgb,var(--ai) 5%,transparent)}
 }
 .focusbtn,.jf-back,.jf-nav{display:none}
 body.j-noen .entry-head .t-en{display:none}
@@ -2124,7 +2141,11 @@ function aiErr(e){
   if(c==="not_granted") return "Claude help is off for this page. Allow it when asked to use these buttons.";
   if(c==="rate_limited") return "Too many requests at once. Wait a few seconds and try again.";
   if(c==="cancelled") return "Stopped.";
-  return "Claude couldn’t finish that. Try again.";
+  /* Oct 2026: say what actually went wrong, so a repeat failure can be traced */
+  if(c==="bad") return "Claude’s answer came back in the wrong shape. Try again.";
+  if(c==="server_unavailable") return "Couldn’t reach your script. Check your connection and try again.";
+  var why=String((e&&e.message)||"").replace(/\s+/g," ").trim().slice(0,120);
+  return "Claude couldn’t finish that"+(why&&why!=="Unknown error"?" ("+esc(why)+")":"")+". Try again in a minute.";
 }
 
 /* ---------- sheets ---------- */
@@ -2205,8 +2226,8 @@ function placeInd(r,trans){var el=$("#tab-ind"); if(!el) return; el.style.transi
 function placeNav(){
   var nav=$("nav.tabs"), hdr=$("header.top"), hw=hdr&&hdr.querySelector(".wrap"); if(!nav||!hw) return;
   var w=window.matchMedia&&matchMedia("(min-width:1100px)").matches;
-  if(w&&nav.parentNode!==hw){ hw.appendChild(nav); document.body.classList.add("hd-row"); }
-  else if(!w&&nav.parentNode===hw){ hdr.parentNode.insertBefore(nav,hdr.nextSibling); document.body.classList.remove("hd-row"); }
+  if(w&&nav.parentNode!==hw){ hw.appendChild(nav); document.body.classList.add("hd-row"); document.querySelectorAll(".pill").forEach(sizePill); }
+  else if(!w&&nav.parentNode===hw){ hdr.parentNode.insertBefore(nav,hdr.nextSibling); document.body.classList.remove("hd-row"); document.querySelectorAll(".pill").forEach(sizePill); }
 }
 placeNav();
 window.addEventListener("resize",function(){placeNav(); placeInd(indRect(S.tab));});
@@ -3721,7 +3742,7 @@ document.addEventListener("keydown",function(e){
 
 /* ---------- expanding pills ---------- */
 function sizePill(p){
-  if(!p) return; var face=p.querySelector(".pill-face"), body=p.querySelector(".pill-body");
+  if(!p) return; if(document.body.classList.contains("hd-row")){ p.style.width=""; return; } var face=p.querySelector(".pill-face"), body=p.querySelector(".pill-body");
   var fw=face.offsetWidth+2;
   if(p.classList.contains("open")){var max=Math.max(fw,(p.closest(".brand").clientWidth||window.innerWidth)-56); p.style.width=Math.min(max,fw+body.scrollWidth+6)+"px";}
   else p.style.width=fw+"px";
@@ -3873,7 +3894,7 @@ function renderHome(){
       var name=rubyText((en.title||"Untitled").split(/\s*[(（](?![\u3040-\u30ffー]+[)）])/)[0]||en.title);
       var slip=t.split(/\s*[(（]/)[0]; if(slip.length>7) slip=slip.slice(0,7)+"…";
       return mixHtml({mark:km?km[0]:"記",slip:slip,name:name,date:en.date,first:stripFuri((en.lines[0]&&en.lines[0].jp)||""),sub:esc(en.date)+", "+(c.words.length+c.sents.length)+" cards",c:JPAL[h%JPAL.length],entry:key});
-    }).join("")+'</div>';
+    }).join("")+(S.entries.length>5?'<button type="button" class="shelf-more" data-act="hm-journal">All '+S.entries.length+' entries ›</button>':'')+'</div>';
   }
   if(jWide()&&!window.KC_LEARNER) html='<div class="hm-cols"><div class="hm-left">'+html.replace('<div id="hchat-slot"></div>','')+'</div><div class="hm-right"><div id="hchat-slot"></div></div></div>';
   el.innerHTML=html;
@@ -3897,6 +3918,7 @@ function goReview(which){
 document.addEventListener("pointerdown",function(e){S.lastPtr=e.pointerType;S.lastPtrAt=Date.now();},true);
 $("#home-tiles").addEventListener("click",function(e){
   if(e.target.closest('[data-act="home-review"]')){ var dn=S.words.some(function(w){return !w.next||w.next<=today();}); setTab("review"); startReview(dn?"due":"all"); return; }
+  if(e.target.closest('[data-act="hm-journal"]')){ setTab("journal"); window.scrollTo(0,0); return; }
   if(e.target.closest('[data-act="retry-load"]')){ $("#home-tiles").innerHTML=LOADER_HTML; loadAll(); return; }
   var mtile=e.target.closest(".mt");
   if(e.target.closest(".mt-addslot")) return;
@@ -4344,7 +4366,12 @@ async function drillCheck(){
   D.ans=ans; D.busy=true; renderGrammar();
   try{
     var d=await sample.json("You are a kind, direct Japanese tutor for a beginner who finished Genki 1. Grammar point: "+stripFuri(it.p)+" ("+it.m+").\nSituation given to the learner: "+it.prompt+"\nLearner's sentence: "+stripFuri(ans)+"\nJudge it. ok is true only if the sentence is grammatical, natural enough, fits the situation, and actually uses the pattern correctly. Small spelling slips in kana that a tutor would forgive can still be ok.\nReturn only JSON: {\"ok\": true or false, \"corrected\": the corrected sentence (or the original if fine) with the hiragana reading in half-width parentheses right after every kanji part, like 毎日(まいにち), \"english\": a natural translation, \"note\": one or two short plain-English sentences on the pattern use, \"words\": up to 4 content words (nouns, verbs, adjectives, adverbs, set expressions; skip particles, names, numbers and the grammar pattern itself) that appear in the learner's sentence, using the correct spelling, each as {\"jp\": dictionary form as normally written, \"kana\": reading in hiragana (katakana for loanwords), \"romaji\": Hepburn with long vowels doubled, \"en\": short meaning (verbs start with to), \"type\": one of Verb, Noun, i-Adjective, na-Adjective, Adverb, Expression, \"group\": for verbs Group 1 (u-verb), Group 2 (ru-verb) or Group 3 (irregular), else empty, \"te\": te-form for verbs, else empty}, \"typos\": misspelled words in the learner's sentence as [{\"wrote\": what they wrote, \"meant\": the correct word with readings in parentheses after kanji, \"note\": a few plain-English words}], or an empty list}. No em dashes.",{modelTier:"default"});
-    if(!d||typeof d.ok!=="boolean") throw {code:"bad"};
+    if(d&&typeof d.ok==="string"&&/^(true|false|yes|no)$/i.test(d.ok.trim())) d.ok=/^(true|yes)$/i.test(d.ok.trim());
+    if(!d||typeof d.ok!=="boolean"){
+      d=await sample.json("You are a kind Japanese tutor for a beginner who finished Genki 1. Grammar point: "+stripFuri(it.p)+" ("+it.m+").\nSituation: "+it.prompt+"\nLearner's sentence: "+stripFuri(ans)+"\nReturn only JSON with short fields: {\"ok\": true or false, \"corrected\": corrected sentence with hiragana in half-width parentheses after kanji, \"english\": translation, \"note\": one short sentence}. Use no double quotes inside the values.",{modelTier:"default"});
+      if(d&&typeof d.ok==="string"&&/^(true|false|yes|no)$/i.test(d.ok.trim())) d.ok=/^(true|yes)$/i.test(d.ok.trim());
+      if(!d||typeof d.ok!=="boolean") throw {code:"bad"};
+    }
     D.res={ok:d.ok,corrected:d.corrected||ans,english:d.english||"",note:d.note||"",gain:(d.ok&&gxPeek(it.id).d<3)?15:0,
       newWords:pickNewWords(d.words,it), typos:(Array.isArray(d.typos)?d.typos:[]).filter(function(t){return t&&t.wrote&&t.meant&&stripFuri(t.wrote)!==stripFuri(t.meant);}).slice(0,3)};
     if(d.ok) D.good++;
