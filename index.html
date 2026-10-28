@@ -700,7 +700,7 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
   .j-cols.reading .j-past{display:block;grid-area:past;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px 22px 16px}
   /* the open entry's title band runs edge to edge across the top of the card, rounded with it, with a divider below (Oct 2026) */
   body:not(.j-focus) .j-cols.reading .entry[data-open] .entry-row{margin:-4px -22px 14px;border-radius:13px 13px 0 0;border-bottom:1px solid var(--line)}
-  body:not(.j-focus) .j-cols.reading .entry[data-open] .entry-slide{padding:10px 22px}
+  body:not(.j-focus) .j-cols.reading .entry[data-open] .entry-slide{padding:10px 22px;background:color-mix(in srgb,var(--ai) 8%,var(--surface))}
   .j-cols.reading .j-past-h{display:none}
   .j-cols.reading #entries .entry:not([data-open]){display:none}
   .j-cols.reading #entries .entry[data-open]{border-bottom:0}
@@ -802,6 +802,44 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .snd-tg[aria-checked="true"] i{background:var(--ai)}.snd-tg[aria-checked="true"] i::after{transform:translateX(16px)}
 body.j-noen #entries .jline .en,body.j-noen #entries .jline .note{display:none}
 .jf-tabs{display:none}
+/* Desktop steps 4-6 (Oct 2026): Review, Home, and side panels for flashcards, quizzes and drills. Below 1,100px nothing changes. */
+.ps-side{display:none}
+.ps-p{padding:14px 16px}
+.ps-p>b{display:block;margin-bottom:8px}
+.ps-stats{display:grid;grid-template-columns:repeat(3,1fr);text-align:center}
+.ps-stats span{display:block;font-size:1.6rem;font-weight:700;line-height:1.2}
+.ps-stats .ok{color:var(--matcha)}.ps-stats .miss{color:var(--t-grammar,#A63A4A)}
+.ps-stats small{font-size:.75rem;color:var(--muted)}
+.ps-round{display:grid;gap:2px;margin:0;padding:0;list-style:none}
+.ps-round li{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:8px;font-size:.92rem}
+.ps-round li.now{background:color-mix(in srgb,var(--ai) 7%,transparent)}
+.ps-round li.todo{color:var(--muted)}
+.ps-round i{font-style:normal;width:14px;text-align:center;flex:none;color:var(--muted)}
+.ps-round li.ok i{color:var(--matcha)}.ps-round li.miss i{color:var(--t-grammar,#A63A4A)}
+.ps-round .a{margin-left:auto;color:var(--muted);font-size:.85rem;white-space:nowrap}
+.ps-round .q{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ps-rank{display:flex;align-items:center;gap:14px}
+.ps-seal{flex:none;width:46px;height:46px;border-radius:50%;border:2px solid var(--mt);color:var(--mt);display:grid;place-items:center;font-family:var(--serif);font-weight:700;font-size:1.05rem}
+.ps-rank .rt{flex:1;min-width:0}
+.ps-rank .rt div{font-size:.8rem;color:var(--muted)}
+.ps-bar{height:5px;border-radius:3px;background:var(--line);margin-top:6px;overflow:hidden}.ps-bar i{display:block;height:100%;background:var(--mt)}
+.ps-form{font-family:var(--serif);font-size:1.05rem;margin-top:2px}
+@media (min-width:1100px){
+  header.top .wrap,nav.tabs .wrap{max-width:1240px}
+  nav.tabs .wrap{gap:6px}
+  .tab{flex:0 0 auto;min-width:112px;padding-left:18px;padding-right:18px}
+  body[data-tab="review"] main.wrap,body[data-tab="add"] main.wrap{max-width:1240px}
+  .ps-cols{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:24px;align-items:start}
+  .ps-side{display:grid;gap:14px;position:sticky;top:72px}
+  .ps-cols .gdrill .gp-f{display:none}
+  .rv-cols,.hm-cols{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:24px;align-items:start}
+  .rv-r,.hm-right{position:sticky;top:72px}
+  .rv-r>details{margin-top:0}
+  .rv-r>details>summary,.rv-l>details.jbox>summary{pointer-events:none}
+  .rv-r>details>summary::after,.rv-l>details.jbox>summary::after,.rv-r>details>summary svg,.rv-l>details.jbox>summary svg{display:none}
+  .hm-right #hchat-slot{margin-top:0}
+  .hm-cols:has(#hchat-slot:empty){display:block;max-width:820px}
+}
 .focusbtn,.jf-back,.jf-nav{display:none}
 body.j-noen .entry-head .t-en{display:none}
 @keyframes jfTurnL{from{opacity:0;transform:translateX(48px)}to{opacity:1;transform:none}}
@@ -2480,6 +2518,31 @@ function jfTurn(dir){
     if(e.key==="ArrowRight"){ e.preventDefault(); jfTurn(1); } else if(e.key==="ArrowLeft"){ e.preventDefault(); jfTurn(-1); }
   });
 })();
+function psWrap(main,side){ return '<div class="ps-cols"><div class="ps-main">'+main+'</div><aside class="ps-side" aria-label="Session">'+side+'</aside></div>'; }
+function psRank(name,jp,M,N,line,nextTxt,inRank){ return '<div class="panel ps-p"><div class="ps-rank" style="--mt:'+M.c+'"><div class="ps-seal" lang="ja">'+M.k+'</div><div class="rt"><b><span lang="ja">'+jp+'</span> '+name+'</b><div><span lang="ja">'+M.k+'</span> '+M.en+' · '+line+(N?' · '+nextTxt+' <span lang="ja">'+N.k+'</span>':'')+'</div><div class="ps-bar"><i style="width:'+(inRank||0)+'%"></i></div></div></div></div>'; }
+function fcSide(D){
+  return '<div class="panel ps-p"><b lang="ja">'+rubyText("今回(こんかい)")+'</b><div class="ps-stats"><div><span class="ok">'+D.good+'</span><small lang="ja">できた</small></div><div><span class="miss">'+D.again+'</span><small lang="ja">'+rubyText("もう一回(いっかい)")+'</small></div><div><span>'+Math.max(0,D.cards.length-D.i)+'</span><small lang="ja">'+rubyText("残(のこ)り")+'</small></div></div></div>'+
+    '<div class="panel ps-p"><b>Keys</b><p class="hint" style="margin:0">Space flips · 1 Again · 2 Got it · P plays audio</p></div>';
+}
+function quizSide(){
+  var Q=S.quiz, q=qStats(), h="";
+  if(!Q.done){
+    h+='<div class="panel ps-p"><b lang="ja">'+rubyText("今回(こんかい)")+'</b><ol class="ps-round">'+Q.items.map(function(x,i){
+      var st=x.res?(x.res.ok?"ok":"miss"):i===Q.i?"now":"todo", ic=x.res?(x.res.ok?"✓":"×"):i===Q.i?"•":"·";
+      var qq=x.kind==="fm"?(x.back?x.from:esc(x.W.jp))+' → '+esc(x.label):esc(stripFuri(x.s)).replace("＿","＿＿");
+      var a=x.res?(x.kind==="fm"?x.show:esc(x.ok[0])):"";
+      return '<li class="'+st+'"><i aria-hidden="true">'+ic+'</i><span class="q" lang="ja">'+qq+'</span>'+(a?'<span class="a" lang="ja">'+a+'</span>':'')+'</li>'; }).join("")+'</ol></div>';
+  }
+  (Q.t==="mx"?["fm","pt"]:[Q.t]).forEach(function(t){ var L=qLevel(q[t].ok), M=METALS[L.idx], N=METALS[L.idx+1];
+    h+=psRank(QT_NAME[t][2],QT_NAME[t][0],M,N,q[t].ok+" right",N?L.toNext+" more to":"",L.inRank); });
+  return h+workingOnHtml();
+}
+function drillSide(){
+  var D=S.drill, it=D.items[D.i], R=gRank(), M=METALS[R.idx], N=METALS[R.idx+1], h="";
+  if(it&&it.f&&D.i<D.items.length) h+='<div class="panel ps-p"><b>How to form</b><div class="ps-form" lang="ja">'+rubyText(it.f)+'</div></div>';
+  return h+psRank("Transmute","錬成",M,N,Math.round(R.pct)+"%",N?"on the way to":"",R.inRank);
+}
+(function(){ var was=jWide(); window.addEventListener("resize",function(){ var w=jWide(); if(w===was) return; was=w; if(S.tab==="add") renderHome(); else if(S.tab==="review") renderReview(); }); })();
 function jfCloseEntry(){ if(S.play) playStop(); S.openEntry={}; renderEntries(); }
 function jfToggle(on){
   function apply(){ S.js.focus=on; store("kc-jset",S.js); renderEntries(); jsetApply(); }
@@ -2716,13 +2779,14 @@ function renderReview(){
     var d=decks();
     var voiceNote=!TTS?"This browser can’t play audio.":(!voiceJa?"No Japanese voice found on this device. Add one in your device’s speech or accessibility settings.":"");
     S.animLevel=S.animLevel!==false;
-    el.innerHTML=quickStartHtml(d)+levelHtml()+'<details class="panel startbox"'+(S.startOpen?' open':'')+'><summary><span class="sb-jp" lang="ja"><ruby>復習<rt>ふくしゅう</rt></ruby>しよう！</span><span class="sb-en">More decks and settings</span></summary><div class="deckopts" role="radiogroup" aria-label="Deck">'+
+    var rvW=jWide(); el.classList.toggle("rv-wide",rvW);
+    el.innerHTML=(rvW?'<div class="rv-cols"><div class="rv-l">':'')+quickStartHtml(d)+levelHtml()+(rvW?journalDecksHtml().replace('<details class="panel startbox jbox"','<details open class="panel startbox jbox"')+'</div><div class="rv-r">':'')+'<details class="panel startbox"'+(S.startOpen||rvW?' open':'')+'><summary><span class="sb-jp" lang="ja"><ruby>復習<rt>ふくしゅう</rt></ruby>しよう！</span><span class="sb-en">More decks and settings</span></summary><div class="deckopts" role="radiogroup" aria-label="Deck">'+
       Object.keys(DECK_LABEL).map(function(k){return '<label class="opt"><input type="radio" name="deck" value="'+k+'"'+(S.deckChoice===k?" checked":"")+'><span>'+DECK_LABEL[k]+'</span><span>'+d[k].length+'</span></label>';}).join("")+
       '</div><div class="settings">'+SETTINGS.filter(function(x){return TTS||(x[0]!=="voice"&&x[0]!=="rate");}).map(function(x){
         var opts=x[2]; if(x[0]==="front"&&!TTS) opts=opts.filter(function(o){return o[0]!=="listen";});
         return segHtml(x[0],x[1],opts);}).join("")+
       (voiceNote?'<p class="hint">'+voiceNote+'</p>':'')+
-      '</div><div class="row" style="margin-top:18px"><button class="btn primary startbtn" data-act="start">Start review</button><span class="hint">Space flips, 1 is Again, 2 is Got it, P plays audio</span></div><div class="msg" id="deck-msg"></div></details>'+journalDecksHtml();
+      '</div><div class="row" style="margin-top:18px"><button class="btn primary startbtn" data-act="start">Start review</button><span class="hint">Space flips, 1 is Again, 2 is Got it, P plays audio</span></div><div class="msg" id="deck-msg"></div></details>'+(rvW?'</div></div>':journalDecksHtml());
     if(S.animLevel){S.animLevel=false; requestAnimationFrame(function(){animateLevel(S.levelOpen);});}
     return;
   }
@@ -2754,7 +2818,7 @@ function renderReview(){
     '<div class="sub rec">'+recText(w)+'</div>'+
     (w.exJp?'<div class="ex" style="text-align:left;margin-top:10px"><div class="row" style="gap:6px;flex-wrap:nowrap"><div lang="ja" style="flex:1">'+esc(w.exJp)+'</div>'+(TTS&&S.voice!=="off"?sayBtn(w.exJp,"Play the example"):"")+'</div><div class="sub">'+esc(w.exEn)+'</div></div>':'')+'</div>':'';
   }
-  el.innerHTML='<div class="progress"><span>'+esc(D.label||DECK_LABEL[D.kind].split(" (")[0])+'</span>'+
+  el.innerHTML=psWrap('<div class="progress"><span>'+esc(D.label||DECK_LABEL[D.kind].split(" (")[0])+'</span>'+
     '<button class="autoplay furi-tg" data-act="furi" aria-pressed="'+(S.furi==="always")+'" title="Furigana '+(S.furi==="always"?"on":"off")+'"><span class="furi-ico" lang="ja" aria-hidden="true"><ruby>漢<rt>かん</rt></ruby></span><span>Furigana '+(S.furi==="always"?"on":"off")+'</span></button>'+
     (TTS?'<button class="autoplay" data-act="autoplay" aria-pressed="'+(S.voice==="auto")+'" title="Turn auto-play '+(S.voice==="auto"?"off":"on")+'">'+SPK+'<span>Auto-play '+(S.voice==="auto"?"on":"off")+'</span></button>':'')+
     '<span>'+(D.i+1)+' of '+D.cards.length+'</span></div>'+
@@ -2765,7 +2829,7 @@ function renderReview(){
     (D.flipped?'<div class="grade"><button class="btn again" data-act="again">Again</button><button class="btn good" data-act="good">Got it</button></div>'
       :'<div class="grade"><button class="btn" data-act="flip" style="grid-column:1/-1">Show answer</button></div>')+
     (D.err?'<div class="msg err">'+D.err+'</div>':'')+
-    '<div class="row" style="margin-top:14px"><button class="btn ghost" data-act="restart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>End review</button></div>';
+    '<div class="row" style="margin-top:14px"><button class="btn ghost" data-act="restart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>End review</button></div>',fcSide(D));
   var token=D.i+":"+D.flipped;
   if(TTS && D.spoken!==token){
     D.spoken=token;
@@ -2902,7 +2966,7 @@ document.addEventListener("keydown",function(e){
 });
 
 /* ---------- JOURNAL ---------- */
-function newDraft(){return {date:today(),title:"",grammar:"",lines:[{jp:"",en:"",notes:"",words:""}]};}
+function newDraft(){return {date:today(),title:"",grammar:"",mode:"free",lines:[{jp:"",en:"",notes:"",words:""}]};}
 S.draft=recall("kc-draft")||null;
 function saveDraft(){store("kc-draft",S.draft);}
 function renderComposer(){
@@ -2970,7 +3034,7 @@ $("#j-list").addEventListener("click",function(e){
 window.addEventListener("resize",function(){ if(S.tab==="journal") jMode(); });
 $("#j-newwords").addEventListener("click",function(e){ var b=e.target.closest('[data-act="nw-add"]'); if(b) toAdd(+b.dataset.i,b.dataset.w); });
 if(window.matchMedia&&matchMedia("(min-width:1100px)").matches) $("#j-look").open=true;
-function compModeHtml(d){ var m=d.mode==="free"?"free":"lines"; return '<div class="seg comp-mode" role="radiogroup" aria-label="How to write"><button role="radio" data-act="cmode" data-m="lines" aria-checked="'+(m==="lines")+'">One by one</button><button role="radio" data-act="cmode" data-m="free" aria-checked="'+(m==="free")+'">Write freely</button></div>'; }
+function compModeHtml(d){ var m=d.mode==="free"?"free":"lines"; return '<div class="seg comp-mode" role="radiogroup" aria-label="How to write"><button role="radio" data-act="cmode" data-m="free" aria-checked="'+(m==="free")+'">Write freely</button><button role="radio" data-act="cmode" data-m="lines" aria-checked="'+(m==="lines")+'">One by one</button></div>'; }
 function splitSentences(t){
   var out=[];
   String(t||"").split(/\n+/).forEach(function(par){
@@ -2996,20 +3060,34 @@ function compAllHtml(d){
   var fixes=d.lines.filter(function(l){return l.check;}).length;
   return '<div class="row ai-only comp-all"><button class="btn small" data-act="checkall">Check all</button><button class="btn small" data-act="furiall">Add furigana to all</button>'+(fixes?'<button class="btn small primary" data-act="useall">Use all '+fixes+' suggestions</button>':'')+'</div><div class="msg" id="j-allmsg"></div>';
 }
+/* Oct 2026: no English in the journal. A line with no Japanese is not checked (so the check never becomes a translator);
+   English words inside a Japanese line get a hint, not the answer. */
+var JA_RE=/[\u3040-\u30ff\u3400-\u9fff]/;
+var NO_EN_RULE="Never translate English into Japanese for them. If a sentence has English words in it, set ok to false, keep their sentence as corrected with the English part left as it is, and in note ask them to write that part in Japanese, giving at most a small hint (a related Genki grammar pattern or the first kana), never the full Japanese word.";
+function enOnlyMsg(i){ var m=$("#lm-"+i); if(m) msg(m,"err",'<span lang="ja">'+rubyText("日本語(にほんご)で書(か)いてみてください。")+'</span>'); }
+/* Check all in batches of 3, so a long entry never overflows one answer (that is why it failed on long entries). */
 async function checkAll(btn){
-  var d=S.draft, m=$("#j-allmsg"), idx=[]; d.lines.forEach(function(l,i){ if(l.jp.trim()) idx.push(i); });
+  var d=S.draft, m=$("#j-allmsg"), idx=[], en=[]; d.lines.forEach(function(l,i){ if(!l.jp.trim()) return; if(JA_RE.test(l.jp)) idx.push(i); else en.push(i); });
   if(!sample){ msg(m,"err",aiOffText()); return; }
-  btn.disabled=true; msg(m,"info","Checking "+idx.length+" sentences…");
-  var list=idx.map(function(i,k){ var l=d.lines[i]; return (k+1)+". "+stripFuri(l.jp).trim()+(l.en.trim()?"  (meant: "+l.en.trim()+")":""); }).join("\n");
-  var prompt="You are a kind, direct Japanese tutor. The learner finished Genki 1 and is starting Genki 2. Check each sentence of their journal entry. Read them together, since they form one entry.\n"+
-    "Entry title: "+(d.title||"")+"\nGrammar focus (may be empty): "+(d.grammar||"")+"\nSentences:\n"+list+"\n"+
-    "Keep their wording when it is already correct and natural. Return only JSON: {\"items\":[{\"ok\": true or false, \"corrected\": the corrected sentence (or the original if ok) with the hiragana reading in half-width parentheses right after every kanji part, like 毎日(まいにち), \"english\": a natural English translation, \"note\": one or two short plain-English sentences naming the grammar point behind the fix, or what they did well if ok}]} with one item per sentence, in the same order. No em dashes.";
-  try{
-    var r=await sample.json(prompt,{modelTier:"default"}); var it=r&&Array.isArray(r.items)?r.items:null; if(!it) throw {code:"bad"};
-    var n=0; idx.forEach(function(i,k){ var x=it[k]; if(!x||!x.corrected) return; var l=d.lines[i]; l.check={ok:!!x.ok,corrected:String(x.corrected),english:String(x.english||""),note:String(x.note||""),draft:stripFuri(l.jp).trim()}; n++; });
-    saveDraft(); renderComposer(); var bad=d.lines.filter(function(l){return l.check&&!l.check.ok;}).length;
-    msg($("#j-allmsg"),"ok","Checked "+n+" sentences. "+(bad?bad+(bad===1?" has a suggested fix.":" have a suggested fix."):"All look correct."));
-  }catch(e){ msg(m,"err",aiErr(e)); btn.disabled=false; }
+  if(!idx.length){ en.forEach(enOnlyMsg); msg(m,"err",'<span lang="ja">'+rubyText("日本語(にほんご)で書(か)いてみてください。")+'</span>'); return; }
+  btn.disabled=true;
+  var whole=d.lines.filter(function(l){return l.jp.trim();}).map(function(l){return stripFuri(l.jp).trim();}).join(" "), n=0, fail=null;
+  for(var b=0;b<idx.length;b+=3){
+    var part=idx.slice(b,b+3); msg(m,"info","Checking "+Math.min(b+3,idx.length)+" of "+idx.length+"…");
+    var list=part.map(function(i,k){ var l=d.lines[i]; return (k+1)+". "+stripFuri(l.jp).trim()+(l.en.trim()?"  (meant: "+l.en.trim()+")":""); }).join("\n");
+    var prompt="You are a kind, direct Japanese tutor. The learner finished Genki 1 and is starting Genki 2. Check sentences from their journal entry.\n"+
+      "Entry title: "+(d.title||"")+"\nGrammar focus (may be empty): "+(d.grammar||"")+"\nThe whole entry, for context only: "+whole+"\nCheck only these sentences:\n"+list+"\n"+
+      "Keep their wording when it is already correct and natural. "+NO_EN_RULE+" Return only JSON: {\"items\":[{\"ok\": true or false, \"corrected\": the corrected sentence (or the original if ok) with the hiragana reading in half-width parentheses right after every kanji part, like 毎日(まいにち), \"english\": a short natural English translation, \"note\": one or two short plain-English sentences naming the grammar point behind the fix, or what they did well if ok}]} with one item per sentence, in the same order. Keep every field short. No em dashes.";
+    try{
+      var r=await sample.json(prompt,{modelTier:"default"}); var it=r&&Array.isArray(r.items)?r.items:null; if(!it) throw {code:"bad"};
+      part.forEach(function(i,k){ var x=it[k]; if(!x||!x.corrected) return; var l=d.lines[i]; l.check={ok:!!x.ok,corrected:String(x.corrected),english:String(x.english||""),note:String(x.note||""),draft:stripFuri(l.jp).trim()}; n++; });
+      saveDraft();
+    }catch(e){ fail=e; break; }
+  }
+  renderComposer(); en.forEach(enOnlyMsg); m=$("#j-allmsg");
+  var bad=d.lines.filter(function(l){return l.check&&!l.check.ok;}).length;
+  if(fail&&!n){ msg(m,"err",aiErr(fail)); return; }
+  msg(m,fail?"info":"ok","Checked "+n+" of "+idx.length+" sentences. "+(bad?bad+(bad===1?" has a suggested fix.":" have a suggested fix."):"All look correct.")+(fail?" The rest didn’t come back. Press Check all again to finish.":"")+(en.length?" "+en.length+(en.length===1?" line in English was skipped.":" lines in English were skipped."):""));
 }
 async function furiAll(btn){
   var d=S.draft, m=$("#j-allmsg"), idx=[]; d.lines.forEach(function(l,i){ if(l.jp.trim()) idx.push(i); });
@@ -3076,6 +3154,7 @@ $("#composer").addEventListener("click",function(e){
 async function furigana(i,btn){
   var l=S.draft.lines[i], m=$("#lm-"+i);
   if(!l.jp.trim()){msg(m,"err","Write the Japanese sentence first.");return;}
+  if(!JA_RE.test(l.jp)){enOnlyMsg(i);return;}
   if(!sample){msg(m,"err",aiOffText());return;}
   btn.disabled=true; msg(m,"info","Adding furigana…");
   var prompt="Add furigana to this Japanese text. Right after every word written with kanji, put its hiragana reading in half-width parentheses, for example: 私(わたし)の高校(こうこう)は神学校(しんがっこう)でした。 Put the reading only after the kanji part of a word, so 食べました becomes 食(た)べました. Keep any readings that are already there. Do not change, fix, or translate anything else. Return only the text.\n\nText: "+l.jp.trim();
@@ -3089,11 +3168,12 @@ async function furigana(i,btn){
 async function checkLine(i,btn){
   var l=S.draft.lines[i], m=$("#lm-"+i);
   if(!l.jp.trim()){msg(m,"err","Write the Japanese sentence first.");return;}
+  if(!JA_RE.test(l.jp)){enOnlyMsg(i);return;}
   if(!sample){msg(m,"err",aiOffText());return;}
   btn.disabled=true; msg(m,"info","Checking…");
   var prompt="You are a kind, direct Japanese tutor. The learner finished Genki 1 and is starting Genki 2. Check one sentence from their journal.\n"+
     "Sentence: "+stripFuri(l.jp).trim()+"\nWhat they meant (may be empty): "+(l.en||"")+"\nGrammar focus of the entry (may be empty): "+(S.draft.grammar||"")+"\n"+
-    "Keep their wording when it is already correct and natural. Return only a JSON object with keys:\n"+
+    "Keep their wording when it is already correct and natural. "+NO_EN_RULE+" Return only a JSON object with keys:\n"+
     'ok: true if the sentence is correct and natural, else false.\n'+
     'corrected: the corrected sentence (or the original if ok), with the hiragana reading in half-width parentheses right after every kanji part, like 毎日(まいにち)祈(いの)っていました。\n'+
     'english: a natural English translation.\n'+
@@ -3744,6 +3824,7 @@ function renderHome(){
       return mixHtml({mark:km?km[0]:"記",slip:slip,name:name,date:en.date,first:stripFuri((en.lines[0]&&en.lines[0].jp)||""),sub:esc(en.date)+", "+(c.words.length+c.sents.length)+" cards",c:JPAL[h%JPAL.length],entry:key});
     }).join("")+'</div>';
   }
+  if(jWide()&&!window.KC_LEARNER) html='<div class="hm-cols"><div class="hm-left">'+html.replace('<div id="hchat-slot"></div>','')+'</div><div class="hm-right"><div id="hchat-slot"></div></div></div>';
   el.innerHTML=html;
   if($("#hchat-slot")) renderChat();
   if(parked){ var slot0=$("#home-addslot"); if(S.homeAdd&&slot0) slot0.appendChild(abox); else returnAddBox(); }
@@ -4003,8 +4084,8 @@ window.addEventListener("resize",function(){ if(S.tab==="grammar") gAlign(); });
 document.getElementById("grammar").addEventListener("toggle",function(){ requestAnimationFrame(gAlign); },true);
 function renderGrammar(){
   var el=$("#grammar"); if(!el) return;
-  if(S.drill){ el.innerHTML=drillHtml(); var gi=$("#gd-ans"); if(gi&&!gi.disabled) gi.focus({preventScroll:true}); return; }
-  if(S.quiz){ el.innerHTML=quizHtml(); quizFocus(); return; }
+  if(S.drill){ el.innerHTML=psWrap(drillHtml(),drillSide()); var gi=$("#gd-ans"); if(gi&&!gi.disabled) gi.focus({preventScroll:true}); return; }
+  if(S.quiz){ el.innerHTML=psWrap(quizHtml(),quizSide()); quizFocus(); return; }
   var pts=allPoints();
   var cnt={all:pts.length,rf:0,got:0,mine:(S.gram.custom||[]).length+(S.sheetG||[]).filter(function(p){return p.l==="my";}).length}; pts.forEach(function(p){var s=gStatus(p.id); if(cnt[s]!==undefined&&s!=="all") cnt[s]++;});
   var f=S.gfilter;
