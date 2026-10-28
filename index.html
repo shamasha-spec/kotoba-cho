@@ -772,7 +772,9 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .kc-leave .sage-card b{font-size:1.15rem}
 .ga-fillrow{display:flex;gap:8px;align-items:center}.ga-fillrow input{flex:1;min-width:0}.ga-fillrow .btn{flex:none}
 #ga-fmsg:empty{display:none}
-.h2row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.h2row{display:flex;align-items:center;justify-content:flex-end;gap:12px}
+/* Section names are already in the tab bar, so the page headings are for screen readers only (Oct 2026) */
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .snd-btn{flex:none;width:32px;height:32px;display:grid;place-items:center;padding:0;border:0;border-radius:9px;background:none;color:var(--muted);cursor:pointer;transition:background .2s,color .2s}
 .snd-btn:hover,.snd-btn.on,.snd-btn:focus-visible{background:color-mix(in srgb,var(--ai) 10%,transparent);color:var(--ai)}
 .snd-pop{position:absolute;z-index:300;opacity:0;transform:translateY(-4px) scale(.98);transform-origin:top right;transition:opacity .15s,transform .15s}
@@ -1918,21 +1920,21 @@ body.kc-locked{overflow:hidden}
 
   <!-- REVIEW -->
   <section id="v-review" role="tabpanel" hidden>
-    <h2>Review</h2>
+    <h2 class="sr-only">Review</h2>
     <p class="lede">Flashcards from your own words. Each answer updates Mastery and the next review date in your sheet.</p>
     <div id="review"></div>
   </section>
 
   <!-- JOURNAL -->
   <section id="v-grammar" role="tabpanel" hidden>
-    <h2>Grammar</h2>
+    <h2 class="sr-only">Grammar</h2>
     <p class="lede">Genki 1 patterns, lesson by lesson. Mark what needs work, add your own examples, and try them in your journal.</p>
     <p class="demo-ai"><b>AI</b><span>Transmute drills: AI writes five short situations for the points you need to work on, then checks your answers. Check it reviews an example you write. Both are off in this demo.</span></p>
     <div id="grammar"></div>
   </section>
 
   <section id="v-journal" role="tabpanel" hidden>
-    <div class="h2row"><h2>Journal</h2><span id="j-snd"></span></div>
+    <div class="h2row"><h2 class="sr-only">Journal</h2><span id="j-snd"></span></div>
     <p class="lede">Write one sentence at a time, or write freely and split it into sentences. Add furigana and get a check before you save it to your Journal tab.</p>
     <p class="demo-ai"><b>AI</b><span>Add furigana puts hiragana readings after kanji. Check sentence corrects your Japanese and explains the grammar. Chats with アンちゃん can be saved here as entries. All three use AI and are off in this demo.</span></p>
     <div class="j-cols" id="j-cols"><div class="j-comp">
