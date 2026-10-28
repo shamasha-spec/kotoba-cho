@@ -669,7 +669,7 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .j-nw-chip i{font-style:normal;font-size:.8rem;color:var(--ai)}
 .j-nw-chip.has{cursor:default;color:var(--muted)}.j-nw-chip.has i{color:var(--matcha)}
 .j-look{margin-top:16px;padding:0}
-@media (min-width:1100px){.j-right>.j-look{margin-top:0;margin-bottom:24px}}
+@media (min-width:1100px){.j-cols>.j-look{margin-top:0;margin-bottom:24px}}
 .j-look>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:10px;padding:14px 16px;font-weight:600}
 .j-look>summary::-webkit-details-marker{display:none}
 .j-look>summary .hint{font-weight:400}
@@ -683,7 +683,10 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .j-past-h{margin-top:32px}
 @media (min-width:1100px){
   body[data-tab="journal"] main.wrap{max-width:1240px}
-  .j-cols{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:0 24px;align-items:start}
+  .j-cols{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);grid-template-areas:"comp look" "comp past";grid-template-rows:auto 1fr;gap:0 24px;align-items:start}
+  .j-comp{grid-area:comp}.j-look{grid-area:look}.j-past{grid-area:past}
+  .j-cols.reading{grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);grid-template-areas:"past look" "past comp"}
+  .j-cols.reading .j-comp{margin-top:0}
   .j-past-h{margin-top:0}
 }
 
@@ -1834,13 +1837,13 @@ body.kc-locked{overflow:hidden}
     <div class="h2row"><h2>Journal</h2><span id="j-snd"></span></div>
     <p class="lede">Write one sentence at a time, or write freely and split it into sentences. Add furigana and get a check before you save it to your Journal tab.</p>
     <p class="demo-ai"><b>AI</b><span>Add furigana puts hiragana readings after kanji. Check sentence corrects your Japanese and explains the grammar. Chats with アンちゃん can be saved here as entries. All three use AI and are off in this demo.</span></p>
-    <div class="j-cols"><div class="j-left">
+    <div class="j-cols" id="j-cols"><div class="j-comp">
     <div id="composer"></div>
     <div id="j-newwords"></div>
-    </div><div class="j-right">
+    </div>
     <details class="panel j-look" id="j-look"><summary><span>Look up a word</span><span class="hint">in your Vocab Bank</span></summary>
       <div class="j-look-in"><input type="search" id="j-lq" lang="ja" autocomplete="off" placeholder="Kanji, kana, romaji or English" aria-label="Look up a word"><div id="j-lres"></div></div></details>
-    <h2 class="j-past-h">Past entries</h2>
+    <div class="j-past"><h2 class="j-past-h">Past entries</h2>
     <div id="entries"></div>
     </div></div>
   </section>
@@ -2708,9 +2711,12 @@ function renderComposer(){
 }
 /* Oct 2026: two ways to write. One by one (the line editor) or Write freely (one box, split into sentences), plus Check all and furigana for all. */
 /* Journal extras (Oct 2026): New words in this entry, and a word lookup that searches your own Vocab Bank (no AI). */
+/* Wide Journal reading mode (Oct 2026): while an entry is open (and the composer is closed), past entries move to the
+   wide left column so you read from the left; lookup and the draft sit on the right. */
+function jMode(){ var c=$("#j-cols"); if(c) c.classList.toggle("reading",anyOpen()&&!S.composerOpen); }
 function jNewWords(){
   var el=$("#j-newwords"); if(!el) return; var d=S.draft;
-  if(!d||!S.composerOpen){ el.innerHTML=""; return; }
+  jMode(); if(!d||!S.composerOpen){ el.innerHTML=""; return; }
   var seen={}, list=[]; d.lines.forEach(function(l,i){ String(l.words||"").split(/[,、，]/).map(function(s){return s.trim();}).filter(Boolean).forEach(function(w){ if(!seen[w]){ seen[w]=1; list.push([w,i]); } }); });
   if(!list.length){ el.innerHTML=""; return; }
   el.innerHTML='<div class="panel j-nw"><b>New words in this entry</b><div class="j-nw-chips">'+list.map(function(x){ var has=inBank(x[0],""); return '<button class="j-nw-chip'+(has?' has':'')+'" lang="ja"'+(has?' disabled title="In your Vocab Bank"':' data-act="nw-add" data-w="'+esc(x[0])+'" data-i="'+x[1]+'" title="Add to Vocab Bank"')+'>'+esc(x[0])+'<i aria-hidden="true">'+(has?'✓':'＋')+'</i></button>'; }).join("")+'</div></div>';
@@ -2963,7 +2969,7 @@ function renderEntries(){
     return '<div class="entry"'+(open?" data-open":"")+' data-key="'+key+'"><div class="entry-row"><div class="swipe-act" aria-hidden="true">'+QZ+'<span>Quiz</span></div><div class="entry-slide"><button class="entry-head" aria-expanded="'+!!open+'"><b lang="ja">'+rubyText(en.title||"Untitled")+'</b><span>'+esc(en.date)+', '+en.lines.length+(en.lines.length===1?" sentence":" sentences")+'</span></button>'+(TTS?'<button class="playbtn" data-act="play-entry" data-key="'+key+'" aria-label="Listen to the whole entry" title="Listen to the whole entry">'+ICO_PLAY+'<span>Listen</span></button>':'')+'<button class="quizbtn" data-act="quiz" data-key="'+key+'" aria-label="Quiz me on this entry" title="Quiz me on this entry">'+QZ+'<span>Quiz</span></button></div></div>'+
       '<div class="entry-body">'+(open?bodyHtml(en):'')+'</div></div>';
   }).join("");
-  el.querySelectorAll(".entry[data-open]").forEach(function(b){decorate(b);});
+  jMode(); el.querySelectorAll(".entry[data-open]").forEach(function(b){decorate(b);});
   updateDock(); if(S.play){ playMark(); renderPlayer(); }
 }
 function rerenderEntry(key){
@@ -3126,7 +3132,7 @@ entriesEl.addEventListener("click",function(e){
   if(Date.now()-(S.entrySwipedAt||0)<400) return;
   var head=e.target.closest(".entry-head");
   if(head){
-    var box=head.closest(".entry"), key=box.dataset.key; S.openEntry[key]=!S.openEntry[key];
+    var box=head.closest(".entry"), key=box.dataset.key; S.openEntry[key]=!S.openEntry[key]; jMode();
     if(S.openEntry[key]){box.setAttribute("data-open","");box.querySelector(".entry-body").innerHTML=bodyHtml(entryByKey(key));decorate(box);}
     else{box.removeAttribute("data-open");box.querySelector(".entry-body").innerHTML=""; if(S.play&&S.play.key===key) playStop();}
     head.setAttribute("aria-expanded",String(!!S.openEntry[key])); updateDock(); return;
