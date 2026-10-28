@@ -797,10 +797,15 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .snd-tg[aria-checked="true"] i{background:var(--ai)}.snd-tg[aria-checked="true"] i::after{transform:translateX(16px)}
 body.j-noen #entries .jline .en,body.j-noen #entries .jline .note{display:none}
 .jf-tabs{display:none}
-.focusbtn,.jf-back{display:none}
+.focusbtn,.jf-back,.jf-nav{display:none}
+body.j-noen .entry-head .t-en{display:none}
+@keyframes jfTurnL{from{opacity:0;transform:translateX(48px)}to{opacity:1;transform:none}}
+@keyframes jfTurnR{from{opacity:0;transform:translateX(-48px)}to{opacity:1;transform:none}}
+@keyframes jfBump{0%,100%{transform:none}40%{transform:translateX(var(--bx))}}
 .jf-back{align-items:center;gap:6px;border:0;background:none;color:var(--muted);font:inherit;font-size:.95rem;padding:6px 10px 6px 4px;border-radius:10px;cursor:pointer;transition:color .2s,background .2s}
 .jf-back:hover{color:var(--ink);background:color-mix(in srgb,var(--ai) 8%,transparent)}
 .jf-back b{font-size:1.3rem;font-weight:400;line-height:1}
+.jf-back span{font-family:var(--serif);font-size:1.15rem;line-height:1.9}.jf-back rt{font-size:.55em;letter-spacing:.08em}
 .entry:not([data-open]) .focusbtn{display:none!important}
 @media (hover:none){.focusbtn span{display:none}.focusbtn{padding:6px 9px}}
 .dock-hint:empty{display:none}
@@ -818,7 +823,20 @@ body.j-noen #entries .jline .en,body.j-noen #entries .jline .note{display:none}
   .focusbtn{flex:none;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;min-height:36px;font-size:.85rem;font-weight:500;cursor:pointer;transition:background .2s,border-color .2s,opacity .25s}
   .focusbtn:hover{border-color:var(--ink)}
   .focusbtn[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-  body.j-focus .j-cols.reading .focusbtn{opacity:.75}body.j-focus .j-cols.reading .focusbtn:hover{opacity:1}
+  body.j-focus .j-cols.reading .focusbtn{background:none;border-color:transparent;color:var(--muted);padding:6px 9px;opacity:.7}
+  body.j-focus .j-cols.reading .focusbtn span{display:none}
+  body.j-focus .j-cols.reading .focusbtn:hover{opacity:1;color:var(--ink);border-color:var(--line)}
+  body.j-focus .j-cols.reading .entry-head .t-en{display:none}
+  body.j-focus .j-cols.reading .jf-nav{display:flex;justify-content:space-between;gap:16px;margin-top:36px;padding-top:18px;border-top:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
+  .jf-pg{display:inline-flex;align-items:center;gap:10px;max-width:48%;border:0;background:none;color:var(--muted);font:inherit;font-family:var(--serif);font-size:.95rem;padding:8px 10px;border-radius:10px;cursor:pointer;text-align:left;transition:color .2s,background .2s}
+  .jf-pg.nx{text-align:right;margin-left:auto}
+  .jf-pg b{font-size:1.3rem;font-weight:400}
+  .jf-pg:hover{color:var(--ink);background:color-mix(in srgb,var(--ai) 6%,transparent)}
+  body.j-focus .j-cols.reading.jf-go-l .entry[data-open]{opacity:0;transform:translateX(-48px);transition:opacity .22s ease,transform .22s cubic-bezier(.55,0,1,.45)}
+  body.j-focus .j-cols.reading.jf-go-r .entry[data-open]{opacity:0;transform:translateX(48px);transition:opacity .22s ease,transform .22s cubic-bezier(.55,0,1,.45)}
+  body.j-focus .j-cols.reading.jf-come-l .entry[data-open]{animation:jfTurnL .42s cubic-bezier(.22,.9,.24,1)}
+  body.j-focus .j-cols.reading.jf-come-r .entry[data-open]{animation:jfTurnR .42s cubic-bezier(.22,.9,.24,1)}
+  body.j-focus .j-cols.reading.jf-bump .entry[data-open]{animation:jfBump .35s ease}
   body.j-focus #v-journal:has(.j-cols.reading) .h2row>h2{visibility:hidden;width:0;overflow:hidden;margin:0}
   body.j-focus .j-cols.reading .j-past{background:none;border:0;padding:8px 0 40px;box-shadow:none}
   body.j-focus .j-cols.reading .entry[data-open]{animation:jfPage .5s cubic-bezier(.22,.9,.24,1)}
@@ -2429,6 +2447,34 @@ function jfExit(fn){
     if(!jfOn()){ c.classList.remove("jf-in"); c.getBoundingClientRect(); c.classList.add("jf-in"); setTimeout(function(){ c.classList.remove("jf-in"); },600); }
   },270);
 }
+var jfTurning=false;
+function jfTurn(dir){
+  var c=$("#j-cols"); if(!c||!jfOn()||jfTurning||jfBusy) return;
+  var k=Object.keys(S.openEntry)[0], en=k&&entryByKey(k), i=en?S.entries.indexOf(en):-1, to=S.entries[i+dir];
+  if(!to){ c.style.setProperty("--bx",(dir>0?-14:14)+"px"); c.classList.remove("jf-bump"); c.getBoundingClientRect(); c.classList.add("jf-bump"); setTimeout(function(){ c.classList.remove("jf-bump"); },400); return; }
+  jfTurning=true; jfSet(null); if(S.play) playStop();
+  c.classList.remove("jf-come-l","jf-come-r"); c.classList.add(dir>0?"jf-go-l":"jf-go-r");
+  setTimeout(function(){
+    S.openEntry={}; S.openEntry[entryKey(to)]=true; renderEntries();
+    c.classList.remove("jf-go-l","jf-go-r"); c.getBoundingClientRect(); c.classList.add(dir>0?"jf-come-l":"jf-come-r");
+    var top=c.getBoundingClientRect().top+window.scrollY-90; if(window.scrollY>top) window.scrollTo(0,Math.max(0,top));
+    setTimeout(function(){ c.classList.remove("jf-come-l","jf-come-r"); jfTurning=false; },450);
+  },230);
+}
+(function(){
+  var ts=null;
+  $("#entries").addEventListener("touchstart",function(e){ ts=(jfOn()&&e.touches.length===1&&S.tool!=="pen"&&S.tool!=="erase")?{x:e.touches[0].clientX,y:e.touches[0].clientY}:null; },{passive:true});
+  $("#entries").addEventListener("touchend",function(e){
+    if(!ts) return; var t=e.changedTouches[0], dx=t.clientX-ts.x, dy=t.clientY-ts.y; ts=null;
+    var sel=window.getSelection&&String(window.getSelection()); if(sel) return;
+    if(Math.abs(dx)>60&&Math.abs(dy)<Math.abs(dx)*0.6) jfTurn(dx<0?1:-1);
+  },{passive:true});
+  $("#entries").addEventListener("click",function(e){ var b=e.target.closest("[data-jturn]"); if(b){ e.stopPropagation(); jfTurn(+b.dataset.jturn); } },true);
+  document.addEventListener("keydown",function(e){
+    if(!jfOn()||e.altKey||e.ctrlKey||e.metaKey||SND.el) return; var a=document.activeElement; if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;
+    if(e.key==="ArrowRight"){ e.preventDefault(); jfTurn(1); } else if(e.key==="ArrowLeft"){ e.preventDefault(); jfTurn(-1); }
+  });
+})();
 function jfCloseEntry(){ if(S.play) playStop(); S.openEntry={}; renderEntries(); }
 function jfToggle(on){
   function apply(){ S.js.focus=on; store("kc-jset",S.js); renderEntries(); jsetApply(); }
@@ -2864,7 +2910,7 @@ function renderComposer(){
     jNewWords(); return;
   }
   var d=S.draft;
-  el.innerHTML='<div class="panel"><div class="comp-head"><b>'+(d.title.trim()||d.lines.some(function(l){return l.jp.trim();})?'Your draft':'New entry')+'</b><span class="comp-acts"><button class="btn small" data-act="newentry">New entry</button><button class="btn small" data-act="hide" aria-label="Close and keep draft">Close</button></span></div>'+
+  el.innerHTML='<div class="panel"><div class="comp-head"><b>'+(d.title.trim()||d.lines.some(function(l){return l.jp.trim();})?'Your draft':rubyText('新(あたら)しい日記(にっき)'))+'</b><span class="comp-acts"><button class="btn small" data-act="newentry" lang="ja" aria-label="New entry" title="New entry">'+rubyText('新(あたら)しく書(か)く')+'</button><button class="btn small" data-act="hide" aria-label="Close and keep draft">Close</button></span></div>'+
     (S.confirmNew?'<div class="confirm" style="margin:10px 0 0"><span>Clear this draft and start a new entry?</span><button class="btn small danger" data-act="newentry">Clear and start</button><button class="btn small" data-act="newentry-no">Keep</button></div>':'')+'<div class="grid">'+
     '<div><label for="j-date">Date</label><input type="date" id="j-date" data-k="date" value="'+esc(d.date)+'"></div>'+
     '<div><label for="j-grammar">Grammar focus</label><input type="text" id="j-grammar" data-k="grammar" lang="ja" value="'+esc(d.grammar)+'" placeholder="〜ていました, と思う"></div>'+
@@ -2931,7 +2977,7 @@ function splitSentences(t){
 }
 function compFreeHtml(d){
   var n=splitSentences(d.free).length;
-  return '<div class="comp-free"><label for="j-free">Your entry</label><textarea id="j-free" data-k="free" lang="ja" rows="8" placeholder="Type or paste your whole entry. Each sentence ending in 。！？ or a new line becomes its own sentence.">'+esc(d.free||"")+'</textarea>'+
+  return '<div class="comp-free"><label for="j-free" lang="ja">'+rubyText('日記(にっき)')+'</label><textarea id="j-free" data-k="free" lang="ja" rows="8" aria-label="Your entry">'+esc(d.free||"")+'</textarea>'+
     '<div class="row" style="margin-top:8px"><button class="btn primary small" data-act="split"'+(n?'':' disabled')+'>Split into sentences</button><span class="hint" id="j-free-n">'+n+(n===1?' sentence':' sentences')+' found</span></div>'+
     (d.lines.some(function(l){return l.jp.trim();})?'<p class="hint" style="margin:6px 0 0">New sentences go after the ones you already have.</p>':'')+'</div>';
 }
@@ -3142,10 +3188,20 @@ function lineHtmlPast(l,i){
     (l.notes?'<div class="note"><span class="hlt" data-k="'+i+'-n">'+esc(l.notes)+'</span></div>':'')+
     '<div class="anns"></div><canvas class="ink" aria-hidden="true"></canvas>'+(l.jp?'<span class="jsay">'+sayBtn(l.jp,"Hear this sentence")+'</span>':'')+'</div>';
 }
+/* Titles like フンバの作り方 (How to make humba): the English part gets its own span so Focus mode and Hide English can hide it. */
+function titleHtml(t){ t=String(t||"Untitled"); var m=t.match(/^(.*?)\s*[（(]([^()（）]*[A-Za-z][^()（）]*)[)）]\s*$/); return m&&m[1].trim()?rubyText(m[1])+'<span class="t-en"> ('+esc(m[2])+')</span>':rubyText(t); }
+function titleJa(t){ t=String(t||"Untitled"); var m=t.match(/^(.*?)\s*[（(]([^()（）]*[A-Za-z][^()（）]*)[)）]\s*$/); return m&&m[1].trim()?m[1]:t; }
+/* Focus mode page turns: the entries before and after this one, like the next page of a book. */
+function jfNavHtml(en){
+  var i=S.entries.indexOf(en); if(i<0) return "";
+  var pv=S.entries[i-1], nx=S.entries[i+1];
+  return '<div class="jf-nav">'+(pv?'<button type="button" class="jf-pg" data-jturn="-1"><b aria-hidden="true">‹</b><span lang="ja">'+rubyText(titleJa(pv.title))+'</span></button>':'<span></span>')+
+    (nx?'<button type="button" class="jf-pg nx" data-jturn="1"><span lang="ja">'+rubyText(titleJa(nx.title))+'</span><b aria-hidden="true">›</b></button>':'<span></span>')+'</div>';
+}
 function bodyHtml(en){
   return (en.grammar?'<p class="hint" lang="ja">Grammar focus: '+esc(en.grammar)+'</p>':'')+
     '<div class="jlines">'+en.lines.map(lineHtmlPast).join("")+'</div>'+
-    '<a class="sheetlink" href="'+rowLink(JOURNAL_GID,en.row)+'" target="_blank" rel="noopener">'+ICO_SHEET+'<span>Open in sheet</span><span class="ext" aria-hidden="true">↗</span></a>';
+    '<a class="sheetlink" href="'+rowLink(JOURNAL_GID,en.row)+'" target="_blank" rel="noopener">'+ICO_SHEET+'<span>Open in sheet</span><span class="ext" aria-hidden="true">↗</span></a>'+jfNavHtml(en);
 }
 var ICO_PLAY='<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.4-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>';
 var QZ='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="14" height="16" rx="2"/><path d="M7 3h12a2 2 0 0 1 2 2v13"/><path d="M8.5 11a1.8 1.8 0 1 1 2.6 1.6c-.6.3-1.1.8-1.1 1.4M10 17h.01"/></svg>';
@@ -3155,7 +3211,7 @@ function renderEntries(){
   if(!S.entries.length){el.innerHTML='<p class="empty">No entries yet. Write your first one above.</p>';updateDock();return;}
   el.innerHTML=S.entries.map(function(en){
     var key=entryKey(en), open=S.openEntry[key];
-    return '<div class="entry"'+(open?" data-open":"")+' data-key="'+key+'"><div class="entry-row"><div class="swipe-act" aria-hidden="true">'+QZ+'<span>Quiz</span></div><div class="entry-slide"><button class="entry-head" aria-expanded="'+!!open+'"><b lang="ja">'+rubyText(en.title||"Untitled")+'</b><span>'+esc(en.date)+', '+en.lines.length+(en.lines.length===1?" sentence":" sentences")+'</span></button>'+(TTS?'<button class="playbtn" data-act="play-entry" data-key="'+key+'" aria-label="Listen to the whole entry" title="Listen to the whole entry">'+ICO_PLAY+'<span>Listen</span></button>':'')+'<button class="quizbtn" data-act="quiz" data-key="'+key+'" aria-label="Quiz me on this entry" title="Quiz me on this entry">'+QZ+'<span>Quiz</span></button>'+(open&&jWide()?'<button class="focusbtn" data-act="jfocus" aria-pressed="'+!!S.js.focus+'" aria-label="Focus mode" title="Focus mode">'+ICO_FOCUS+'<span>Focus</span></button>':'')+'</div></div>'+
+    return '<div class="entry"'+(open?" data-open":"")+' data-key="'+key+'"><div class="entry-row"><div class="swipe-act" aria-hidden="true">'+QZ+'<span>Quiz</span></div><div class="entry-slide"><button class="entry-head" aria-expanded="'+!!open+'"><b lang="ja">'+titleHtml(en.title)+'</b><span>'+esc(en.date)+', '+en.lines.length+(en.lines.length===1?" sentence":" sentences")+'</span></button>'+(TTS?'<button class="playbtn" data-act="play-entry" data-key="'+key+'" aria-label="Listen to the whole entry" title="Listen to the whole entry">'+ICO_PLAY+'<span>Listen</span></button>':'')+'<button class="quizbtn" data-act="quiz" data-key="'+key+'" aria-label="Quiz me on this entry" title="Quiz me on this entry">'+QZ+'<span>Quiz</span></button>'+(open&&jWide()?'<button class="focusbtn" data-act="jfocus" aria-pressed="'+!!S.js.focus+'" aria-label="Focus mode" title="Focus mode">'+ICO_FOCUS+'<span>Focus</span></button>':'')+'</div></div>'+
       '<div class="entry-body">'+(open?bodyHtml(en):'')+'</div></div>';
   }).join("");
   jMode(); el.querySelectorAll(".entry[data-open]").forEach(function(b){decorate(b);});
@@ -4805,7 +4861,7 @@ gEl.addEventListener("click",async function(e){
 (function(){
   var es=null, LIMIT=96;
   entriesEl.addEventListener("touchstart",function(e){
-    es=null; if(e.touches.length!==1||S.tool==="pen"||S.tool==="erase") return;
+    es=null; if(e.touches.length!==1||S.tool==="pen"||S.tool==="erase"||jfOn()) return;
     var row=e.target.closest(".entry-row"); if(!row||e.target.closest(".quizbtn")) return;
     var t=e.touches[0]; es={row:row,slide:row.querySelector(".entry-slide"),act:row.querySelector(".swipe-act"),x0:t.clientX,y0:t.clientY,dx:0,lock:null};
   },{passive:true});
@@ -4875,6 +4931,7 @@ gEl.addEventListener("click",async function(e){
     if(S.tool==="pen"||S.tool==="erase") return false;
     if(S.tool==="highlight"&&el.closest&&el.closest(".hlt")) return false;
     if(S.tab==="review"&&S.deck) return false;
+    if(jfOn()&&el.closest&&el.closest("#j-cols")) return false;
     return true;
   }
   document.addEventListener("touchstart",function(e){
