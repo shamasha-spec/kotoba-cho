@@ -802,6 +802,21 @@ body.tools-on .dock{display:block;animation:dockIn .22s cubic-bezier(.22,.8,.24,
 .snd-tg[aria-checked="true"] i{background:var(--ai)}.snd-tg[aria-checked="true"] i::after{transform:translateX(16px)}
 body.j-noen #entries .jline .en,body.j-noen #entries .jline .note{display:none}
 .jf-tabs{display:none}
+/* the merged sync + appearance button (Oct 2026) */
+.pills.one{width:44px}
+.pills.one>#theme-pill{display:none!important}
+header.top{z-index:6}
+header.top:has(#sync-pill.open){overflow:visible}
+#sync-pill.merged{overflow:visible;width:var(--face)!important}
+#sync-pill.merged>.pill-menu{position:absolute;top:calc(100% + 8px);right:-1px;display:grid;gap:4px;padding:10px;width:270px;max-width:calc(100vw - 32px);white-space:normal;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 16px 36px -14px rgba(0,0,0,.32);opacity:0;transform:translateY(-6px) scale(.98);transform-origin:top right;pointer-events:none;transition:opacity .16s ease,transform .22s cubic-bezier(.22,.9,.24,1)}
+#sync-pill.merged.open>.pill-menu{opacity:1;transform:none;pointer-events:auto}
+.pm-cap{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:4px 6px 2px}
+.pill-menu #status{display:flex;align-items:center;gap:8px;padding:2px 4px 8px;border-bottom:1px solid var(--line);margin-bottom:2px;opacity:1;transform:none}
+.pill-menu #status .sync-txt{flex:1;min-width:0}
+.pill-menu .pm-themes{display:grid;grid-template-columns:1fr 1fr;gap:4px;opacity:1;transform:none;padding:0;position:static!important;inset:auto;margin:0;width:auto;min-width:0;background:none;border:0;box-shadow:none;animation:none}
+.pill-menu .pm-themes button{display:flex;align-items:center;gap:8px;width:100%;min-height:38px;padding:8px 10px;border-radius:10px;font-size:.88rem;justify-content:flex-start}
+.pill-menu .pm-themes button span{display:inline!important}
+.pill-menu .pm-themes button[aria-checked="true"]{background:var(--ai);color:var(--surface)}
 .shelf-more{display:none}
 /* Desktop steps 4-6 (Oct 2026): Review, Home, and side panels for flashcards, quizzes and drills. Below 1,100px nothing changes. */
 .ps-side{display:none}
@@ -826,35 +841,8 @@ body.j-noen #entries .jline .en,body.j-noen #entries .jline .note{display:none}
 .ps-bar{height:5px;border-radius:3px;background:var(--line);margin-top:6px;overflow:hidden}.ps-bar i{display:block;height:100%;background:var(--mt)}
 .ps-form{font-family:var(--serif);font-size:1.05rem;margin-top:2px}
 @media (min-width:1100px){
-  header.top .wrap,nav.tabs .wrap{max-width:1240px}
-  nav.tabs .wrap{gap:6px}
-  .tab{flex:0 0 auto;min-width:112px;padding-left:18px;padding-right:18px}
-  /* one header row on desktop, like the mockups: brand left, tabs right, then the two round buttons (Oct 2026) */
-  body.hd-row header.top{position:sticky;top:0;z-index:6;padding:8px 0 0;overflow:visible;box-shadow:0 6px 14px -12px rgba(0,0,0,.25)}
-  body.hd-row header.top .wrap{display:flex;align-items:center;gap:24px}
-  body.hd-row .brand{position:static;flex:none;padding-bottom:8px}
-  body.hd-row .logo{width:32px;height:40px}
-  body.hd-row .brand h1{font-size:2rem}
-  body.hd-row .subtitle{font-size:.78rem}
-  body.hd-row .pills{top:50%;transform:translateY(-50%);margin-top:-3px}
-  /* desktop: the two round buttons open a small dropdown below instead of growing sideways over the tabs (Oct 2026) */
-  body.hd-row .pills.both-open{top:50%}
-  body.hd-row .pills.both-open>#theme-pill{right:52px;top:0}
-  body.hd-row .pills>.pill{width:var(--face)!important;overflow:visible}
-  body.hd-row .pills:not(.both-open)>#sync-pill.open~#theme-pill{transform:none;opacity:1;pointer-events:auto}
-  body.hd-row .pill-body,body.hd-row .pill-body.themes{position:absolute;top:calc(100% + 8px);right:-1px;display:flex;flex-direction:column;align-items:stretch;gap:2px;padding:6px;min-width:190px;white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 34px -12px rgba(0,0,0,.3);transform:translateY(-6px) scale(.98);transform-origin:top right;transition:opacity .16s ease,transform .2s cubic-bezier(.22,.9,.24,1)}
-  body.hd-row .pill.open .pill-body{transform:none;transition-delay:0s}
-  body.hd-row .pill-body.themes button{display:flex;width:100%;justify-content:flex-start;padding:8px 10px;border-radius:9px;font-size:.9rem}
-  body.hd-row .pill-body.themes button span{display:inline!important}
-  body.hd-row .pill-body.themes button[aria-checked="true"]{background:color-mix(in srgb,var(--ai) 10%,transparent);color:var(--ink)}
-  body.hd-row .pill-body.themes button[aria-checked="true"]::after{content:"✓";margin-left:auto;padding-left:14px;color:var(--ai);font-weight:700}
-  body.hd-row #sync-pill .pill-body{flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 12px;min-width:250px}
-  body.hd-row nav.tabs{position:static;margin-left:auto;margin-right:128px;background:none;border:0;box-shadow:none;align-self:flex-end}
-  body.hd-row nav.tabs .wrap{padding:0;max-width:none}
-  body.hd-row .w-right,body.hd-row .g-left,body.hd-row .ps-side,body.hd-row .rv-r,body.hd-row .hm-right{top:104px}
-  body.hd-row #j-cols,body.hd-row .entry{scroll-margin-top:104px}
-  body.hd-row.j-focus .j-cols.reading>.j-look,body.hd-row.j-focus .j-cols.reading>.j-list{top:108px;max-height:calc(100vh - 136px)}
-  body[data-tab="review"] main.wrap,body[data-tab="add"] main.wrap{max-width:1240px}
+  body[data-tab="review"] main.wrap{max-width:1240px}
+  body[data-tab="add"] main.wrap{max-width:900px}
   .ps-cols{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:24px;align-items:start}
   .ps-side{display:grid;gap:14px;position:sticky;top:72px}
   .ps-cols .gdrill .gp-f{display:none}
@@ -2222,15 +2210,8 @@ function renderStatus(){
 var EASE_IND="cubic-bezier(.22,.8,.24,1)";
 function indRect(t){var b=document.querySelector('.tab[data-tab="'+t+'"]'); if(!b) return {x:0,w:0}; var w=Math.min(56,b.offsetWidth*0.6); return {x:b.offsetLeft+(b.offsetWidth-w)/2,w:w};}
 function placeInd(r,trans){var el=$("#tab-ind"); if(!el) return; el.style.transition=trans||"none"; el.style.transform="translateX("+r.x+"px)"; el.style.width=r.w+"px";}
-/* Desktop: the tab bar moves into the header row (and back below it on smaller windows). */
-function placeNav(){
-  var nav=$("nav.tabs"), hdr=$("header.top"), hw=hdr&&hdr.querySelector(".wrap"); if(!nav||!hw) return;
-  var w=window.matchMedia&&matchMedia("(min-width:1100px)").matches;
-  if(w&&nav.parentNode!==hw){ hw.appendChild(nav); document.body.classList.add("hd-row"); document.querySelectorAll(".pill").forEach(sizePill); }
-  else if(!w&&nav.parentNode===hw){ hdr.parentNode.insertBefore(nav,hdr.nextSibling); document.body.classList.remove("hd-row"); document.querySelectorAll(".pill").forEach(sizePill); }
-}
-placeNav();
-window.addEventListener("resize",function(){placeNav(); placeInd(indRect(S.tab));});
+
+window.addEventListener("resize",function(){placeInd(indRect(S.tab));});
 function renderTab(t){
   if(t==="review") S.animLevel=true;
   if(t==="words"&&S.homeAdd){ S.homeAdd=false; returnAddBox(); }
@@ -3742,7 +3723,7 @@ document.addEventListener("keydown",function(e){
 
 /* ---------- expanding pills ---------- */
 function sizePill(p){
-  if(!p) return; if(document.body.classList.contains("hd-row")){ p.style.width=""; return; } var face=p.querySelector(".pill-face"), body=p.querySelector(".pill-body");
+  if(!p) return; if(p.classList.contains("merged")){ p.style.width=""; return; } var face=p.querySelector(".pill-face"), body=p.querySelector(".pill-body");
   var fw=face.offsetWidth+2;
   if(p.classList.contains("open")){var max=Math.max(fw,(p.closest(".brand").clientWidth||window.innerWidth)-56); p.style.width=Math.min(max,fw+body.scrollWidth+6)+"px";}
   else p.style.width=fw+"px";
@@ -3785,7 +3766,17 @@ function setTheme(t){
 }
 var THEME_ICON={};document.querySelectorAll("#themes button").forEach(function(b){THEME_ICON[b.dataset.theme]=b.querySelector("svg").outerHTML;});
 $("#theme-btn").addEventListener("click",function(e){e.stopPropagation();pillClick($("#theme-pill"));});
-$("#themes").addEventListener("click",function(e){var b=e.target.closest("button");if(b){setTheme(b.dataset.theme);setTimeout(function(){openPill($("#theme-pill"),false);},380);}});
+$("#themes").addEventListener("click",function(e){var b=e.target.closest("button");if(b){setTheme(b.dataset.theme);}});
+/* Oct 2026: one round button for sync and appearance. It opens a small menu: sync status and buttons, then the four themes. */
+(function(){
+  var sp=$("#sync-pill"), st=$("#status"), th=$("#themes"); if(!sp||!st||!th) return;
+  var m=document.createElement("div"); m.className="pill-body pill-menu"; m.id="pill-menu";
+  m.innerHTML='<div class="pm-cap">Sync</div>'; sp.insertBefore(m,st); m.appendChild(st);
+  var c=document.createElement("div"); c.className="pm-cap"; c.textContent="Appearance"; m.appendChild(c); m.appendChild(th);
+  st.classList.remove("pill-body"); th.classList.remove("pill-body"); th.classList.add("pm-themes");
+  sp.classList.add("merged"); $("#theme-pill").hidden=true; $(".pills").classList.add("one");
+  var f=$("#sync-face"); f.setAttribute("aria-controls","pill-menu");
+})();
 setTheme(recall("kc-theme")||"system");
 if(window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",redrawAllInk);
 
@@ -3896,7 +3887,7 @@ function renderHome(){
       return mixHtml({mark:km?km[0]:"記",slip:slip,name:name,date:en.date,first:stripFuri((en.lines[0]&&en.lines[0].jp)||""),sub:esc(en.date)+", "+(c.words.length+c.sents.length)+" cards",c:JPAL[h%JPAL.length],entry:key});
     }).join("")+(S.entries.length>5?'<button type="button" class="shelf-more" data-act="hm-journal">All '+S.entries.length+' entries ›</button>':'')+'</div>';
   }
-  if(jWide()&&!window.KC_LEARNER) html='<div class="hm-cols"><div class="hm-left">'+html.replace('<div id="hchat-slot"></div>','')+'</div><div class="hm-right"><div id="hchat-slot"></div></div></div>';
+  if(jWide()) html='<div class="hm-left">'+html+'</div>';
   el.innerHTML=html;
   if($("#hchat-slot")) renderChat();
   if(parked){ var slot0=$("#home-addslot"); if(S.homeAdd&&slot0) slot0.appendChild(abox); else returnAddBox(); }
