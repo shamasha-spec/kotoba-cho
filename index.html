@@ -828,6 +828,19 @@ body.j-noen #entries .jline .en,body.j-noen #entries .jline .note{display:none}
   header.top .wrap,nav.tabs .wrap{max-width:1240px}
   nav.tabs .wrap{gap:6px}
   .tab{flex:0 0 auto;min-width:112px;padding-left:18px;padding-right:18px}
+  /* one header row on desktop, like the mockups: brand left, tabs right, then the two round buttons (Oct 2026) */
+  body.hd-row header.top{position:sticky;top:0;z-index:6;padding:8px 0 0;box-shadow:0 6px 14px -12px rgba(0,0,0,.25)}
+  body.hd-row header.top .wrap{display:flex;align-items:center;gap:24px}
+  body.hd-row .brand{position:static;flex:none;padding-bottom:8px}
+  body.hd-row .logo{width:32px;height:40px}
+  body.hd-row .brand h1{font-size:2rem}
+  body.hd-row .subtitle{font-size:.78rem}
+  body.hd-row .pills{top:50%;transform:translateY(-50%);margin-top:-3px}
+  body.hd-row nav.tabs{position:static;margin-left:auto;margin-right:128px;background:none;border:0;box-shadow:none;align-self:flex-end}
+  body.hd-row nav.tabs .wrap{padding:0;max-width:none}
+  body.hd-row .w-right,body.hd-row .g-left,body.hd-row .ps-side,body.hd-row .rv-r,body.hd-row .hm-right{top:104px}
+  body.hd-row #j-cols,body.hd-row .entry{scroll-margin-top:104px}
+  body.hd-row.j-focus .j-cols.reading>.j-look,body.hd-row.j-focus .j-cols.reading>.j-list{top:108px;max-height:calc(100vh - 136px)}
   body[data-tab="review"] main.wrap,body[data-tab="add"] main.wrap{max-width:1240px}
   .ps-cols{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:24px;align-items:start}
   .ps-side{display:grid;gap:14px;position:sticky;top:72px}
@@ -839,6 +852,36 @@ body.j-noen #entries .jline .en,body.j-noen #entries .jline .note{display:none}
   .rv-r>details>summary::after,.rv-l>details.jbox>summary::after,.rv-r>details>summary svg,.rv-l>details.jbox>summary svg{display:none}
   .hm-right #hchat-slot{margin-top:0}
   .hm-cols:has(#hchat-slot:empty){display:block;max-width:820px}
+  /* Home desktop, option C (Oct 2026): greeting, Start reviewing, Word of the day, four tiles in one row,
+     then Practice sets and your journal as two plain lists side by side. アンちゃん in the right sidebar. */
+  .hm-cols{grid-template-columns:minmax(0,1.7fr) minmax(0,1fr)}
+  .hm-right{padding-top:8px}
+  .hm-left{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:24px;grid-auto-flow:row dense;align-items:start}
+  .hm-left>*{grid-column:1/-1}
+  .hm-left>.shelf-h{grid-column:1}
+  .hm-left>.shelf-h+.shelf{grid-column:1}
+  .hm-left>.shelf-h~.shelf-h,.hm-left>.shelf-h~.shelf-h+.shelf{grid-column:2}
+  .hm-left .mtiles{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .hm-left .mt-row>.mt{min-height:0!important;display:flex;flex-direction:column;padding:14px 14px 12px}
+  .hm-left .mt-row>.mt .mt-stack{position:relative!important;left:auto!important;top:auto!important;width:72px!important;height:72px!important;flex:none}
+  .hm-left .mt-row>.mt .mt-lab{position:static!important;margin-top:auto;padding-top:14px;justify-items:end;text-align:right}
+  .hm-left .mt-row>.mt .mt-lab small{-webkit-line-clamp:1}
+  /* lists instead of shelves */
+  .hm-left .shelf{display:grid;grid-template-columns:1fr;gap:0;margin:0;padding:0;overflow:visible;scroll-snap-type:none;background:var(--surface);border:1px solid var(--line);border-radius:16px}
+  .hm-left .shelf-h{margin:22px 0 10px}
+  .hm-left .shelf>.mix{flex:none;display:grid;grid-template-columns:38px minmax(0,1fr);column-gap:14px;row-gap:0;align-items:center;padding:11px 16px;border-top:1px solid var(--line);border-radius:0}
+  .hm-left .shelf>.mix:first-child{border-top:0}
+  .hm-left .shelf>.mix:hover{background:color-mix(in srgb,var(--ai) 5%,transparent)}
+  .hm-left .shelf>.mix .pl-cover{grid-row:1/3;width:38px;height:38px;aspect-ratio:auto;padding:0;border-radius:9px!important;display:grid;place-items:center}
+  .hm-left .shelf>.mix .pl-cover>*,.hm-left .shelf>.mix .pl-cover::before{display:none}
+  .hm-left .shelf>.mix .pl-cover::after{position:static;font-size:1.05rem!important;opacity:1;transform:none!important;color:var(--slip,#fff)}
+  .hm-left .shelf>.mix .pl-title{font-size:.95rem;padding:0;align-self:end}
+  .hm-left .shelf>.mix .pl-sub{font-size:.78rem;padding:0;align-self:start;-webkit-line-clamp:1}
+  .hm-left .shelf>.mix.page{display:block}
+  .hm-left .shelf>.mix.page .pg-cover{aspect-ratio:auto;padding:0;background:none!important;box-shadow:none;transform:none!important;color:var(--ink);overflow:visible}
+  .hm-left .shelf>.mix.page .pg-cover::before,.hm-left .shelf>.mix.page .pg-tape,.hm-left .shelf>.mix.page .pg-stamp,.hm-left .shelf>.mix.page .pg-mark,.hm-left .shelf>.mix.page .pg-line{display:none}
+  .hm-left .shelf>.mix.page .pg-title{font-size:1rem;-webkit-line-clamp:1}
+  .hm-left .shelf>.mix.page .pg-title ruby rt{color:var(--muted)}
 }
 .focusbtn,.jf-back,.jf-nav{display:none}
 body.j-noen .entry-head .t-en{display:none}
@@ -2158,7 +2201,15 @@ function renderStatus(){
 var EASE_IND="cubic-bezier(.22,.8,.24,1)";
 function indRect(t){var b=document.querySelector('.tab[data-tab="'+t+'"]'); if(!b) return {x:0,w:0}; var w=Math.min(56,b.offsetWidth*0.6); return {x:b.offsetLeft+(b.offsetWidth-w)/2,w:w};}
 function placeInd(r,trans){var el=$("#tab-ind"); if(!el) return; el.style.transition=trans||"none"; el.style.transform="translateX("+r.x+"px)"; el.style.width=r.w+"px";}
-window.addEventListener("resize",function(){placeInd(indRect(S.tab));});
+/* Desktop: the tab bar moves into the header row (and back below it on smaller windows). */
+function placeNav(){
+  var nav=$("nav.tabs"), hdr=$("header.top"), hw=hdr&&hdr.querySelector(".wrap"); if(!nav||!hw) return;
+  var w=window.matchMedia&&matchMedia("(min-width:1100px)").matches;
+  if(w&&nav.parentNode!==hw){ hw.appendChild(nav); document.body.classList.add("hd-row"); }
+  else if(!w&&nav.parentNode===hw){ hdr.parentNode.insertBefore(nav,hdr.nextSibling); document.body.classList.remove("hd-row"); }
+}
+placeNav();
+window.addEventListener("resize",function(){placeNav(); placeInd(indRect(S.tab));});
 function renderTab(t){
   if(t==="review") S.animLevel=true;
   if(t==="words"&&S.homeAdd){ S.homeAdd=false; returnAddBox(); }
