@@ -1923,6 +1923,13 @@ body.lib-open{overflow:hidden}
 .lr-sh-h{display:flex;align-items:center;gap:10px}.lr-sh-h b{flex:1}
 .lr-sh-sw{display:flex;gap:8px}.lr-sh-sw .lt-sw{box-shadow:0 0 0 1px var(--line)}.lr-sh-sw .lt-sw[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--surface) inset}
 .lr-sheet textarea{min-height:76px}
+.lc-res{display:grid;max-height:42vh;overflow:auto;overscroll-behavior:contain}
+.lc-hit{display:flex;align-items:center;gap:8px;border-top:1px solid var(--line)}
+.lc-hit:first-child{border-top:0}
+.lc-hb{flex:1;min-width:0;display:flex;align-items:baseline;gap:10px;border:0;background:none;color:inherit;font:inherit;text-align:left;padding:8px 2px;min-height:48px;cursor:pointer}
+.lc-hb b{font-family:var(--serif);font-size:1.25rem;font-weight:700;white-space:nowrap}
+.lc-hb span{color:var(--muted);font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lc-hit .stamp{width:24px;height:24px;font-size:.7rem;flex:none}
 .lr-prog{height:4px;border-radius:2px;background:var(--line);overflow:hidden;margin-top:14px}.lr-prog i{display:block;height:100%;width:0;background:var(--matcha);transition:width .25s}
 </style>
 <script>
@@ -5620,6 +5627,7 @@ async function libOpen(id){
   libClose(true);
   var R=document.createElement("div"); R.className="lib-reader"; R.setAttribute("role","dialog"); R.setAttribute("aria-modal","true"); R.setAttribute("aria-label",b.name);
   R.innerHTML='<div class="lr-bar"><button class="lr-btn" data-act="lr-close" aria-label="Close book" title="Close book">‹</button><span class="lr-t" title="'+esc(b.name)+'">'+esc(libTitle(b.name).t)+'</span><span class="lr-pg" id="lr-pg" aria-live="polite"></span>'+
+    '<button class="lr-btn" data-act="lr-find" aria-label="Search your words" title="Search your words"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg></button>'+
     '<button class="lr-btn" data-act="lr-zoom" data-d="-1" aria-label="Zoom out" title="Zoom out">−</button><button class="lr-btn" data-act="lr-zoom" data-d="1" aria-label="Zoom in" title="Zoom in">＋</button></div>'+
     '<div class="lr-body" id="lr-body"><div class="lr-msg" id="lr-msg" role="status">'+libLoadHtml("読(よ)み込(こ)み中(ちゅう)…",true)+'</div></div><div class="lr-dock" id="lr-dock" hidden></div>';
   document.body.appendChild(R); document.body.classList.add("lib-open");
@@ -5687,7 +5695,7 @@ function libSelShow(){
   var sel=window.getSelection(), r=sel.getRangeAt(0).getBoundingClientRect(); if(!r.width&&!r.height) return;
   var an=sel.anchorNode, span=an&&(an.nodeType===1?an:an.parentElement), sp=span&&span.closest&&span.closest(".textLayer span");
   var m=document.createElement("div"); m.className="lr-sel"; m.setAttribute("role","toolbar");
-  m.innerHTML='<button type="button" data-a="copy">Copy</button>'+(t.length<=40?'<button type="button" data-a="add">＋ Add to words</button>':'');
+  m.innerHTML='<button type="button" data-a="copy">Copy</button>'+(t.length<=40?'<button type="button" data-a="add">Look up</button>':'');
   m.style.left=Math.max(80,Math.min(window.innerWidth-80,r.left+r.width/2))+"px"; m.style.top=Math.max(60,r.top-8)+"px";
   m.addEventListener("mousedown",function(e){ e.preventDefault(); });
   m.addEventListener("click",function(e){
@@ -5767,9 +5775,9 @@ var LT_ICO={
   undo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>',
   redo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg>'
 };
-var LT_NAME={read:"Read",add:"Add word",hl:"Highlight",pen:"Pen",erase:"Erase"};
+var LT_NAME={read:"Read",add:"Look up",hl:"Highlight",pen:"Pen",erase:"Erase"};
 function libHint(t){
-  if(t==="add") return "Tap a word on the page to add it.";
+  if(t==="add") return "Tap a word to see its meaning. Save adds it to your words.";
   if(t==="hl") return "Drag across a line to mark it. Tap a mark’s ＋ to add a note.";
   if(t==="pen") return LIB.sawPen?"Stylus draws. Finger scrolls.":"Draw on the page. With a stylus, your finger scrolls.";
   if(t==="erase") return "Drag across marks to erase them.";
@@ -5793,6 +5801,7 @@ function libReaderClick(e){
   var act=a.dataset.act;
   if(act==="lr-close") libClose();
   else if(act==="lr-zoom") libZoom(+a.dataset.d);
+  else if(act==="lr-find"){ if(LIB.card&&LIB.card.st==="search") libCardClose(); else libCardOpen("","",libCurPage(),"search"); }
   else if(act==="lt-tool") libTool(a.dataset.t);
   else if(act==="lt-hc"){ LIB.hc=a.dataset.c; store("kc-lib-hl",LIB.hc); libDock(); }
   else if(act==="lt-pc"){ LIB.pc=a.dataset.c; store("kc-lib-pen",LIB.pc); libDock(); }
@@ -6017,17 +6026,28 @@ function libCardOpen(q,sent,page,st){
   if(C.st==="busy"){ var have=libBankFind(C.q); if(have){ C.have=have; C.st="have"; } }
   libCardRender();
   if(C.st==="busy") libCardFill();
-  if(C.st==="type") setTimeout(function(){ var i=el.querySelector("#lc-q"); if(i) i.focus({preventScroll:true}); },80);
+  if(C.st==="type"||C.st==="search") setTimeout(function(){ var i=el.querySelector(C.st==="search"?"#lc-s":"#lc-q"); if(i) i.focus({preventScroll:true}); },80);
 }
 function libCardClose(){
   if(!LIB.card) return; var el=LIB.card.el; LIB.card=null; if(el) el.remove();
   if(LIB.open){ LIB.open.el.querySelectorAll(".lr-pick").forEach(function(x){ x.remove(); }); if(!LIB.note) LIB.open.el.classList.remove("has-sheet"); }
 }
+/* search your own Vocab Bank from the reader (Oct 30). No AI. If nothing matches, Look it up asks Auto-fill. */
+function libFindHtml(q){
+  q=String(q||"").trim().toLowerCase();
+  if(!q) return '<p class="hint" style="margin:0">Searches your Vocab Bank. Instant, no AI.</p>';
+  var hits=S.words.filter(function(w){ return (w.jp+" "+w.kana+" "+w.romaji+" "+w.en+" "+w.tags).toLowerCase().indexOf(q)>-1; }).slice(0,8);
+  if(!hits.length) return '<p class="hint" style="margin:0 0 6px">Not in your Vocab Bank.</p><button type="button" class="btn small primary" data-act="lc-ai">Look it up</button>';
+  return hits.map(function(w){ return '<div class="lc-hit"><button type="button" class="lc-hb" data-act="lc-pick" data-row="'+w.row+'"><b lang="ja">'+rubyWord(w.jp,w.kana)+'</b><span>'+esc(w.en)+'</span></button>'+sayBtn(w.kana||w.jp,"Play "+w.jp)+'<span class="stamp st-'+w.mastery+'" lang="ja" title="'+w.mastery+'">'+STAMP[w.mastery]+'</span></div>'; }).join("");
+}
+document.addEventListener("input",function(e){ if(e.target&&e.target.id==="lc-s"&&LIB.card){ LIB.card.q=e.target.value; var r=LIB.card.el.querySelector("#lc-res"); if(r) r.innerHTML=libFindHtml(e.target.value); } });
 function libChip(t){ return '<span class="lc-chip">'+t+'</span>'; }
 function libCardRender(){
   var C=LIB.card; if(!C||!C.el) return; var h='<span class="lc-grab" aria-hidden="true"></span>', X='<button type="button" class="lc-x" data-act="lc-close" aria-label="Close" title="Close">×</button>';
-  if(C.st==="type"){
-    h+='<div class="lc-head"><b>Add a word</b>'+X+'</div><p class="hint" style="margin:0">'+(C.q?'':'There’s no tappable text there. Pages that are pictures can’t be tapped, so type the word you see.')+'</p>'+
+  if(C.st==="search"){
+    h+='<div class="lc-head"><b>Search your words</b>'+X+'</div><div class="lc-row"><label class="sr-only" for="lc-s">Search your words</label><input type="search" id="lc-s" lang="ja" autocomplete="off" placeholder="Kanji, kana, romaji or English" value="'+esc(C.q)+'"></div><div class="lc-res" id="lc-res">'+libFindHtml(C.q)+'</div>';
+  } else if(C.st==="type"){
+    h+='<div class="lc-head"><b>Look up a word</b>'+X+'</div><p class="hint" style="margin:0">'+(C.q?'':'There’s no tappable text there. Pages that are pictures can’t be tapped, so type the word you see.')+'</p>'+
       '<div class="lc-row"><label class="sr-only" for="lc-q">Word</label><input type="text" id="lc-q" lang="ja" autocomplete="off" placeholder="漢字, kana, or romaji" value="'+esc(C.q)+'"><button type="button" class="btn small primary" data-act="lc-look">Look up</button></div>';
   } else if(C.st==="busy"){
     h+='<div class="lc-head"><span class="lc-word" lang="ja">'+esc(C.q)+'</span>'+X+'</div><p class="hint lc-busy" style="margin:0"><span class="hc-dots"><i></i><i></i><i></i></span> Looking it up…</p>';
@@ -6037,7 +6057,9 @@ function libCardRender(){
   } else if(C.st==="have"){
     var w=C.have;
     h+='<div class="lc-head"><span class="lc-word" lang="ja">'+rubyWord(w.jp,w.kana)+'</span>'+sayBtn(w.kana||w.jp,"Play the word")+'<span class="stamp st-'+w.mastery+'" lang="ja" title="'+w.mastery+'">'+STAMP[w.mastery]+'</span>'+X+'</div>'+
-      '<div class="lc-mean">'+(w.romaji?'<span>'+esc(w.romaji)+'</span> · ':'')+esc(w.en)+'</div><div class="lc-tag have">Already in your Vocab Bank</div><p class="hint" style="margin:0">'+recText(w)+'</p>';
+      '<div class="lc-mean">'+(w.romaji?'<span>'+esc(w.romaji)+'</span> · ':'')+esc(w.en)+'</div><div class="lc-tag have">In your Vocab Bank</div><p class="hint" style="margin:0">'+recText(w)+'</p>'+
+      (w.exJp?'<div class="lc-ex"><span class="gp-lbl">Your example</span><span lang="ja" class="lc-exjp">'+rubyText(w.exJp)+'</span><span class="hint">'+esc(w.exEn||"")+'</span></div>':'')+
+      (C.from==="search"?'<div class="lc-row"><button type="button" class="linkbtn" data-act="lc-back">‹ Back to search</button></div>':'');
   } else if(C.st==="saved"){
     h+='<div class="lc-head"><span class="lc-word" lang="ja">'+rubyWord(C.w.jp,C.w.kana)+'</span>'+X+'</div><div class="msg ok" style="display:block;margin:0">Saved to your Vocab Bank.</div>'+
       '<div class="lc-row"><button type="button" class="btn small primary" data-act="lc-close">Keep reading</button></div>';
@@ -6087,6 +6109,9 @@ async function libCardAct(act,btn){
   else if(act==="lc-type"){ C.st="type"; libCardRender(); var i=C.el.querySelector("#lc-q"); if(i) i.focus({preventScroll:true}); }
   else if(act==="lc-look"){ var v=(C.el.querySelector("#lc-q")||{}).value; v=String(v||"").trim(); if(!v) return; C.q=v; C.sent=""; var have=libBankFind(v); if(have){ C.have=have; C.st="have"; libCardRender(); } else libCardFill(); }
   else if(act==="lc-retry") libCardFill();
+  else if(act==="lc-pick"){ var w=S.words.find(function(x){ return x.row===+btn.dataset.row; }); if(!w) return; C.have=w; C.from="search"; C.st="have"; libCardRender(); }
+  else if(act==="lc-back"){ C.st="search"; C.from=""; libCardRender(); var si=C.el.querySelector("#lc-s"); if(si) si.focus({preventScroll:true}); }
+  else if(act==="lc-ai"){ C.sent=""; C.from=""; libCardFill(); }
   else if(act==="lc-edit"){ C.edit=true; libCardRender(); }
   else if(act==="lc-save"){
     libCardEditRead(); var w=C.w; if(!w||!w.jp||!w.en){ toast("Japanese and English meaning are required."); return; }
