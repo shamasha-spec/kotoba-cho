@@ -813,6 +813,14 @@ header.top:has(#sync-pill.open){overflow:visible}
 .pm-cap{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:4px 6px 2px}
 .pill-menu #status{display:flex;align-items:center;gap:8px;padding:2px 4px 8px;border-bottom:1px solid var(--line);margin-bottom:2px;opacity:1;transform:none}
 .pill-menu #status .sync-txt{flex:1;min-width:0}
+/* sweep fix (Oct 29): nothing pokes out of the menu when signed in */
+#sync-pill.merged>.pill-menu{width:300px}
+.pill-menu,.pill-menu *{box-sizing:border-box}
+.pill-menu .sync-main{flex-wrap:nowrap}
+.pill-menu .sync-count{white-space:nowrap}
+.pill-menu #status .iconbtn{flex:none}
+.pill-menu #status{flex-wrap:wrap;min-width:0;row-gap:8px}
+.pill-menu #status .sync-txt{flex:1 1 100%}
 .pill-menu .pm-themes{display:grid;grid-template-columns:1fr 1fr;gap:4px;opacity:1;transform:none;padding:0;position:static!important;inset:auto;margin:0;width:auto;min-width:0;background:none;border:0;box-shadow:none;animation:none}
 .pill-menu .pm-themes button{display:flex;align-items:center;gap:8px;width:100%;min-height:38px;padding:8px 10px;border-radius:10px;font-size:.88rem;justify-content:flex-start}
 .pill-menu .pm-themes button span{display:inline!important}
@@ -2671,7 +2679,7 @@ function jfSet(w){
   document.querySelectorAll(".jf-tab").forEach(function(b){ b.classList.toggle("on",b.dataset.jf===w); b.setAttribute("aria-expanded",String(b.dataset.jf===w)); });
   if(w==="look"){ $("#j-look").open=true; setTimeout(function(){ try{ $("#j-lq").focus({preventScroll:true}); }catch(e){} },260); }
 }
-function jfOn(){ return !!(document.body.classList.contains("j-focus")&&jWide()&&$("#j-cols")&&$("#j-cols").classList.contains("reading")); }
+function jfOn(){ return !!(S.tab==="journal"&&document.body.classList.contains("j-focus")&&jWide()&&$("#j-cols")&&$("#j-cols").classList.contains("reading")); }
 var jfTimer=null;
 (function(){
   var tabs=$("#jf-tabs"), hov=window.matchMedia&&matchMedia("(hover:hover)").matches;
