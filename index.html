@@ -5408,7 +5408,7 @@ function libTitle(name){
 /* Library step 3 (Oct 29): a subfolder is one book made of chapters (series:true, chapters:[...]), e.g. Genki II by lesson */
 function libAll(){ var out=[]; (LIB.books||[]).forEach(function(b){ if(b.series) (b.chapters||[]).forEach(function(c){ c.parent=b; out.push(c); }); else out.push(b); }); return out; }
 function libFind(id){ return libAll().find(function(x){ return x.id===id; })||null; }
-function libChNum(c,i){ var m=String(c.name||"").match(/(\d+)/); return m?+m[1]:i+1; }
+function libChNum(c,i){ var n=String(c.name||""), m=n.match(/^\s*L\s*(\d+)/i); if(m) return +m[1]; var k=n.match(/[\u3040-\u30ff\u3400-\u9fff]/); return k?k[0]:"•"; }
 function libSeriesLast(b){ var pos=libPos(), last=null, lp=null; (b.chapters||[]).forEach(function(c){ var p=pos[c.id]; if(p&&p.at&&(!lp||p.at>lp.at)){ last=c; lp=p; } }); return last?{c:last,p:lp}:null; }
 function libThumbs(){ return recall("kc-lib-thumbs")||{}; }
 function libCover(b){
