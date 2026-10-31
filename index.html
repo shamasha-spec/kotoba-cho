@@ -1925,6 +1925,64 @@ body.lib-open{overflow:hidden}
 .lr-sh-h{display:flex;align-items:center;gap:10px}.lr-sh-h b{flex:1}
 .lr-sh-sw{display:flex;gap:8px}.lr-sh-sw .lt-sw{box-shadow:0 0 0 1px var(--line)}.lr-sh-sw .lt-sw[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--surface) inset}
 .lr-sheet textarea{min-height:76px}
+
+/* Desktop Home, layout B3 (Oct 30). Only used at 1,100px and wider. */
+@media (min-width:1100px){body[data-tab="add"] main.wrap{max-width:1240px}}
+.hd{display:flex;flex-direction:column;gap:20px}
+.hd-top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 28px;margin-top:14px}
+.hd-top .greet-wrap{margin:0}
+.hd-rev{flex:0 1 520px;min-width:320px}
+.hd-revcard{border-radius:18px;background:var(--ai);color:var(--surface);padding:14px 16px 12px 18px;display:grid;gap:10px;box-shadow:0 14px 28px -18px color-mix(in srgb,var(--ai) 85%,transparent)}
+.hd-revgo{display:flex;align-items:center;gap:16px;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer;padding:2px 0;border-radius:12px}
+.hd-revgo .hr-arrow{transition:transform .2s}
+.hd-revgo:hover .hr-arrow{transform:translateX(3px)}
+.hd-due{display:grid;line-height:1;min-width:3.2ch}.hd-due b{font-family:var(--serif);font-size:2.2rem}.hd-due small{font-size:.74rem;opacity:.85;margin-top:5px;white-space:nowrap}
+.hd-revt{flex:1;display:grid;gap:2px}.hd-revt b{font-size:1.1rem}.hd-revt b span{font-family:var(--serif);margin-right:6px}.hd-revt small{opacity:.85;font-size:.82rem}
+.hd-pills{display:flex;flex-wrap:wrap;gap:6px;align-items:center;border-top:1px solid color-mix(in srgb,var(--surface) 22%,transparent);padding-top:10px}
+.hd-pill{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 13px;border-radius:999px;border:0;background:color-mix(in srgb,var(--surface) 15%,transparent);color:inherit;font:inherit;font-size:.82rem;cursor:pointer;transition:background .15s}
+.hd-pill span{font-family:var(--serif);font-weight:700}.hd-pill i{font-style:normal;opacity:.75}
+.hd-pill:hover{background:color-mix(in srgb,var(--surface) 26%,transparent)}
+.hd-more{margin-left:auto;border:0;background:none;color:inherit;opacity:.85;font:inherit;font-size:.82rem;cursor:pointer;min-height:36px;padding:0 4px}
+.hd-more:hover{opacity:1;text-decoration:underline;text-underline-offset:3px}
+.hd-row{display:flex;flex-wrap:wrap;gap:16px;align-items:stretch}
+.hd-row>*{min-width:0}
+.hd-row>.hd-wotd{flex:2 1 460px}
+.hd-row>.lib-home{flex:1 1 230px}
+.hd-row>#hchat-slot{flex:1 1 280px;margin:0;display:flex}
+.hd-row>#hchat-slot:empty{display:none}
+.hd #hchat-slot>.hchat{flex:1;margin:0;display:flex;flex-direction:column}
+.hd #hchat-slot>.hchat .hc-msgs{flex:1}
+.hd #hchat-slot>.hchat.mini .hc-notif{align-items:flex-start;padding:16px}
+.hd .mt.wide{position:relative;display:flex!important;flex-direction:column;min-height:300px!important;padding:18px 20px 14px!important;grid-column:auto;background:radial-gradient(120% 140% at 50% 0%,var(--sun-soft) 0%,color-mix(in srgb,var(--sun-soft) 55%,var(--surface)) 55%,var(--surface) 100%);border-color:color-mix(in srgb,var(--sun) 65%,var(--line));box-shadow:0 14px 30px -22px color-mix(in srgb,var(--sun-ink) 55%,transparent)}
+.hd .mt.wide:hover{border-color:var(--sun)}
+.hd .mt.wide .mt-stack{display:none}
+.hd .mt.wide .wb{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;height:auto!important;flex:1;display:grid;align-items:center;padding:34px 0 12px}
+.hd .mt.wide .wb-wotd .wb-jp{font-size:clamp(2.8rem,4.4vw,4rem)!important;line-height:1.45}
+.hd .mt.wide .wb-wotd .wb-mean{font-size:1.02rem}
+.hd .mt.wide .mt-lab{position:static!important;display:block;text-align:center;border-top:1px dashed color-mix(in srgb,var(--sun) 70%,var(--line));padding-top:10px;margin-top:6px}
+.hd .mt.wide .mt-lab [lang="ja"],.hd .mt.wide .mt-lab b{display:inline;font-size:.9rem;margin-right:6px}
+.hd .mt.wide .mt-lab small{display:inline}
+.hd .mt.wide .mt-add{z-index:3;top:14px;right:14px;background:var(--sun-soft);border-color:color-mix(in srgb,var(--sun) 80%,var(--line))}
+.hd .mt.wide .mt-add:hover{background:var(--sun)}
+.hd .lib-home{flex-direction:column;align-items:stretch;gap:14px;padding:18px;grid-column:auto}
+.hd .lib-home .lib-cover,.hd .lib-home .lh-shelf{width:98px;align-self:center}
+.hd .lib-home .lib-cover{padding:10px 8px 8px 16px}
+.hd .lib-home .lib-cover b{font-size:.78rem}
+.hd .lib-home .lib-cover .lc-seal{display:grid;width:26px;height:26px;font-size:.72rem}
+.hd .lib-home .lh-txt{gap:7px}
+.hd .lib-home .lh-k,.hd .lib-home .lh-t{text-align:center;white-space:normal}
+.hd-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.hd-tile{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;background:var(--surface);border:1px solid var(--line);cursor:pointer;min-width:0;outline-offset:3px;transition:border-color .2s,box-shadow .25s,background .25s}
+.hd-tile:hover{border-color:color-mix(in srgb,var(--cv) 45%,var(--line));background:color-mix(in srgb,var(--cv) 5%,var(--surface));box-shadow:0 10px 22px -14px color-mix(in srgb,var(--cv) 55%,transparent)}
+.hd-tile.hop{animation:tileHop .55s cubic-bezier(.3,1.4,.5,1)}
+.hd-seal{flex:none;width:52px;height:52px;border-radius:50%;border:2px solid var(--cv);color:var(--cv);display:grid;place-items:center;font-family:var(--serif);font-weight:700;font-size:1.35rem;background:var(--surface);box-shadow:0 0 0 4px color-mix(in srgb,var(--cv) 10%,transparent)}
+.hd-seal.sm{font-size:.95rem}
+.hd-tt{display:grid;gap:1px;min-width:0}
+.hd-jp{font-family:var(--serif);font-weight:700;font-size:.8rem;color:var(--cv)}
+.hd-tt b{font-size:1.02rem}
+.hd-tt small{font-size:.76rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hd-tt small button{border:0;background:none;padding:0;color:var(--ai);font:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:2px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kc-learner .hd-tile[data-go="journal"],.kc-learner .hd-tile[data-go="grammar"]{display:none!important}
 /* Oct 30: the card and note sheet sit just above the on-screen keyboard (--kb is set from the visual viewport) */
 .lr-card,.lr-sheet{bottom:var(--kb,0px);max-height:calc(100% - var(--kb,0px) - 56px);overflow:auto;overscroll-behavior:contain;transition:bottom .2s ease}
 .lib-reader.kb-open .lr-card,.lib-reader.kb-open .lr-sheet{border-radius:22px;padding-bottom:16px}
@@ -4014,6 +4072,29 @@ function renderHome(){
   var G=greeting();
   var nowD=new Date(), WK=["日","月","火","水","木","金","土"];
   var jpDate=(nowD.getMonth()+1)+"月"+nowD.getDate()+"日（"+WK[nowD.getDay()]+"）", enDate=nowD.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
+  /* Desktop Home, layout B3 (Oct 30): greeting beside the review card (with three deck pills), then the word of the day,
+     the book you're reading and アンちゃん side by side, then four calm seal tiles. No lists. Phones keep the layout below. */
+  var html;
+  if(jWide()){
+    var dkD=decks(), dueD=dkD.due.length, sizeD=S.size==="all"?"All cards":S.size+" per session", lastE=S.entries[0], newD=S.words.slice().sort(function(x,y){return y.row-x.row;})[0];
+    var pillsD=[["all","混","Random mix",""],["tricky","渋","Tea stains",dkD.tricky.length],["fresh","新","New words",dkD.fresh.length]].map(function(x){ return '<button type="button" class="hd-pill" data-act="hd-deck" data-k="'+x[0]+'"><span lang="ja">'+x[1]+'</span>'+x[2]+(x[3]!==""?' <i>'+x[3]+'</i>':'')+'</button>'; }).join("");
+    var revD=S.words.length?'<div class="hd-revcard"><button type="button" class="hd-revgo" data-act="home-review"><span class="hd-due"><b>'+dueD+'</b><small>'+(dueD?(dueD===1?'card due':'cards due'):'nothing due')+'</small></span><span class="hd-revt"><b><span lang="ja">復習</span>Start reviewing</b><small>'+(dueD?sizeD:'Try a random mix')+'</small></span><span class="hr-arrow" aria-hidden="true">›</span></button><div class="hd-pills">'+pillsD+'<button type="button" class="hd-more" data-act="hd-more">More decks ›</button></div></div>':'';
+    var hdTile=function(go,c,face,jp,en,sub,small){ return '<div class="hd-tile" data-go="'+go+'" role="link" tabindex="0" aria-label="'+en+'" style="--cv:'+c+'"><span class="hd-seal'+(small?' sm':'')+'" lang="ja">'+face+'</span><span class="hd-tt"><span class="hd-jp" lang="ja">'+jp+'</span><b>'+en+'</b><small>'+sub+'</small></span></div>'; };
+    var jSub=lastE?'<button type="button" data-act="hd-quiz" data-key="'+entryKey(lastE)+'">Quiz <span lang="ja">'+esc(stripFuri((lastE.title||"").split(/\s*[(（](?![\u3040-\u30ffー]+[)）])/)[0]))+'</span> ›</button>':(S.draft?'Draft waiting':'Start your first');
+    html='<div class="hd"><div class="hd-top"><div class="greet-wrap"><div class="greet-date"><span lang="ja">'+jpDate+'</span><span>'+enDate+'</span></div><h2 class="greet"><span lang="ja">'+G[0]+'</span><span>'+esc((window.KC_ME&&window.KC_ME.name)||"Pete")+'</span></h2><p class="greet-sub">'+G[1]+'. Pick up where you left off.</p></div>'+(revD?'<div class="hd-rev">'+revD+'</div>':'')+'</div>'+
+      '<div class="hd-row"><div class="mt wide hd-wotd'+(S.bannerAdd?' adding':'')+'" data-go="words" role="link" tabindex="0" aria-label="Words" style="--cv:#6E6A64">'+
+        '<button class="mt-add'+(S.bannerAdd?' on':'')+'" data-act="addword" data-tip="'+(S.bannerAdd?'Close':'Add a word')+'" aria-expanded="'+!!S.bannerAdd+'"><span class="mt-add-ico" aria-hidden="true">＋</span><span class="mt-add-txt">'+(S.bannerAdd?'Close':'Add a word')+'</span></button>'+
+        '<div class="wb" data-state="'+(S.bannerAdd?'add':'wotd')+'">'+wotdHtml()+'<div class="wb-add">'+bannerAddHtml()+'</div></div>'+
+        '<div class="mt-lab"><span lang="ja">単語</span><b>Words</b><small>'+S.words.length+(S.words.length===1?' word':' words')+(newD?', newest: '+esc(newD.en):'')+'</small></div></div>'+
+        libHomeHtml()+'<div id="hchat-slot"></div></div>'+
+      '<div class="mt-addslot'+(S.homeAdd?' on':'')+'" id="home-addslot"></div>'+
+      '<div class="hd-tiles">'+
+        hdTile("rank","var(--"+RI.cv+RI.idx+")",R.k,"段位","Mastery",R.en+', '+(NX?Math.max(1,Math.ceil(RI.hi-RI.score))+'% to next':'top rank'),R.k.length>1)+
+        hdTile("cards","var(--d-ai)",String(due.length),"札","Flashcards",due.length?'due'+(w?' · try <span lang="ja">'+esc(w.jp)+'</span>':''):'Nothing due',String(due.length).length>2)+
+        hdTile("journal","var(--d-asagi)","記","日記","Journal",jSub)+
+        hdTile("grammar","var(--d-enji)",String(got),"文法","Grammar",'of '+pts.length+' mastered',String(got).length>2)+
+      '</div></div>';
+  } else {
   var html='<div class="greet-wrap"><div class="greet-date"><span lang="ja">'+jpDate+'</span><span>'+enDate+'</span></div><h2 class="greet"><span lang="ja">'+G[0]+'</span><span>'+esc((window.KC_ME&&window.KC_ME.name)||"Pete")+'</span></h2><p class="greet-sub">'+G[1]+'. Pick up where you left off.</p></div>';
   var dueN=S.words.filter(function(w){return !w.next||w.next<=t;}).length;
   if(S.words.length) html+='<button class="home-review" data-act="home-review"><span class="hr-ico" aria-hidden="true"><span class="fc fc-b"></span><span class="fc fc-f"><i lang="ja">あ</i><i>a</i></span></span><span class="hr-txt"><b><span lang="ja">復習</span> Start reviewing</b><small>'+(dueN?dueN+(dueN===1?' card':' cards')+' due today':'Nothing due, try a random mix')+'</small></span><span class="hr-arrow" aria-hidden="true">›</span></button>';
@@ -4073,7 +4154,7 @@ function renderHome(){
       return mixHtml({mark:km?km[0]:"記",slip:slip,name:name,date:en.date,first:stripFuri((en.lines[0]&&en.lines[0].jp)||""),sub:esc(en.date)+", "+(c.words.length+c.sents.length)+" cards",c:JPAL[h%JPAL.length],entry:key});
     }).join("")+(S.entries.length>5?'<button type="button" class="shelf-more" data-act="hm-journal">All '+S.entries.length+' entries ›</button>':'')+'</div>';
   }
-  if(jWide()) html='<div class="hm-left">'+html+'</div>';
+  }
   el.innerHTML=html;
   if($("#hchat-slot")) renderChat();
   if(parked){ var slot0=$("#home-addslot"); if(S.homeAdd&&slot0) slot0.appendChild(abox); else returnAddBox(); }
@@ -4096,6 +4177,10 @@ document.addEventListener("pointerdown",function(e){S.lastPtr=e.pointerType;S.la
 $("#home-tiles").addEventListener("click",function(e){
   if(e.target.closest('[data-act="home-review"]')){ var dn=S.words.some(function(w){return !w.next||w.next<=today();}); setTab("review"); startReview(dn?"due":"all"); return; }
   if(e.target.closest('[data-act="hm-journal"]')){ setTab("journal"); window.scrollTo(0,0); return; }
+  var hdk=e.target.closest('[data-act="hd-deck"]'); if(hdk){ setTab("review"); startReview(hdk.dataset.k); return; }
+  if(e.target.closest('[data-act="hd-more"]')){ goReview("cards"); return; }
+  var hdq=e.target.closest('[data-act="hd-quiz"]'); if(hdq){ e.stopPropagation(); startEntryReview(hdq.dataset.key); return; }
+  var hdt=e.target.closest(".hd-tile"); if(hdt){ hopEl(hdt); var gg=hdt.dataset.go; setTimeout(function(){ if(gg==="rank"||gg==="cards") goReview(gg); else { setTab(gg); window.scrollTo(0,0); } },160); return; }
   var lh=e.target.closest('[data-act="lib-home"]'); if(lh){ if(lh.dataset.id) libOpen(lh.dataset.id); else { setTab("library"); window.scrollTo(0,0); } return; }
   if(e.target.closest('[data-act="retry-load"]')){ $("#home-tiles").innerHTML=LOADER_HTML; loadAll(); return; }
   var mtile=e.target.closest(".mt");
@@ -4142,7 +4227,7 @@ $("#home-tiles").addEventListener("click",function(e){
   hopEl(card);
   setTimeout(function(){ if(g==="rank"||g==="cards") goReview(g); else setTab(g); },160);
 });
-$("#home-tiles").addEventListener("keydown",function(e){ if((e.key==="Enter"||e.key===" ")&&e.target.classList.contains("mt")){e.preventDefault();navScroll(e.target,"go");return;} if((e.key==="Enter"||e.key===" ")&&e.target.classList.contains("scr")){e.preventDefault();navScroll(e.target,"go");return;} if((e.key==="Enter"||e.key===" ")&&(e.target.classList.contains("pl")||e.target.classList.contains("mix"))){e.preventDefault();e.target.click();} });
+$("#home-tiles").addEventListener("keydown",function(e){ if((e.key==="Enter"||e.key===" ")&&e.target.classList.contains("hd-tile")){ e.preventDefault(); e.target.click(); return; } if((e.key==="Enter"||e.key===" ")&&e.target.classList.contains("mt")){e.preventDefault();navScroll(e.target,"go");return;} if((e.key==="Enter"||e.key===" ")&&e.target.classList.contains("scr")){e.preventDefault();navScroll(e.target,"go");return;} if((e.key==="Enter"||e.key===" ")&&(e.target.classList.contains("pl")||e.target.classList.contains("mix"))){e.preventDefault();e.target.click();} });
 
 
 /* ---------- Words banner: word of the day + slide-out quick add ---------- */
@@ -4327,8 +4412,8 @@ function gAlign(){
   [L.lastElementChild,R.lastElementChild].forEach(function(c){ if(!c) return; c.style.minHeight=""; var s=c.querySelector(":scope>summary"); if(s) s.style.minHeight=""; });
   if(!(window.matchMedia&&matchMedia("(min-width:1100px)").matches)) return;
   var d=R.offsetHeight-L.offsetHeight, c=d>0?L.lastElementChild:R.lastElementChild;
-  /* a closed section banner grows through its summary, so the hover tint covers the whole card */
-  if(c&&c.matches(".gsecd:not([open])")) c=c.querySelector("summary");
+  /* Oct 30: never stretch a Genki / Preply / Mine section card; a tall empty card looked broken. Other cards still stretch. */
+  if(c&&c.matches(".gsecd")) return;
   if(c&&Math.abs(d)>1&&Math.abs(d)<320) c.style.minHeight=(c.offsetHeight+Math.abs(d))+"px";
 }
 window.addEventListener("resize",function(){ if(S.tab==="grammar") gAlign(); });
