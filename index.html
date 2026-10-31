@@ -1878,11 +1878,13 @@ body.lib-open{overflow:hidden}
 .lr-dock[hidden]{display:none}
 .lib-reader.has-sheet .lr-dock{display:none}
 .lt-tools{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px}
-.lt-tool{border:0;background:transparent;color:inherit;border-radius:12px;min-height:50px;padding:4px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:inherit;font-size:.7rem;cursor:pointer}
-.lt-tool svg{width:20px;height:20px}
+.lt-tool{border:0;background:transparent;color:inherit;border-radius:12px;min-height:46px;padding:4px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:inherit;font-size:.7rem;cursor:pointer}
+.lt-tool svg{width:22px;height:22px}
+.lib-reader{touch-action:pan-x pan-y}
+.lr-load .ld-txt{margin-top:2px}
 .lt-tool:hover{background:rgba(255,255,255,.08)}
 .lt-tool[aria-pressed="true"]{background:#F1F2EE;color:#1C2220}
-.lt-go{font-family:var(--serif);font-weight:700;font-size:1.05rem;line-height:20px}
+.lt-go{font-family:var(--serif);font-weight:700;font-size:1.2rem;line-height:22px}
 .lt-row{display:flex;align-items:center;gap:10px;padding:2px 6px}
 .lt-sw{width:30px;height:30px;border-radius:50%;border:2px solid transparent;padding:0;cursor:pointer;flex:none;box-shadow:0 0 0 1px rgba(255,255,255,.35)}
 .lt-sw.sq{border-radius:7px}
@@ -1923,6 +1925,9 @@ body.lib-open{overflow:hidden}
 .lr-sh-h{display:flex;align-items:center;gap:10px}.lr-sh-h b{flex:1}
 .lr-sh-sw{display:flex;gap:8px}.lr-sh-sw .lt-sw{box-shadow:0 0 0 1px var(--line)}.lr-sh-sw .lt-sw[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--surface) inset}
 .lr-sheet textarea{min-height:76px}
+/* Oct 30: the card and note sheet sit just above the on-screen keyboard (--kb is set from the visual viewport) */
+.lr-card,.lr-sheet{bottom:var(--kb,0px);max-height:calc(100% - var(--kb,0px) - 56px);overflow:auto;overscroll-behavior:contain;transition:bottom .2s ease}
+.lib-reader.kb-open .lr-card,.lib-reader.kb-open .lr-sheet{border-radius:22px;padding-bottom:16px}
 .lc-res{display:grid;max-height:42vh;overflow:auto;overscroll-behavior:contain}
 .lc-hit{display:flex;align-items:center;gap:8px;border-top:1px solid var(--line)}
 .lc-hit:first-child{border-top:0}
@@ -5474,7 +5479,7 @@ var LIB={books:recall("kc-lib-list"),loading:false,err:"",asked:false,max:30,byt
   tool:"read",hc:recall("kc-lib-hl")||"y",pc:recall("kc-lib-pen")||"red",marks:{},hist:[],redo:[],card:null,note:null,drag:null,sawPen:false};
 var PDFJS_BASE="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";
 var LIB_COLORS=["#2C4870","#2B7A78","#A63A4A","#56752C","#8B5A3C","#6A4C93","#3F6187"];
-var LIB_Z=[0.75,1,1.25,1.5,2,2.5];
+var LIB_Z=[0.75,1,1.25,1.5,2,2.5,3];
 function libOwner(){ return !!(window.KC_ME&&window.KC_ME.role==="owner"&&window.kcLib); }
 function libPos(){ return recall("kc-lib-pos")||{}; }
 function libColor(b){ return LIB_COLORS[(parseInt(hash(String(b.id)),36)||0)%LIB_COLORS.length]; }
@@ -5615,10 +5620,10 @@ async function libFetch(b,onProg){
   LIB.bytes={}; LIB.bytes[b.id]={updated:first.updated,data:out}; // one book in memory at a time
   return out;
 }
-/* Oct 30: the loader is the app's 言 notebook. Its cover opens, the pages flip, it closes, and it starts again. */
-function libLoadHtml(jp,bar){
-  return '<div class="lr-load" aria-label="Loading"><span class="lr-nb" aria-hidden="true"><span class="lr-nb-in"><i class="nb-back"></i><i class="nb-pg"></i><i class="nb-pg p2"></i><i class="nb-cv"><b>言</b></i><i class="nb-rb"></i></span></span><span class="lr-nb-sh" aria-hidden="true"></span>'+
-    '<span class="t" lang="ja">'+rubyText(jp)+'</span>'+(bar?'<div class="lr-prog" style="width:220px"><i id="lr-prog"></i></div>':'')+'</div>';
+/* Oct 30: the book loader is the same spinning 言 notebook as Home's loader, so the app feels like one piece */
+function libLoadHtml(jp,en,bar){
+  return '<div class="loader lr-load" aria-label="Loading"><div class="ld-spin" aria-hidden="true"><div class="ld-bob"><div class="ld-b3"><span class="f front"><i>言</i></span><span class="f back"></span><span class="f spine"></span><span class="f edge"></span><span class="f top"></span><span class="f bot"></span></div></div><span class="ld-shadow"></span></div>'+
+    '<div class="ld-txt"><span lang="ja">'+rubyText(jp)+'</span>'+en+'</div>'+(bar?'<div class="lr-prog" style="width:220px;margin-top:4px"><i id="lr-prog"></i></div>':'')+'</div>';
 }
 function libLive(tok){ return !!(LIB.open&&LIB.open.tok===tok); }
 function libMsg(html){ var m=$("#lr-msg"); if(m) m.innerHTML=html; }
@@ -5629,7 +5634,7 @@ async function libOpen(id){
   R.innerHTML='<div class="lr-bar"><button class="lr-btn" data-act="lr-close" aria-label="Close book" title="Close book">‹</button><span class="lr-t" title="'+esc(b.name)+'">'+esc(libTitle(b.name).t)+'</span><span class="lr-pg" id="lr-pg" aria-live="polite"></span>'+
     '<button class="lr-btn" data-act="lr-find" aria-label="Search your words" title="Search your words"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg></button>'+
     '<button class="lr-btn" data-act="lr-zoom" data-d="-1" aria-label="Zoom out" title="Zoom out">−</button><button class="lr-btn" data-act="lr-zoom" data-d="1" aria-label="Zoom in" title="Zoom in">＋</button></div>'+
-    '<div class="lr-body" id="lr-body"><div class="lr-msg" id="lr-msg" role="status">'+libLoadHtml("読(よ)み込(こ)み中(ちゅう)…",true)+'</div></div><div class="lr-dock" id="lr-dock" hidden></div>';
+    '<div class="lr-body" id="lr-body"><div class="lr-msg" id="lr-msg" role="status">'+libLoadHtml("本(ほん)を開(ひら)いています","Opening your book…",true)+'</div></div><div class="lr-dock" id="lr-dock" hidden></div>';
   document.body.appendChild(R); document.body.classList.add("lib-open");
   var tok={}; LIB.open={b:b,el:R,tok:tok,back:document.activeElement};
   LIB.tool="read"; LIB.marks={}; LIB.hist=[]; LIB.redo=[]; R.dataset.tool="read";
@@ -5640,7 +5645,7 @@ async function libOpen(id){
   try{
     var data=await libFetch(b,function(i,n){ var p=$("#lr-prog"); if(p) p.style.width=Math.round(i/n*100)+"%"; });
     if(!libLive(tok)) return;
-    libMsg(libLoadHtml("ページを準備(じゅんび)中(ちゅう)…",false));
+    libMsg(libLoadHtml("ページを準備(じゅんび)中(ちゅう)…","Getting the pages ready…",false));
     var lib=await libLoadPdfJs(); if(!libLive(tok)) return;
     var doc=await lib.getDocument({data:data.slice()}).promise;
     if(!libLive(tok)){ doc.destroy(); return; }
@@ -5728,15 +5733,44 @@ function libSavePos(){
   var all=libPos(); all[O.b.id]={p:n,n:O.sizes.length,at:Date.now()}; store("kc-lib-pos",all);
 }
 function libZoomBtns(){
-  if(!LIB.open) return; var i=LIB_Z.indexOf(LIB.zoom);
-  LIB.open.el.querySelectorAll('[data-act="lr-zoom"]').forEach(function(b){ b.disabled=(+b.dataset.d<0&&i<=0)||(+b.dataset.d>0&&i>=LIB_Z.length-1); });
+  if(!LIB.open) return; var z=LIB.zoom;
+  LIB.open.el.querySelectorAll('[data-act="lr-zoom"]').forEach(function(b){ b.disabled=(+b.dataset.d<0&&z<=LIB_Z[0]+0.01)||(+b.dataset.d>0&&z>=LIB_Z[LIB_Z.length-1]-0.01); });
 }
 function libZoom(dir){
   var O=LIB.open; if(!O||!O.sizes) return;
-  var cur=libCurPage(), i=LIB_Z.indexOf(LIB.zoom); if(i<0) i=1;
-  i=Math.max(0,Math.min(LIB_Z.length-1,i+dir)); if(LIB_Z[i]===LIB.zoom) return;
-  LIB.zoom=LIB_Z[i]; store("kc-lib-zoom",LIB.zoom); libLayout(); libGo(cur); libSavePos(); libZoomBtns();
+  var cur=libCurPage(), z=LIB.zoom, nz=dir>0?LIB_Z.find(function(v){ return v>z+0.01; }):LIB_Z.slice().reverse().find(function(v){ return v<z-0.01; });
+  if(!nz) return;
+  LIB.zoom=nz; store("kc-lib-zoom",LIB.zoom); libLayout(); libGo(cur); libSavePos(); libZoomBtns();
 }
+/* Oct 30: pinch to zoom inside the book. The browser's own pinch zoom is turned off in the reader (it pushed the toolbar
+   off screen); instead the pages are re-drawn at the new size, so text stays sharp and the toolbar stays put. */
+(function(){
+  var pz=null;
+  function dist(t){ var dx=t[0].clientX-t[1].clientX, dy=t[0].clientY-t[1].clientY; return Math.sqrt(dx*dx+dy*dy); }
+  document.addEventListener("touchstart",function(e){
+    var body=e.target.closest&&e.target.closest("#lr-body"); if(!body||!LIB.open||!LIB.open.sizes||e.touches.length!==2) return;
+    if(LIB.drag&&LIB.drag.s){ var g=LIB.drag; LIB.drag=null; libDraw(g.cv,g.n); } else LIB.drag=null;
+    var pages=body.querySelector(".lr-pages"); if(!pages) return;
+    var r=body.getBoundingClientRect(), cx=(e.touches[0].clientX+e.touches[1].clientX)/2, cy=(e.touches[0].clientY+e.touches[1].clientY)/2;
+    var fx=cx-r.left+body.scrollLeft, fy=cy-r.top+body.scrollTop;
+    pz={body:body,pages:pages,d0:dist(e.touches),z0:LIB.zoom,s:1,vx:cx-r.left,vy:cy-r.top,fx:fx,fy:fy};
+    pages.style.transformOrigin=(fx-pages.offsetLeft)+"px "+(fy-pages.offsetTop)+"px"; pages.style.willChange="transform";
+  },{passive:true});
+  document.addEventListener("touchmove",function(e){
+    if(!pz||e.touches.length!==2) return; e.preventDefault();
+    pz.s=Math.max(0.6/pz.z0,Math.min(3/pz.z0,dist(e.touches)/pz.d0)); pz.pages.style.transform="scale("+pz.s+")";
+  },{passive:false});
+  function end(e){
+    if(!pz||(e.touches&&e.touches.length>=2)) return; var P=pz; pz=null;
+    P.pages.style.transform=""; P.pages.style.willChange="";
+    var nz=Math.max(0.75,Math.min(3,Math.round(P.z0*P.s*100)/100)); if(Math.abs(nz-P.z0)<0.03||!LIB.open) return;
+    var oldW=LIB.open.W; LIB.zoom=nz; store("kc-lib-zoom",nz); libLayout();
+    var k=LIB.open.W/oldW, b=$("#lr-body"); if(b){ b.scrollLeft=Math.max(0,P.fx*k-P.vx); b.scrollTop=Math.max(0,P.fy*k-P.vy); }
+    libSavePos(); libZoomBtns();
+  }
+  document.addEventListener("touchend",end,{passive:true});
+  document.addEventListener("touchcancel",end,{passive:true});
+})();
 function libClose(quiet){
   var O=LIB.open; if(!O) return;
   if(O.sizes) libSavePos();
@@ -5791,7 +5825,7 @@ function libDock(){
   if(t==="hl"||t==="pen"||t==="erase") row+='<span class="lt-hist"><button type="button" class="lt-ib" data-act="lt-undo" aria-label="Undo" title="Undo"'+(LIB.hist.length?'':' disabled')+'>'+LT_ICO.undo+'</button><button type="button" class="lt-ib" data-act="lt-redo" aria-label="Redo" title="Redo"'+(LIB.redo.length?'':' disabled')+'>'+LT_ICO.redo+'</button></span>';
   var h=libHint(t);
   el.hidden=false;
-  el.innerHTML=(row?'<div class="lt-row">'+row+'</div>':'')+'<div class="lt-tools" role="toolbar" aria-label="Reader tools">'+["read","add","hl","pen","erase"].map(function(k){ return '<button type="button" class="lt-tool" data-act="lt-tool" data-t="'+k+'" aria-pressed="'+(t===k)+'">'+LT_ICO[k]+'<span>'+LT_NAME[k]+'</span></button>'; }).join("")+'</div>'+(h?'<div class="lt-hint">'+h+'</div>':'');
+  el.innerHTML=(row?'<div class="lt-row">'+row+'</div>':'')+'<div class="lt-tools" role="toolbar" aria-label="Reader tools">'+["read","add","hl","pen","erase"].map(function(k){ return '<button type="button" class="lt-tool" data-act="lt-tool" data-t="'+k+'" aria-pressed="'+(t===k)+'" aria-label="'+LT_NAME[k]+'" title="'+LT_NAME[k]+'">'+LT_ICO[k]+'</button>'; }).join("")+'</div>'+(h?'<div class="lt-hint">'+h+'</div>':'');
   O.el.dataset.tool=t;
 }
 function libTool(t){ LIB.tool=t; libSelHide(); if(t!=="read"){ try{ window.getSelection().removeAllRanges(); }catch(e){} } libDock(); }
@@ -6125,6 +6159,18 @@ async function libCardAct(act,btn){
     }catch(err){ btn.disabled=false; btn.textContent="Try again"; toast(sheetErr(err,true)); var m=C.el.querySelector(".lc-row"); if(m) m.insertAdjacentHTML("beforebegin",'<div class="msg err" style="display:block;margin:0">'+sheetErr(err,true)+'</div>'); }
   }
 }
+/* keyboard (Oct 30): on phones the keyboard covers the page instead of shrinking it, so lift the card above it */
+(function(){
+  var vv=window.visualViewport; if(!vv) return;
+  function fit(){
+    var R=LIB.open&&LIB.open.el; if(!R) return;
+    var kb=Math.max(0,Math.round(window.innerHeight-vv.height-vv.offsetTop)); if(kb<60) kb=0;
+    R.style.setProperty("--kb",kb+"px"); R.classList.toggle("kb-open",kb>0);
+    if(kb){ var a=document.activeElement; if(a&&a.closest&&a.closest(".lr-card,.lr-sheet")) setTimeout(function(){ try{ a.scrollIntoView({block:"nearest"}); }catch(e){} },60); }
+  }
+  vv.addEventListener("resize",fit); vv.addEventListener("scroll",fit);
+  document.addEventListener("focusin",function(e){ if(e.target&&e.target.closest&&e.target.closest(".lr-card,.lr-sheet")) setTimeout(fit,250); });
+})();
 document.addEventListener("keydown",function(e){ if(e.target&&e.target.id==="lc-q"&&e.key==="Enter"&&!e.isComposing){ e.preventDefault(); var b=LIB.card&&LIB.card.el.querySelector('[data-act="lc-look"]'); if(b) b.click(); } });
 })();
 </script>
