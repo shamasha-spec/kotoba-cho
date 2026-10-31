@@ -1925,6 +1925,54 @@ body.lib-open{overflow:hidden}
 .lr-sh-h{display:flex;align-items:center;gap:10px}.lr-sh-h b{flex:1}
 .lr-sh-sw{display:flex;gap:8px}.lr-sh-sw .lt-sw{box-shadow:0 0 0 1px var(--line)}.lr-sh-sw .lt-sw[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--surface) inset}
 .lr-sheet textarea{min-height:76px}
+/* Desktop reader (Oct 30): book on the left, lookup and study tools on the right. 1,100px and wider only. */
+.lr-side,.lr-full{display:none}
+.lib-reader.desk{display:grid;grid-template-columns:minmax(0,1fr) 380px;grid-template-rows:auto auto minmax(0,1fr)}
+.lib-reader.desk>.lr-bar{grid-column:1;grid-row:1}
+.lib-reader.desk .lr-full{display:grid}
+.lib-reader.desk .lr-full[aria-pressed="true"]{background:var(--ai-soft);color:var(--ai)}
+.lib-reader.desk>.lr-dock{grid-column:1;grid-row:2;position:static;transform:none;left:auto;bottom:auto;margin:10px auto 2px;width:auto;display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:16px}
+.lib-reader.desk>.lr-dock[hidden]{display:none}
+.lib-reader.desk.has-sheet>.lr-dock{display:flex}
+.lib-reader.desk .lt-tools{display:flex;gap:2px}
+.lib-reader.desk .lt-tool{min-height:40px;min-width:46px}
+.lib-reader.desk .lt-row{order:2;padding:0 2px 0 10px;border-left:1px solid rgba(255,255,255,.2)}
+.lib-reader.desk .lt-sw{width:26px;height:26px}
+.lib-reader.desk .lt-ib{width:36px;height:36px}
+.lib-reader.desk .lt-hint{display:none}
+.lib-reader.desk>.lr-body{grid-column:1;grid-row:3;padding-bottom:40px}
+.lib-reader.desk>.lr-side{grid-column:2;grid-row:1/4;display:flex;flex-direction:column;min-height:0;border-left:1px solid var(--line);background:var(--surface)}
+.lib-reader.desk.focus{grid-template-columns:minmax(0,1fr)}
+.lib-reader.desk.focus>.lr-side{display:none}
+.lib-reader.desk .lr-sheet{left:0;right:380px}
+.lib-reader.desk.focus .lr-sheet{right:0}
+.lr-look{flex:0 1 auto;max-height:55%;overflow:auto;border-bottom:1px solid var(--line);overscroll-behavior:contain}
+.lib-reader.desk .lr-look .lr-card{position:static;animation:none;box-shadow:none;border-radius:0;max-width:none;max-height:none;overflow:visible;background:none;padding:14px 16px 16px}
+.lib-reader.desk .lr-look .lc-grab{display:none}
+.lib-reader.desk .lr-look .lc-word{font-size:1.9rem}
+.lc-img{display:block;width:100%;max-height:120px;object-fit:contain;border-radius:8px;border:1px solid var(--line);background:#fff}
+.lr-pick.ring{border-radius:50%;border-color:#D8382B;background:rgba(216,56,43,.1)}
+.lr-toolsp{flex:1 1 0;min-height:0;display:flex;flex-direction:column}
+.lr-tabs{display:flex;gap:4px;padding:10px 12px 0;border-bottom:1px solid var(--line);flex:none}
+.lr-tab{border:0;background:none;color:var(--muted);font:inherit;font-size:.9rem;padding:8px 12px 10px;border-bottom:2px solid transparent;cursor:pointer;min-height:40px}
+.lr-tab[aria-selected="true"]{color:var(--ink);font-weight:700;border-bottom-color:var(--ai)}
+.lr-tp{flex:1;min-height:0;overflow:auto;padding:12px 16px 24px;display:grid;gap:10px;align-content:start;overscroll-behavior:contain}
+.lr-lab{display:block;margin:0;font-size:.74rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+#lr-npad{min-height:150px;font-size:.95rem;line-height:1.75}
+.lr-hlrow{display:flex;align-items:flex-start;gap:10px;width:100%;padding:8px 6px;border:0;border-top:1px solid var(--line);background:none;color:var(--ink);font:inherit;font-size:.88rem;text-align:left;cursor:pointer;border-radius:6px}
+.lr-hlrow:first-child{border-top:0}
+.lr-hlrow:hover{background:color-mix(in srgb,var(--ai) 5%,transparent)}
+.lr-hlrow i{flex:none;width:12px;height:12px;border-radius:3px;margin-top:4px}
+.lr-hlrow span{display:grid;gap:1px;min-width:0}.lr-hlrow small{color:var(--muted);font-size:.74rem}.lr-hlrow em{color:var(--muted)}
+.lr-gpage{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.lr-gplist{display:grid;gap:8px}
+.lr-gpi{display:grid;gap:3px;padding:10px 12px;border-radius:10px;background:var(--paper);border-left:3px solid var(--t-grammar)}
+.lr-gpi b{font-family:var(--serif);font-size:1.05rem}
+.lr-gpi .lc-tag{justify-self:start}
+.lr-gp{border-top:1px solid var(--line)}
+.lr-gph{display:grid;gap:1px;width:100%;padding:8px 2px;border:0;background:none;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.lr-gph b{font-family:var(--serif);font-size:1.02rem}.lr-gph span{font-size:.84rem;color:var(--muted)}
+.lr-gpb{display:grid;gap:4px;padding:0 2px 10px}
 
 /* Desktop Home, layout B3 (Oct 30). Only used at 1,100px and wider. */
 @media (min-width:1100px){body[data-tab="add"] main.wrap{max-width:1240px}}
@@ -2050,10 +2098,11 @@ body.lib-open{overflow:hidden}
   function feat(opts){ return (opts&&opts.feature)||"other"; }
   var sample=async function(prompt,opts){ var j=await call({action:"ai",prompt:String(prompt),feature:feat(opts)}); return {text:j.text||""}; };
   sample.json=async function(prompt,opts){
-    var j=await call({action:"ai",prompt:String(prompt),json:true,max:1500,feature:feat(opts)});
+    var img=opts&&opts.image?{image:opts.image}:{};
+    var j=await call(Object.assign({action:"ai",prompt:String(prompt),json:true,max:1500,feature:feat(opts)},img));
     try{ return parseJson(j.text); }
     catch(e){
-      var j2=await call({action:"ai",prompt:String(prompt)+"\n\nKeep every field short so the whole JSON fits. Return the complete JSON object only.",json:true,max:1500,feature:feat(opts)});
+      var j2=await call(Object.assign({action:"ai",prompt:String(prompt)+"\n\nKeep every field short so the whole JSON fits. Return the complete JSON object only.",json:true,max:1500,feature:feat(opts)},img));
       return parseJson(j2.text);
     }
   };
@@ -5026,7 +5075,7 @@ function quitDrill(){ S.drill=null; checkRankUp(); renderGrammar(); renderHome()
 function quitDeck(){ S.deck=null; renderReview(); renderHome(); }
 window.addEventListener("popstate",function(){
   var lv=document.querySelector(".kc-leave"); if(lv){ lv.remove(); navGuard(); return; }
-  if(LIB.card||LIB.note){ libCardClose(); libNoteClose(); navGuard(); return; }
+  if((LIB.card&&!LIB.card.idle)||LIB.note){ if(LIB.card&&!LIB.card.idle) libCardClose(); libNoteClose(); navGuard(); return; }
   if(LIB.open){ libClose(); navGuard(); return; }
   if(LIB.sheet){ libSeriesClose(); navGuard(); return; }
   var pop=document.querySelector(".tea-pop,.sage-cel"); if(pop){ pop.click(); navGuard(); return; }
@@ -5451,6 +5500,7 @@ function mergeData(key,a,b){
   if(/^lib-/.test(key)){ o={m:{}};
     [a,b].forEach(function(s){ var m=(s&&s.m)||{}; Object.keys(m).forEach(function(pg){ var t=o.m[pg]=o.m[pg]||{ink:[],hl:[]};
       ["ink","hl"].forEach(function(f){ ((m[pg]||{})[f]||[]).forEach(function(x){ var ex=t[f].find(function(y){return y.id===x.id;}); if(!ex) t[f].push(x); else if(x.n&&!ex.n) ex.n=x.n; }); }); }); });
+    o.notes=(a&&typeof a.notes==="string")?a.notes:((b&&b.notes)||"");
     return o; }
   if(/^e-/.test(key)){ o={hl:[],ink:{}};
     [a,b].forEach(function(s){
@@ -5466,7 +5516,7 @@ function sheetDb(){
     if(key==="review-stats"){ S.stats=obj.w||{}; S.mstats=obj.m||{}; }
     else if(key==="grammar"){ S.gram={st:obj.st||{},mine:obj.mine||{},custom:Array.isArray(obj.custom)?obj.custom:[],xp:obj.xp||{},cov3:!!obj.cov3}; }
     else if(/^e-/.test(key)&&S.marks[key]){ S.marks[key]={hl:obj.hl||[],ink:obj.ink||{}}; }
-    else if(/^lib-/.test(key)){ if(LIB.open&&key==="lib-"+LIB.open.b.id){ LIB.marks=obj.m||{}; libRepaintAll(); } return; }
+    else if(/^lib-/.test(key)){ if(LIB.open&&key==="lib-"+LIB.open.b.id){ LIB.marks=obj.m||{}; libRepaintAll(); var np=document.getElementById("lr-npad"); if(typeof obj.notes==="string"&&(!np||document.activeElement!==np)){ LIB.bookNotes=obj.notes; if(np) np.value=obj.notes; } libHlRefresh(); } return; }
     setTimeout(function(){
       if(S.tab==="grammar"&&!S.drill&&!S.quiz&&!S.gex) renderGrammar();
       else if(S.tab==="review"&&!S.deck) renderReview();
@@ -5718,11 +5768,11 @@ async function libOpen(id){
   var R=document.createElement("div"); R.className="lib-reader"; R.setAttribute("role","dialog"); R.setAttribute("aria-modal","true"); R.setAttribute("aria-label",b.name);
   R.innerHTML='<div class="lr-bar"><button class="lr-btn" data-act="lr-close" aria-label="Close book" title="Close book">‹</button><span class="lr-t" title="'+esc(b.name)+'">'+esc(libTitle(b.name).t)+'</span><span class="lr-pg" id="lr-pg" aria-live="polite"></span>'+
     '<button class="lr-btn" data-act="lr-find" aria-label="Search your words" title="Search your words"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg></button>'+
-    '<button class="lr-btn" data-act="lr-zoom" data-d="-1" aria-label="Zoom out" title="Zoom out">−</button><button class="lr-btn" data-act="lr-zoom" data-d="1" aria-label="Zoom in" title="Zoom in">＋</button></div>'+
-    '<div class="lr-body" id="lr-body"><div class="lr-msg" id="lr-msg" role="status">'+libLoadHtml("本(ほん)を開(ひら)いています","Opening your book…",true)+'</div></div><div class="lr-dock" id="lr-dock" hidden></div>';
-  document.body.appendChild(R); document.body.classList.add("lib-open");
+    '<button class="lr-btn" data-act="lr-zoom" data-d="-1" aria-label="Zoom out" title="Zoom out">−</button><button class="lr-btn" data-act="lr-zoom" data-d="1" aria-label="Zoom in" title="Zoom in">＋</button><button class="lr-btn lr-full" data-act="lr-full" aria-pressed="false" aria-label="Full screen" title="Full screen"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4"/></svg></button></div>'+
+    '<div class="lr-body" id="lr-body"><div class="lr-msg" id="lr-msg" role="status">'+libLoadHtml("本(ほん)を開(ひら)いています","Opening your book…",true)+'</div></div><div class="lr-dock" id="lr-dock" hidden></div><aside class="lr-side" id="lr-side" aria-label="Study tools">'+libSideHtml()+'</aside>';
+  document.body.appendChild(R); document.body.classList.add("lib-open"); R.classList.toggle("desk",jWide());
   var tok={}; LIB.open={b:b,el:R,tok:tok,back:document.activeElement};
-  LIB.tool="read"; LIB.marks={}; LIB.hist=[]; LIB.redo=[]; R.dataset.tool="read";
+  LIB.tool="read"; LIB.marks={}; LIB.bookNotes=""; LIB.recent=[]; LIB.pgram={}; LIB.hist=[]; LIB.redo=[]; R.dataset.tool="read";
   R.addEventListener("click",libReaderClick);
   libZoomBtns();
   setTimeout(function(){ var c=R.querySelector('[data-act="lr-close"]'); if(c) c.focus({preventScroll:true}); },60);
@@ -5738,8 +5788,9 @@ async function libOpen(id){
     var th=libThumbs()[b.id]; if(!th||!th.d) libSaveThumb(b,doc);
     var sizes=[];
     for(var i=1;i<=doc.numPages;i++){ var pg=await doc.getPage(i); var v=pg.getViewport({scale:1}); sizes.push({w:v.width,h:v.height}); if(!libLive(tok)) return; }
-    LIB.marks=await marksP; if(!libLive(tok)) return;
+    var mk=await marksP; if(!libLive(tok)) return; LIB.marks=mk.m; LIB.bookNotes=mk.notes||"";
     LIB.open.sizes=sizes; libLayout(); libDock();
+    if(libDesk()){ libPanel(); libCardOpen("","",1,"search"); }
     var p=libPos()[b.id]; libGo(p&&p.p?Math.min(p.p,sizes.length):1);
     libSavePos();
   }catch(e){
@@ -5859,7 +5910,7 @@ function libZoom(dir){
 function libClose(quiet){
   var O=LIB.open; if(!O) return;
   if(O.sizes) libSavePos();
-  libMarksFlush(); libCardClose(); libNoteClose();
+  libMarksFlush(); libCardClose(true); libNoteClose();
   clearTimeout(O.st); if(O.io) O.io.disconnect();
   if(O.doc){ try{ O.doc.destroy(); }catch(e){} }
   O.el.remove(); LIB.open=null; LIB.drag=null; if(!LIB.sheet) document.body.classList.remove("lib-open"); libSelHide();
@@ -5870,7 +5921,7 @@ function libClose(quiet){
     if(O.back&&O.back.isConnected){ try{ O.back.focus({preventScroll:true}); }catch(e){} }
   }
 }
-document.addEventListener("keydown",function(e){ if(e.key!=="Escape") return; if(LIB.card) libCardClose(); else if(LIB.note) libNoteClose(); else if(LIB.open) libClose(); else if(LIB.sheet) libSeriesClose(); });
+document.addEventListener("keydown",function(e){ if(e.key!=="Escape") return; if(LIB.card&&!LIB.card.idle) libCardClose(); else if(LIB.note) libNoteClose(); else if(LIB.open) libClose(); else if(LIB.sheet) libSeriesClose(); });
 window.addEventListener("resize",function(){
   var O=LIB.open, body=$("#lr-body"); if(!O||!O.sizes||!body||Math.abs(body.clientWidth-O.bw)<8) return;
   clearTimeout(O.rt); O.rt=setTimeout(function(){ if(LIB.open!==O) return; var cur=libCurPage(); libLayout(); libGo(cur); },200);
@@ -5930,6 +5981,12 @@ function libReaderClick(e){
   else if(act==="ln-done") libNoteClose();
   else if(act==="ln-del") libNoteDelete();
   else if(act==="ln-c") libNoteColor(a.dataset.c);
+  else if(act==="lr-full") libFull();
+  else if(act==="lp-tab"){ LIB.ptab=a.dataset.t; store("kc-lib-ptab",LIB.ptab); libPanel(); }
+  else if(act==="lp-hl") libGo(+a.dataset.p);
+  else if(act==="lp-gpage") libPageGrammar();
+  else if(act==="lp-gopen"){ LIB.gopen[a.dataset.id]=!LIB.gopen[a.dataset.id]; var gr=LIB.open.el.querySelector("#lr-gres"); if(gr) gr.innerHTML=libGramHtml(LIB.gq); }
+  else if(act==="lp-word"){ var ww=S.words.find(function(x){ return x.row===+a.dataset.row; }); if(ww){ libCardOpen("","",libCurPage(),"search"); var CC=LIB.card; CC.have=ww; CC.st="have"; CC.idle=false; CC.from="search"; libCardRender(); } }
   else if(/^lc-/.test(act)) libCardAct(act,a);
 }
 
@@ -5941,11 +5998,11 @@ async function libMarksLoad(id){
   var key="lib-"+id, d=null;
   try{ if(db&&uid){ var snap=await db.collection("data/users/"+uid).doc(key).get(); if(snap&&snap.exists) d=snap.data(); } }catch(e){}
   if(!d) d=recall("kc-marks-"+key);
-  return (d&&d.m&&typeof d.m==="object")?JSON.parse(JSON.stringify(d.m)):{};
+  return {m:(d&&d.m&&typeof d.m==="object")?JSON.parse(JSON.stringify(d.m)):{},notes:(d&&typeof d.notes==="string")?d.notes:""};
 }
 function libMarksSave(){
   var O=LIB.open; if(!O) return;
-  var key="lib-"+O.b.id; LIB.mPending={key:key,data:{m:LIB.marks,updated:new Date().toISOString()}};
+  var key="lib-"+O.b.id; LIB.mPending={key:key,data:{m:LIB.marks,notes:LIB.bookNotes||"",updated:new Date().toISOString()}}; libHlRefresh();
   clearTimeout(LIB.mt); LIB.mt=setTimeout(libMarksFlush,900);
 }
 function libMarksFlush(){
@@ -6116,14 +6173,17 @@ function libSentence(span,word){
 }
 function libPick(e){
   var page=e.target.closest(".lr-page"); if(!page||!LIB.open) return;
-  var span=e.target.closest(".textLayer span"), n=+page.dataset.n;
-  if(!span){ libCardOpen("","",n,"type"); return; }
-  var c=libCaret(e.clientX,e.clientY), node=c&&c.node, off=c?c.off:0;
-  if(!node||!span.contains(node)){ node=span.firstChild; off=0; }
-  var text=node&&node.nodeType===3?node.nodeValue:span.textContent, hit=libWordAt(text,off);
-  if(!hit||!/[\u3040-\u30ff\u3400-\u9fffA-Za-z]/.test(hit.w)){ libCardOpen("","",n,"type"); return; }
-  libMarkPick(page,node,hit);
-  libCardOpen(hit.w,libSentence(span,hit.w),n);
+  var span=e.target.closest(".textLayer span"), n=+page.dataset.n, hit=null, node=null;
+  if(span){
+    var c=libCaret(e.clientX,e.clientY), off=c?c.off:0; node=c&&c.node;
+    if(!node||!span.contains(node)){ node=span.firstChild; off=0; }
+    hit=libWordAt(node&&node.nodeType===3?node.nodeValue:span.textContent,off);
+  }
+  if(hit&&libReadable(hit.w)){ libMarkPick(page,node,hit); libCardOpen(hit.w,libSentence(span,hit.w),n); return; }
+  /* scrambled text or a picture page: read the word from the picture */
+  var img=sample?libCrop(page,e.clientX,e.clientY):null;
+  if(img){ libMarkTap(page,e.clientX,e.clientY); libCardOpen("","",n,"busy",img); return; }
+  libCardOpen("","",n,"type");
 }
 function libMarkPick(page,node,hit){
   page.parentNode.querySelectorAll(".lr-pick").forEach(function(x){ x.remove(); });
@@ -6137,19 +6197,22 @@ function libMarkPick(page,node,hit){
 }
 function libBankFind(jp,kana){ jp=String(jp||"").trim(); if(!jp) return null; return S.words.find(function(w){ var ps=String(w.jp||"").split("・").map(function(x){return x.trim();}); return ps.indexOf(jp)>-1||(kana&&ps.indexOf(kana)>-1)||(!KANJI_RE.test(jp)&&w.kana===jp); })||null; }
 function libBookTag(){ var b=LIB.open&&LIB.open.b; if(!b) return ""; return (b.parent?libTitle(b.parent.name).t+", ":"")+libTitle(b.name).t; }
-function libCardOpen(q,sent,page,st){
+function libCardOpen(q,sent,page,st,img){
   if(!LIB.open) return; libNoteClose();
-  var C=LIB.card={q:String(q||"").trim(),sent:sent||"",page:page||libCurPage(),st:st||(q?"busy":"type"),w:null,have:null,err:"",edit:false};
-  var el=LIB.open.el.querySelector(".lr-card"); if(!el){ el=document.createElement("div"); el.className="lr-card"; el.setAttribute("role","dialog"); el.setAttribute("aria-label","Add a word"); LIB.open.el.appendChild(el); }
-  C.el=el; LIB.open.el.classList.add("has-sheet");
-  if(C.st==="busy"){ var have=libBankFind(C.q); if(have){ C.have=have; C.st="have"; } }
+  var side=libDesk(), host=side?LIB.open.el.querySelector("#lr-look"):LIB.open.el;
+  var C=LIB.card={q:String(q||"").trim(),sent:sent||"",page:page||libCurPage(),st:st||((q||img)?"busy":"type"),w:null,have:null,err:"",edit:false,img:img||null};
+  C.idle=side&&C.st==="search"&&!C.q;
+  var old=LIB.open.el.querySelector(".lr-card"); if(old&&old.parentNode!==host){ old.remove(); old=null; }
+  var el=old; if(!el){ el=document.createElement("div"); el.className="lr-card"; el.setAttribute("role",side?"region":"dialog"); el.setAttribute("aria-label","Word lookup"); host.appendChild(el); }
+  C.el=el; if(!side) LIB.open.el.classList.add("has-sheet");
+  if(C.st==="busy"&&!C.img){ var have=libBankFind(C.q); if(have){ C.have=have; C.st="have"; libRemember(have); } }
   libCardRender();
   if(C.st==="busy") libCardFill();
-  if(C.st==="type"||C.st==="search") setTimeout(function(){ var i=el.querySelector(C.st==="search"?"#lc-s":"#lc-q"); if(i) i.focus({preventScroll:true}); },80);
+  if((C.st==="type"||C.st==="search")&&!C.idle) setTimeout(function(){ var i=el.querySelector(C.st==="search"?"#lc-s":"#lc-q"); if(i) i.focus({preventScroll:true}); },80);
 }
-function libCardClose(){
+function libCardClose(final){
   if(!LIB.card) return; var el=LIB.card.el; LIB.card=null; if(el) el.remove();
-  if(LIB.open){ LIB.open.el.querySelectorAll(".lr-pick").forEach(function(x){ x.remove(); }); if(!LIB.note) LIB.open.el.classList.remove("has-sheet"); }
+  if(LIB.open){ LIB.open.el.querySelectorAll(".lr-pick").forEach(function(x){ x.remove(); }); if(!LIB.note) LIB.open.el.classList.remove("has-sheet"); if(!final&&libDesk()) libCardOpen("","",libCurPage(),"search"); }
 }
 /* search your own Vocab Bank from the reader (Oct 30). No AI. If nothing matches, Look it up asks Auto-fill. */
 function libFindHtml(q){
@@ -6164,12 +6227,12 @@ function libChip(t){ return '<span class="lc-chip">'+t+'</span>'; }
 function libCardRender(){
   var C=LIB.card; if(!C||!C.el) return; var h='<span class="lc-grab" aria-hidden="true"></span>', X='<button type="button" class="lc-x" data-act="lc-close" aria-label="Close" title="Close">×</button>';
   if(C.st==="search"){
-    h+='<div class="lc-head"><b>Search your words</b>'+X+'</div><div class="lc-row"><label class="sr-only" for="lc-s">Search your words</label><input type="search" id="lc-s" lang="ja" autocomplete="off" placeholder="Kanji, kana, romaji or English" value="'+esc(C.q)+'"></div><div class="lc-res" id="lc-res">'+libFindHtml(C.q)+'</div>';
+    h+='<div class="lc-head"><b>'+(C.idle?'Look up':'Search your words')+'</b>'+(C.idle?'':X)+'</div><div class="lc-row"><label class="sr-only" for="lc-s">Search your words</label><input type="search" id="lc-s" lang="ja" autocomplete="off" placeholder="Kanji, kana, romaji or English" value="'+esc(C.q)+'"></div><div class="lc-res" id="lc-res">'+libFindHtml(C.q)+'</div>'+(C.idle?libRecentHtml():'');
   } else if(C.st==="type"){
-    h+='<div class="lc-head"><b>Look up a word</b>'+X+'</div><p class="hint" style="margin:0">'+(C.q?'':'There’s no tappable text there. Pages that are pictures can’t be tapped, so type the word you see.')+'</p>'+
+    h+='<div class="lc-head"><b>Look up a word</b>'+X+'</div><p class="hint" style="margin:0">'+(C.err?esc(C.err):C.q?'':'There’s no tappable text there. Pages that are pictures can’t be tapped, so type the word you see.')+'</p>'+
       '<div class="lc-row"><label class="sr-only" for="lc-q">Word</label><input type="text" id="lc-q" lang="ja" autocomplete="off" placeholder="漢字, kana, or romaji" value="'+esc(C.q)+'"><button type="button" class="btn small primary" data-act="lc-look">Look up</button></div>';
   } else if(C.st==="busy"){
-    h+='<div class="lc-head"><span class="lc-word" lang="ja">'+esc(C.q)+'</span>'+X+'</div><p class="hint lc-busy" style="margin:0"><span class="hc-dots"><i></i><i></i><i></i></span> Looking it up…</p>';
+    h+='<div class="lc-head">'+(C.q?'<span class="lc-word" lang="ja">'+esc(C.q)+'</span>':'<b>Look up</b>')+X+'</div>'+(C.img?'<img class="lc-img" src="'+C.img+'" alt="The spot you tapped">':'')+'<p class="hint lc-busy" style="margin:0"><span class="hc-dots"><i></i><i></i><i></i></span> '+(C.img?'Reading the word…':'Looking it up…')+'</p>';
   } else if(C.st==="err"){
     h+='<div class="lc-head"><span class="lc-word" lang="ja">'+esc(C.q)+'</span>'+X+'</div><div class="msg err" style="display:block;margin:0">'+C.err+'</div>'+
       '<div class="lc-row"><button type="button" class="btn small primary" data-act="lc-retry">Try again</button><button type="button" class="linkbtn" data-act="lc-type">Type it instead</button></div>';
@@ -6194,7 +6257,8 @@ function libCardRender(){
   }
   C.el.innerHTML=h;
 }
-async function libCardFill(){
+async function libCardFill(){ var C0=LIB.card; if(C0&&C0.img) return libCardVision(); return libCardFillText(); }
+async function libCardFillText(){
   var C=LIB.card; if(!C) return;
   if(!sample){ C.st="err"; C.err=aiOffText(); libCardRender(); return; }
   C.st="busy"; libCardRender();
@@ -6213,7 +6277,7 @@ async function libCardFill(){
       type:["Verb","Noun","i-Adjective","na-Adjective","Adverb","Expression"].indexOf(d.type)>-1?d.type:"",group:String(d.group||""),te:String(d.te||""),
       exJp:stripFuri(String(d.exJp||"")).trim(),exFuri:String(d.exFuri||""),exEn:String(d.exEn||"")};
     if(w.exFuri&&stripFuri(w.exFuri).replace(/\s/g,"")!==w.exJp.replace(/\s/g,"")) w.exFuri="";
-    var have=libBankFind(w.jp,w.kana);
+    var have=libBankFind(w.jp,w.kana); libRemember(have||w);
     if(have){ C.have=have; C.st="have"; } else { C.w=w; C.st="ready"; }
   }catch(err){ if(LIB.card!==C) return; C.st="err"; C.err=aiErr(err); }
   libCardRender();
@@ -6228,8 +6292,9 @@ async function libCardAct(act,btn){
   else if(act==="lc-type"){ C.st="type"; libCardRender(); var i=C.el.querySelector("#lc-q"); if(i) i.focus({preventScroll:true}); }
   else if(act==="lc-look"){ var v=(C.el.querySelector("#lc-q")||{}).value; v=String(v||"").trim(); if(!v) return; C.q=v; C.sent=""; var have=libBankFind(v); if(have){ C.have=have; C.st="have"; libCardRender(); } else libCardFill(); }
   else if(act==="lc-retry") libCardFill();
-  else if(act==="lc-pick"){ var w=S.words.find(function(x){ return x.row===+btn.dataset.row; }); if(!w) return; C.have=w; C.from="search"; C.st="have"; libCardRender(); }
-  else if(act==="lc-back"){ C.st="search"; C.from=""; libCardRender(); var si=C.el.querySelector("#lc-s"); if(si) si.focus({preventScroll:true}); }
+  else if(act==="lc-pick"){ var w=S.words.find(function(x){ return x.row===+btn.dataset.row; }); if(!w) return; C.have=w; C.from="search"; C.st="have"; C.idle=false; libRemember(w); libCardRender(); }
+  else if(act==="lc-rec"){ var rw=LIB.recent[+btn.dataset.i]; if(!rw) return; var hv=libBankFind(rw.jp,rw.kana); if(hv){ C.have=hv; C.st="have"; } else { C.w=rw; C.st="ready"; } C.from="search"; C.idle=false; libCardRender(); }
+  else if(act==="lc-back"){ C.st="search"; C.from=""; C.idle=libDesk()&&C.el.parentNode&&C.el.parentNode.id==="lr-look"&&!C.q; libCardRender(); var si=C.el.querySelector("#lc-s"); if(si) si.focus({preventScroll:true}); }
   else if(act==="lc-ai"){ C.sent=""; C.from=""; libCardFill(); }
   else if(act==="lc-edit"){ C.edit=true; libCardRender(); }
   else if(act==="lc-save"){
@@ -6256,6 +6321,136 @@ async function libCardAct(act,btn){
   vv.addEventListener("resize",fit); vv.addEventListener("scroll",fit);
   document.addEventListener("focusin",function(e){ if(e.target&&e.target.closest&&e.target.closest(".lr-card,.lr-sheet")) setTimeout(fit,250); });
 })();
+/* ---------- Desktop reader (Oct 30): at 1,100px and wider the reader becomes a study desk. The book on the left with the
+   toolbar on top (and a full screen button), and on the right a lookup panel above a tools panel: Notes (a notepad for this
+   book plus your highlights), Grammar (search your points, or ask what grammar this page uses) and Words (added from this
+   book). Phones keep the normal reader. ---------- */
+LIB.ptab=recall("kc-lib-ptab")||"notes"; LIB.recent=[]; LIB.pgram={}; LIB.gopen={}; LIB.gq="";
+function libDesk(){ var O=LIB.open; return !!(O&&O.el.classList.contains("desk")&&!O.el.classList.contains("focus")); }
+function libSideHtml(){
+  return '<section class="lr-look" id="lr-look" aria-label="Word lookup"></section>'+
+    '<section class="lr-toolsp" aria-label="Study tools"><div class="lr-tabs" role="tablist">'+
+    [["notes","Notes"],["grammar","Grammar"],["words","Words"]].map(function(t){ return '<button type="button" role="tab" class="lr-tab" data-act="lp-tab" data-t="'+t[0]+'" aria-selected="'+(LIB.ptab===t[0])+'">'+t[1]+'</button>'; }).join("")+
+    '</div><div class="lr-tp" id="lr-tp" role="tabpanel"></div></section>';
+}
+function libSetDesk(){
+  var O=LIB.open; if(!O) return; var was=O.el.classList.contains("desk"), now=jWide();
+  O.el.classList.toggle("desk",now);
+  if(now!==was){ var c=LIB.card; if(c&&c.el) { c.el.remove(); LIB.card=null; O.el.classList.remove("has-sheet"); } }
+  if(now&&O.sizes){ libPanel(); if(!LIB.card) libCardOpen("","",libCurPage(),"search"); }
+}
+function libPanel(){
+  var tp=LIB.open&&LIB.open.el.querySelector("#lr-tp"); if(!tp) return;
+  LIB.open.el.querySelectorAll(".lr-tab").forEach(function(b){ b.setAttribute("aria-selected",String(b.dataset.t===LIB.ptab)); });
+  if(LIB.ptab==="notes"){
+    tp.innerHTML='<label for="lr-npad" class="lr-lab">Notes for this book</label><textarea id="lr-npad" lang="ja" placeholder="Anything you want to remember from this book. Saves as you type.">'+esc(LIB.bookNotes||"")+'</textarea>'+
+      '<div class="lr-lab">Highlights and notes</div><div id="lr-hls">'+libHlListHtml()+'</div>';
+    tp.querySelector("#lr-npad").addEventListener("input",function(){ LIB.bookNotes=this.value; libMarksSave(); });
+  } else if(LIB.ptab==="grammar"){
+    var n=libCurPage(), pg=LIB.pgram[n];
+    tp.innerHTML='<div class="lr-gpage"><button type="button" class="btn small primary" data-act="lp-gpage"'+(pg&&pg.busy?' disabled':'')+'>'+(pg&&pg.busy?'Reading page '+n+'…':'Grammar on page '+n)+'</button><span class="hint">Claude reads the page. Under a tenth of a cent.</span></div>'+
+      (pg&&pg.err?'<div class="msg err" style="display:block;margin:0">'+pg.err+'</div>':'')+(pg&&pg.items?libGPageHtml(pg.items,n):'')+
+      '<label for="lr-gq" class="lr-lab">Your grammar points</label><input type="search" id="lr-gq" lang="ja" autocomplete="off" placeholder="Pattern, meaning or lesson" value="'+esc(LIB.gq)+'"><div id="lr-gres">'+libGramHtml(LIB.gq)+'</div>';
+    tp.querySelector("#lr-gq").addEventListener("input",function(){ LIB.gq=this.value; var r=tp.querySelector("#lr-gres"); if(r) r.innerHTML=libGramHtml(this.value); });
+  } else {
+    var tag=libBookTag(), ws=S.words.filter(function(w){ return tag&&String(w.tags||"").indexOf(tag)>-1; }).sort(function(a,b){ return b.row-a.row; });
+    tp.innerHTML='<div class="lr-lab">Words from this book · '+ws.length+'</div>'+(ws.length?ws.map(function(w){ return '<div class="lc-hit"><button type="button" class="lc-hb" data-act="lp-word" data-row="'+w.row+'"><b lang="ja">'+rubyWord(w.jp,w.kana)+'</b><span>'+esc(w.en)+'</span></button>'+sayBtn(w.kana||w.jp,"Play "+w.jp)+'<span class="stamp st-'+w.mastery+'" lang="ja" title="'+w.mastery+'">'+STAMP[w.mastery]+'</span></div>'; }).join(""):'<p class="hint" style="margin:0">Words you save with Look up while reading this book show up here.</p>');
+  }
+}
+function libHlListHtml(){
+  var rows=[]; Object.keys(LIB.marks||{}).sort(function(a,b){ return a-b; }).forEach(function(pg){ ((LIB.marks[pg]||{}).hl||[]).forEach(function(h){ rows.push([+pg,h]); }); });
+  if(!rows.length) return '<p class="hint" style="margin:0">Use the highlighter on a page. Your marks and their notes gather here.</p>';
+  return rows.map(function(r){ var h=r[1]; return '<button type="button" class="lr-hlrow" data-act="lp-hl" data-p="'+r[0]+'"><i style="background:'+(LHL_SW[h.c]||LHL_SW.y)+'" aria-hidden="true"></i><span><small>p. '+r[0]+'</small>'+(h.n?esc(h.n):'<em>Highlight, no note</em>')+'</span></button>'; }).join("");
+}
+function libGramHtml(q){
+  q=String(q||"").trim().toLowerCase(); var pts=allPoints();
+  var list=q?pts.filter(function(p){ return (stripFuri(p.p)+" "+p.p+" "+(p.m||"")+" "+(p.f||"")+" lesson "+p.l+" l"+p.l).toLowerCase().indexOf(q)>-1; }).slice(0,20):pts.filter(function(p){ return gStatus(p.id)==="rf"; }).slice(0,12);
+  if(!list.length) return '<p class="hint" style="margin:0">'+(q?'No points match.':'Points you mark Reinforce show here. Search to find any point.')+'</p>';
+  return (q?'':'<p class="hint" style="margin:0 0 4px">Marked Reinforce</p>')+list.map(function(p){ var op=LIB.gopen[p.id];
+    return '<div class="lr-gp"><button type="button" class="lr-gph" data-act="lp-gopen" data-id="'+esc(p.id)+'" aria-expanded="'+!!op+'"><b lang="ja">'+rubyText(p.p)+'</b><span>'+rubyText(p.m||"")+'</span></button>'+
+      (op?'<div class="lr-gpb">'+(p.f?'<div><span class="gp-lbl">How to form</span><div lang="ja">'+rubyText(p.f)+'</div></div>':'')+(p.ex?'<div lang="ja" class="lc-exjp">'+rubyText(p.ex)+'</div><div class="hint">'+esc(p.en||"")+'</div>':'')+'</div>':'')+'</div>'; }).join("");
+}
+function libGPageHtml(items,n){
+  if(!items.length) return '<p class="hint" style="margin:0">No clear grammar patterns found on page '+n+'.</p>';
+  var pts=allPoints();
+  return '<div class="lr-gplist">'+items.map(function(it){
+    var key=stripFuri(String(it.p||"")).replace(/[〜~\s]/g,""), mine=key&&pts.find(function(p){ var k=stripFuri(p.p).replace(/[〜~\s]/g,""); return k&&(k===key||k.indexOf(key)>-1||key.indexOf(k)>-1); });
+    return '<div class="lr-gpi"><b lang="ja">'+rubyText(String(it.p||""))+'</b>'+(mine?'<span class="lc-tag have">In your list</span>':'')+'<div>'+esc(String(it.m||""))+'</div>'+(it.ex?'<div lang="ja" class="lc-exjp">'+rubyText(String(it.exFuri||it.ex))+'</div>':'')+(it.note?'<div class="hint">'+esc(String(it.note))+'</div>':'')+'</div>'; }).join("")+'</div>';
+}
+function libPageImage(n,maxW){
+  var d=$("#lr-body")&&$("#lr-body").querySelector('.lr-page[data-n="'+n+'"]'), cv=d&&d.querySelector("canvas:not(.lr-ink)"); if(!cv||!cv.width) return null;
+  var sc=Math.min(1,maxW/cv.width), out=document.createElement("canvas"); out.width=Math.round(cv.width*sc); out.height=Math.round(cv.height*sc);
+  var g=out.getContext("2d"); g.fillStyle="#fff"; g.fillRect(0,0,out.width,out.height); g.drawImage(cv,0,0,out.width,out.height);
+  var url=out.toDataURL("image/jpeg",0.78); out.width=0; return url;
+}
+async function libPageGrammar(){
+  var n=libCurPage(); if(!sample){ LIB.pgram[n]={err:aiOffText()}; libPanel(); return; }
+  var img=libPageImage(n,1100); if(!img){ LIB.pgram[n]={err:"Scroll so the page is on screen, then try again."}; libPanel(); return; }
+  LIB.pgram[n]={busy:true}; libPanel();
+  try{
+    var d=await sample.json('This image is one page of a Japanese book. The learner finished Genki 1 and is starting Genki 2. List the grammar patterns used on this page that a learner at this level should notice, most useful first, at most 8. Ignore the small furigana above kanji. '+
+      'Return only JSON: {"items":[{"p":"the pattern, like 〜ている, with the hiragana reading in half-width parentheses after any kanji","m":"short English meaning","ex":"the phrase on the page that uses it, no furigana","exFuri":"ex with the hiragana reading in half-width parentheses after every kanji part","note":"one short plain-English sentence on how it is used here"}]}. If the page has no Japanese, return {"items":[]}. No em dashes.',{feature:"grammar-page",image:img.split(",")[1]});
+    LIB.pgram[n]={items:(d&&Array.isArray(d.items)?d.items:[]).slice(0,8)};
+  }catch(e){ LIB.pgram[n]={err:aiErr(e)}; }
+  if(LIB.open&&LIB.ptab==="grammar") libPanel();
+}
+function libHlRefresh(){ var el=LIB.open&&LIB.open.el.querySelector("#lr-hls"); if(el) el.innerHTML=libHlListHtml(); }
+function libRecentHtml(){
+  if(!LIB.recent.length) return '<p class="hint" style="margin:6px 0 0">Tap a word on the page with 語, or search your words above.</p>';
+  return '<div class="lr-lab" style="margin-top:6px">Looked up in this book</div>'+LIB.recent.map(function(w,i){ return '<div class="lc-hit"><button type="button" class="lc-hb" data-act="lc-rec" data-i="'+i+'"><b lang="ja">'+rubyWord(w.jp,w.kana)+'</b><span>'+esc(w.en)+'</span></button></div>'; }).join("");
+}
+function libRemember(w){ if(!w||!w.jp) return; LIB.recent=[w].concat(LIB.recent.filter(function(x){ return x.jp!==w.jp; })).slice(0,8); }
+function libFull(){
+  var O=LIB.open; if(!O) return; var on=!O.el.classList.contains("focus"), cur=libCurPage();
+  O.el.classList.toggle("focus",on);
+  try{ if(on&&document.documentElement.requestFullscreen&&!document.fullscreenElement) document.documentElement.requestFullscreen().catch(function(){}); else if(!on&&document.fullscreenElement) document.exitFullscreen().catch(function(){}); }catch(e){}
+  if(LIB.card&&LIB.card.el){ LIB.card.el.remove(); LIB.card=null; O.el.classList.remove("has-sheet"); }
+  setTimeout(function(){ if(LIB.open!==O) return; libLayout(); libGo(cur); if(!on&&libDesk()) libCardOpen("","",cur,"search"); },120);
+  var fb=O.el.querySelector('[data-act="lr-full"]'); if(fb){ fb.setAttribute("aria-pressed",String(on)); fb.title=on?"Exit full screen":"Full screen"; fb.setAttribute("aria-label",fb.title); }
+}
+document.addEventListener("fullscreenchange",function(){ var O=LIB.open; if(O&&!document.fullscreenElement&&O.el.classList.contains("focus")) libFull(); });
+window.addEventListener("resize",function(){ if(LIB.open) libSetDesk(); });
+
+/* Look up from a picture of the page (Oct 30): when the tapped text isn't readable (scrambled or a picture page), a small strip
+   around the tap, with a red ring on the spot, goes to Claude, which reads the word. */
+function libCrop(page,cx,cy){
+  var cv=page.querySelector("canvas:not(.lr-ink)"); if(!cv||!cv.width) return null;
+  var pr=page.getBoundingClientRect(), sx=cv.width/pr.width, sy=cv.height/pr.height, x=cx-pr.left, y=cy-pr.top;
+  var w=Math.min(pr.width,Math.max(220,pr.width*0.62)), h=Math.min(pr.height,Math.max(90,pr.width*0.2));
+  var x0=Math.max(0,Math.min(pr.width-w,x-w/2)), y0=Math.max(0,Math.min(pr.height-h,y-h/2));
+  var sc=Math.min(1.6,900/(w*sx)), out=document.createElement("canvas"); out.width=Math.round(w*sx*sc); out.height=Math.round(h*sy*sc);
+  var g=out.getContext("2d"); g.fillStyle="#fff"; g.fillRect(0,0,out.width,out.height); g.drawImage(cv,x0*sx,y0*sy,w*sx,h*sy,0,0,out.width,out.height);
+  var mx=(x-x0)*sx*sc, my=(y-y0)*sy*sc, r=Math.max(12,out.width*0.028);
+  g.strokeStyle="rgba(224,40,30,.9)"; g.lineWidth=Math.max(2.5,r*0.22); g.beginPath(); g.arc(mx,my,r,0,Math.PI*2); g.stroke();
+  var url=out.toDataURL("image/jpeg",0.85); out.width=0; return url;
+}
+function libMarkTap(page,cx,cy){
+  page.parentNode.querySelectorAll(".lr-pick").forEach(function(x){ x.remove(); });
+  var pb=page.getBoundingClientRect(), m=document.createElement("span"); m.className="lr-pick ring"; m.setAttribute("aria-hidden","true");
+  m.style.left=(cx-pb.left-14)+"px"; m.style.top=(cy-pb.top-14)+"px"; m.style.width="28px"; m.style.height="28px"; page.appendChild(m);
+}
+function libReadable(w){ return /[\u3040-\u30ff\u3400-\u9fff]/.test(w)||/^[A-Za-z][A-Za-z'’\-]*$/.test(w); }
+async function libCardVision(){
+  var C=LIB.card; if(!C) return;
+  if(!sample){ C.st="type"; C.q=""; libCardRender(); return; }
+  C.st="busy"; libCardRender();
+  try{
+    var d=await sample.json('This image is a strip from a Japanese book page. A red ring marks where a beginner learner (finished Genki 1) tapped. Find the Japanese word at the red ring. Small furigana above kanji shows the reading; never return the furigana itself as the word. '+
+      'Return only JSON with keys: surface (the word exactly as printed at the ring), jp (its dictionary form as normally written, kanji where usual), kana (reading in hiragana, katakana for loanwords), romaji (Hepburn, long vowels doubled), en (short English meaning; verbs start with "to"), '+
+      'type (one of "Verb","Noun","i-Adjective","na-Adjective","Adverb","Expression"), group (verbs: "Group 1 (u-verb)","Group 2 (ru-verb)" or "Group 3 (irregular)"; adjectives "N/A"; otherwise ""), te (te-form for verbs, otherwise ""), '+
+      'exJp (the sentence or clause around the word as printed, under 40 characters, no furigana), exFuri (exJp with the hiragana reading in half-width parentheses right after every kanji part), exEn (natural English translation of exJp). If there is no Japanese word at the ring, return {"none":true}. No em dashes.',{feature:"autofill",image:C.img.split(",")[1]});
+    if(LIB.card!==C) return;
+    if(!d||d.none||!d.jp){ C.st="type"; C.q=""; C.err="Couldn’t find a word at that spot. Type it, or tap closer to the word."; libCardRender(); return; }
+    var w={jp:stripFuri(String(d.jp)).trim(),kana:String(d.kana||"").trim(),romaji:String(d.romaji||"").trim(),en:String(d.en||"").trim(),
+      type:["Verb","Noun","i-Adjective","na-Adjective","Adverb","Expression"].indexOf(d.type)>-1?d.type:"",group:String(d.group||""),te:String(d.te||""),
+      exJp:stripFuri(String(d.exJp||"")).trim(),exFuri:String(d.exFuri||""),exEn:String(d.exEn||"")};
+    if(w.exFuri&&stripFuri(w.exFuri).replace(/\s/g,"")!==w.exJp.replace(/\s/g,"")) w.exFuri="";
+    C.q=String(d.surface||w.jp); C.sent=w.exJp; C.img=null;
+    var have=libBankFind(w.jp,w.kana); libRemember(have||w);
+    if(have){ C.have=have; C.st="have"; } else { C.w=w; C.st="ready"; }
+  }catch(err){ if(LIB.card!==C) return; C.st="err"; C.err=aiErr(err); }
+  libCardRender();
+}
 document.addEventListener("keydown",function(e){ if(e.target&&e.target.id==="lc-q"&&e.key==="Enter"&&!e.isComposing){ e.preventDefault(); var b=LIB.card&&LIB.card.el.querySelector('[data-act="lc-look"]'); if(b) b.click(); } });
 })();
 </script>
