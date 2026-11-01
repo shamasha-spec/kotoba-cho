@@ -1925,6 +1925,34 @@ body.lib-open{overflow:hidden}
 .lr-sh-h{display:flex;align-items:center;gap:10px}.lr-sh-h b{flex:1}
 .lr-sh-sw{display:flex;gap:8px}.lr-sh-sw .lt-sw{box-shadow:0 0 0 1px var(--line)}.lr-sh-sw .lt-sw[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--surface) inset}
 .lr-sheet textarea{min-height:76px}
+/* Oct 31: on desktop the reader's tools live in the top bar, as quiet icons */
+.lib-reader.desk .lr-bar .lr-dock{position:static;transform:none;left:auto;bottom:auto;width:auto;margin:0 6px;padding:0 10px;display:flex;align-items:center;gap:6px;background:transparent;color:var(--ink);box-shadow:none;border-radius:0;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+.lib-reader.desk .lr-bar .lr-dock[hidden]{display:none}
+.lib-reader.desk.has-sheet .lr-bar .lr-dock:not([hidden]){display:flex}
+.lib-reader.desk .lr-bar .lt-tools{display:flex;gap:2px}
+.lib-reader.desk .lr-bar .lt-tool{color:var(--muted);min-height:40px;min-width:42px;border-radius:10px}
+.lib-reader.desk .lr-bar .lt-tool:hover{background:var(--paper);color:var(--ink)}
+.lib-reader.desk .lr-bar .lt-tool[aria-pressed="true"]{background:var(--ai-soft);color:var(--ai)}
+.lib-reader.desk .lr-bar .lt-row{order:2;padding:0 0 0 10px;border-left:1px solid var(--line)}
+.lib-reader.desk .lr-bar .lt-sw{box-shadow:0 0 0 1px var(--line)}
+.lib-reader.desk .lr-bar .lt-sw[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--surface) inset}
+.lib-reader.desk .lr-bar .lt-ib{color:var(--ink)}
+.lib-reader.desk .lr-bar .lt-ib:hover:not(:disabled){background:var(--paper)}
+.lib-reader.desk .lr-bar .lt-hint{display:none}
+.lib-reader.desk .lr-bar .lr-t{flex:1 1 auto}
+.lib-reader.desk>.lr-body{padding-top:20px}
+/* full screen: Look up floats as a small panel at the top right instead of a sheet across the bottom */
+.lib-reader.desk.focus .lr-card,.lib-reader.desk.focus .lr-sheet{left:auto;right:20px;top:72px;bottom:auto;width:390px;max-width:calc(100% - 40px);max-height:calc(100% - 100px);margin:0;border-radius:18px;border:1px solid var(--line);box-shadow:0 22px 50px -18px rgba(0,0,0,.4);animation:lcFloat .25s cubic-bezier(.22,.9,.24,1)}
+.lib-reader.desk.focus .lc-grab{display:none}
+@keyframes lcFloat{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+/* slim scrollbars in the reader, in the app's colours, no arrow buttons */
+.lib-reader ::-webkit-scrollbar{width:10px;height:10px}
+.lib-reader ::-webkit-scrollbar-track{background:transparent}
+.lib-reader ::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--ink) 20%,transparent);border:3px solid transparent;border-radius:10px;background-clip:content-box}
+.lib-reader ::-webkit-scrollbar-thumb:hover{background:color-mix(in srgb,var(--ink) 38%,transparent);background-clip:content-box}
+.lib-reader ::-webkit-scrollbar-button{display:none;width:0;height:0}
+.lib-reader ::-webkit-scrollbar-corner{background:transparent}
+@supports not selector(::-webkit-scrollbar){.lib-reader .lr-body,.lib-reader .lr-tp,.lib-reader .lr-look,.lib-reader .lc-res{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--ink) 25%,transparent) transparent}}
 /* Desktop reader (Oct 30): book on the left, lookup and study tools on the right. 1,100px and wider only. */
 .lr-side,.lr-full{display:none}
 .lib-reader.desk{display:grid;grid-template-columns:minmax(0,1fr) 380px;grid-template-rows:auto auto minmax(0,1fr)}
@@ -5772,7 +5800,7 @@ async function libOpen(id){
     '<div class="lr-body" id="lr-body"><div class="lr-msg" id="lr-msg" role="status">'+libLoadHtml("本(ほん)を開(ひら)いています","Opening your book…",true)+'</div></div><div class="lr-dock" id="lr-dock" hidden></div><aside class="lr-side" id="lr-side" aria-label="Study tools">'+libSideHtml()+'</aside>';
   document.body.appendChild(R); document.body.classList.add("lib-open"); R.classList.toggle("desk",jWide());
   var tok={}; LIB.open={b:b,el:R,tok:tok,back:document.activeElement};
-  LIB.tool="read"; LIB.marks={}; LIB.bookNotes=""; LIB.recent=[]; LIB.pgram={}; LIB.hist=[]; LIB.redo=[]; R.dataset.tool="read";
+  LIB.tool="read"; LIB.marks={}; LIB.bookNotes=""; LIB.recent=[]; LIB.pgram={}; LIB.hist=[]; LIB.redo=[]; R.dataset.tool="read"; libDockPlace();
   R.addEventListener("click",libReaderClick);
   libZoomBtns();
   setTimeout(function(){ var c=R.querySelector('[data-act="lr-close"]'); if(c) c.focus({preventScroll:true}); },60);
@@ -6333,9 +6361,14 @@ function libSideHtml(){
     [["notes","Notes"],["grammar","Grammar"],["words","Words"]].map(function(t){ return '<button type="button" role="tab" class="lr-tab" data-act="lp-tab" data-t="'+t[0]+'" aria-selected="'+(LIB.ptab===t[0])+'">'+t[1]+'</button>'; }).join("")+
     '</div><div class="lr-tp" id="lr-tp" role="tabpanel"></div></section>';
 }
+function libDockPlace(){
+  var O=LIB.open; if(!O) return; var dock=O.el.querySelector("#lr-dock"), bar=O.el.querySelector(".lr-bar"), pg=bar&&bar.querySelector("#lr-pg"); if(!dock||!bar) return;
+  if(O.el.classList.contains("desk")){ if(dock.parentNode!==bar) bar.insertBefore(dock,pg); }
+  else if(dock.parentNode!==O.el){ var body=O.el.querySelector("#lr-body"); O.el.insertBefore(dock,body?body.nextSibling:null); }
+}
 function libSetDesk(){
   var O=LIB.open; if(!O) return; var was=O.el.classList.contains("desk"), now=jWide();
-  O.el.classList.toggle("desk",now);
+  O.el.classList.toggle("desk",now); libDockPlace();
   if(now!==was){ var c=LIB.card; if(c&&c.el) { c.el.remove(); LIB.card=null; O.el.classList.remove("has-sheet"); } }
   if(now&&O.sizes){ libPanel(); if(!LIB.card) libCardOpen("","",libCurPage(),"search"); }
 }
