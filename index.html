@@ -5923,15 +5923,25 @@ function libZoom(dir){
     var pages=body.querySelector(".lr-pages"); if(!pages) return;
     var r=body.getBoundingClientRect(), cx=(e.touches[0].clientX+e.touches[1].clientX)/2, cy=(e.touches[0].clientY+e.touches[1].clientY)/2;
     var fx=cx-r.left+body.scrollLeft, fy=cy-r.top+body.scrollTop;
-    pz={body:body,pages:pages,d0:dist(e.touches),z0:LIB.zoom,s:1,vx:cx-r.left,vy:cy-r.top,fx:fx,fy:fy};
+    pz={body:body,pages:pages,d0:dist(e.touches),cx0:cx,cy0:cy,mode:"",z0:LIB.zoom,s:1,vx:cx-r.left,vy:cy-r.top,fx:fx,fy:fy};
     pages.style.transformOrigin=(fx-pages.offsetLeft)+"px "+(fy-pages.offsetTop)+"px"; pages.style.willChange="transform";
     document.addEventListener("touchmove",pzMove,{passive:false});
   },{passive:true});
+  /* Nov 3: two fingers moving together are a scroll (some touchpads send scrolling this way), so only a real pinch,
+     fingers spreading or closing, zooms. A scroll is handed back to the browser and the scroll watchdog. */
   function pzMove(e){
-    if(!pz||e.touches.length!==2) return; e.preventDefault();
-    pz.s=Math.max(0.6/pz.z0,Math.min(3/pz.z0,dist(e.touches)/pz.d0)); pz.pages.style.transform="scale("+pz.s+")";
+    if(!pz||e.touches.length!==2) return;
+    var d=dist(e.touches), cx=(e.touches[0].clientX+e.touches[1].clientX)/2, cy=(e.touches[0].clientY+e.touches[1].clientY)/2;
+    if(!pz.mode){
+      if(Math.abs(d-pz.d0)>Math.max(18,pz.d0*0.08)){ pz.mode="pinch"; window.KC_PINCHING=true; }
+      else if(Math.abs(cx-pz.cx0)+Math.abs(cy-pz.cy0)>10){ var P=pz; pz=null; document.removeEventListener("touchmove",pzMove,{passive:false}); P.pages.style.transform=""; P.pages.style.willChange=""; return; }
+      else return;
+    }
+    e.preventDefault();
+    pz.s=Math.max(0.6/pz.z0,Math.min(3/pz.z0,d/pz.d0)); pz.pages.style.transform="scale("+pz.s+")";
   }
   function end(e){
+    window.KC_PINCHING=false;
     if(!pz||(e.touches&&e.touches.length>=2)) return; var P=pz; pz=null; document.removeEventListener("touchmove",pzMove,{passive:false});
     P.pages.style.transform=""; P.pages.style.willChange="";
     var nz=Math.max(0.75,Math.min(3,Math.round(P.z0*P.s*100)/100)); if(Math.abs(nz-P.z0)<0.03||!LIB.open) return;
@@ -5956,6 +5966,20 @@ function libClose(quiet){
     if(O.back&&O.back.isConnected){ try{ O.back.focus({preventScroll:true}); }catch(e){} }
   }
 }
+/* Nov 3: keys in the Library. In a book: up/down arrows scroll, Page Up/Down and Space scroll a screen, Home/End jump to the
+   start or end, left/right arrows go to the previous or next page. In the chapter list: up/down scroll it. */
+document.addEventListener("keydown",function(e){
+  if(e.altKey||e.ctrlKey||e.metaKey||(!LIB.open&&!LIB.sheet)) return;
+  var a=document.activeElement; if(a&&(/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)||a.isContentEditable)) return;
+  var box=LIB.open?$("#lr-body"):(LIB.sheet&&LIB.sheet.el.querySelector(".ls-list")); if(!box) return;
+  var h=box.clientHeight, k=e.key, dy=null;
+  if(k==="ArrowDown") dy=90; else if(k==="ArrowUp") dy=-90;
+  else if(k==="PageDown"||(k===" "&&!e.shiftKey)) dy=h*0.85; else if(k==="PageUp"||(k===" "&&e.shiftKey)) dy=-h*0.85;
+  else if(k==="Home"){ e.preventDefault(); box.scrollTo({top:0,behavior:"smooth"}); return; }
+  else if(k==="End"){ e.preventDefault(); box.scrollTo({top:box.scrollHeight,behavior:"smooth"}); return; }
+  else if(LIB.open&&LIB.open.sizes&&(k==="ArrowRight"||k==="ArrowLeft")){ e.preventDefault(); var n=libCurPage()+(k==="ArrowRight"?1:-1); n=Math.max(1,Math.min(LIB.open.sizes.length,n)); var d=box.querySelector('.lr-page[data-n="'+n+'"]'); if(d) box.scrollTo({top:Math.max(0,d.offsetTop-12),behavior:"smooth"}); return; }
+  if(dy===null) return; e.preventDefault(); box.scrollBy({top:dy,behavior:"smooth"});
+});
 document.addEventListener("keydown",function(e){ if(e.key!=="Escape") return; if(LIB.card&&!LIB.card.idle) libCardClose(); else if(LIB.note) libNoteClose(); else if(LIB.open) libClose(); else if(LIB.sheet) libSeriesClose(); });
 window.addEventListener("resize",function(){
   var O=LIB.open, body=$("#lr-body"); if(!O||!O.sizes||!body||Math.abs(body.clientWidth-O.bw)<8) return;
@@ -6512,8 +6536,18 @@ document.addEventListener("keydown",function(e){ if(e.target&&e.target.id==="lc-
   }
   function snap(t){ return {y:window.scrollY,x:window.scrollX,vy:vv?vv.pageTop:0,vx:vv?vv.pageLeft:0,b:t?t.scrollTop:0}; }
   function moved(a,t){ var b=snap(t); return Math.abs(b.y-a.y)>0.5||Math.abs(b.x-a.x)>0.5||Math.abs(b.vy-a.vy)>0.5||Math.abs(b.vx-a.vx)>0.5||Math.abs(b.b-a.b)>0.5; }
-  function push(t,dx,dy){ if(t) t.scrollTop+=dy; else window.scrollBy(dx,dy); }
-  function off(e){ return window.KC_NOWHEELFIX||(e.target&&e.target.closest&&e.target.closest(".lib-reader")); }
+  /* Nov 3: movement is collected and applied once per frame, so the page glides instead of jumping in uneven steps.
+     Wheel scrolls ease out; two-finger drags follow the fingers exactly. */
+  var Q={t:null,x:0,y:0,ease:false,raf:0};
+  function step(){
+    Q.raf=0; var k=Q.ease?0.24:1, mx=Q.x*k, my=Q.y*k;
+    if(Math.abs(Q.x-mx)<0.6) mx=Q.x; if(Math.abs(Q.y-my)<0.6) my=Q.y;
+    Q.x-=mx; Q.y-=my;
+    if(Q.t) Q.t.scrollTop+=my; else window.scrollBy({left:mx,top:my,behavior:"instant"});
+    if(Math.abs(Q.x)>0.5||Math.abs(Q.y)>0.5) Q.raf=requestAnimationFrame(step); else { Q.x=0; Q.y=0; }
+  }
+  function push(t,dx,dy,ease){ if(Q.t!==t){ Q.x=0; Q.y=0; Q.t=t; } Q.ease=!!ease; Q.x+=dx; Q.y+=dy; if(!Q.raf) Q.raf=requestAnimationFrame(step); }
+  function off(e){ return window.KC_NOWHEELFIX||window.KC_PINCHING; }
   window.KC_SCROLLMODE="idle";
   /* wheel gestures: a burst of wheel events with short gaps */
   var W=null;
@@ -6523,11 +6557,11 @@ document.addEventListener("keydown",function(e){ if(e.target&&e.target.id==="lc-
     if(!W||now-W.last>220){ var t=box(e.target,dy); W={t:t,s:snap(t),start:now,last:now,mode:"check",pdx:0,pdy:0}; }
     W.last=now;
     if(W.mode==="native") return;
-    if(W.mode==="manual"){ push(W.t,dx,dy); return; }
+    if(W.mode==="manual"){ push(W.t,dx,dy,true); return; }
     W.pdx+=dx; W.pdy+=dy;
     if(now-W.start>90){
       if(moved(W.s,W.t)){ W.mode="native"; window.KC_SCROLLMODE="wheel: native"; }
-      else { W.mode="manual"; window.KC_SCROLLMODE="wheel: app"; push(W.t,W.pdx,W.pdy); }
+      else { W.mode="manual"; window.KC_SCROLLMODE="wheel: app"; push(W.t,W.pdx,W.pdy,true); }
     }
   },{passive:true});
   /* two-finger touch drags (some covers send the touchpad as two fingers). Pinches are left to the browser. */
