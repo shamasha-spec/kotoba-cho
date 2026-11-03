@@ -150,7 +150,8 @@ nav.tabs .wrap{display:flex;gap:4px}
 .tab[aria-selected="true"] b{font-weight:700}
 
 main{padding:24px 0 80px;position:relative;touch-action:pan-y pinch-zoom}
-html,body{overflow-x:clip}
+/* Nov 3: the sideways clip sits on the main content, not on html/body, so zoomed panning on tablets is never blocked */
+main{overflow-x:clip}
 main.swiping{overflow-x:clip}
 main.swiping section{backface-visibility:hidden}
 .ladder,.seg,.themes,.dock-tools{touch-action:pan-x pan-y}
@@ -5447,8 +5448,9 @@ gEl.addEventListener("click",async function(e){
     g=null; if(!canStart(e)) return;
     var t=e.touches[0];
     g={x0:t.clientX,y0:t.clientY,dx:0,lock:null,samples:[[Date.now(),t.clientX]],onEntry:!!(e.target.closest&&e.target.closest(".entry-row"))};
+    swOn();
   },{passive:true});
-  document.addEventListener("touchmove",function(e){
+  function swMove(e){
     if(!g||g.settling) return;
     var t=e.touches[0], dx=t.clientX-g.x0, dy=t.clientY-g.y0;
     if(g.lock===null){
@@ -5466,7 +5468,9 @@ gEl.addEventListener("click",async function(e){
     var dir=dx<0?1:-1; if(dx!==0 && dir!==g.dir) prepNeighbour(dir);
     g.dx=dx; g.samples.push([Date.now(),t.clientX]); if(g.samples.length>6) g.samples.shift();
     if(!raf) raf=requestAnimationFrame(paint);
-  },{passive:false});
+  }
+  function swOn(){ document.addEventListener("touchmove",swMove,{passive:false}); }
+  function swOff(){ document.removeEventListener("touchmove",swMove,{passive:false}); }
   function end(){
     if(!g||g.lock!=="x"||g.settling){ if(g&&!g.settling) g=null; return; }
     if(raf){cancelAnimationFrame(raf);raf=0;paint();}
@@ -5497,6 +5501,8 @@ gEl.addEventListener("click",async function(e){
     g.cur.addEventListener("transitionend",finish,{once:true});
     setTimeout(finish,dur+80);
   }
+  document.addEventListener("touchend",swOff,{passive:true});
+  document.addEventListener("touchcancel",swOff,{passive:true});
   document.addEventListener("touchend",end,{passive:true});
   document.addEventListener("touchcancel",end,{passive:true});
 })();
@@ -5919,13 +5925,14 @@ function libZoom(dir){
     var fx=cx-r.left+body.scrollLeft, fy=cy-r.top+body.scrollTop;
     pz={body:body,pages:pages,d0:dist(e.touches),z0:LIB.zoom,s:1,vx:cx-r.left,vy:cy-r.top,fx:fx,fy:fy};
     pages.style.transformOrigin=(fx-pages.offsetLeft)+"px "+(fy-pages.offsetTop)+"px"; pages.style.willChange="transform";
+    document.addEventListener("touchmove",pzMove,{passive:false});
   },{passive:true});
-  document.addEventListener("touchmove",function(e){
+  function pzMove(e){
     if(!pz||e.touches.length!==2) return; e.preventDefault();
     pz.s=Math.max(0.6/pz.z0,Math.min(3/pz.z0,dist(e.touches)/pz.d0)); pz.pages.style.transform="scale("+pz.s+")";
-  },{passive:false});
+  }
   function end(e){
-    if(!pz||(e.touches&&e.touches.length>=2)) return; var P=pz; pz=null;
+    if(!pz||(e.touches&&e.touches.length>=2)) return; var P=pz; pz=null; document.removeEventListener("touchmove",pzMove,{passive:false});
     P.pages.style.transform=""; P.pages.style.willChange="";
     var nz=Math.max(0.75,Math.min(3,Math.round(P.z0*P.s*100)/100)); if(Math.abs(nz-P.z0)<0.03||!LIB.open) return;
     var oldW=LIB.open.W; LIB.zoom=nz; store("kc-lib-zoom",nz); libLayout();
@@ -6503,8 +6510,14 @@ document.addEventListener("keydown",function(e){ if(e.target&&e.target.id==="lc-
   var pend=0, tgt=null, t0=0, timer=null, broken=null, lastScroll=0;
   document.addEventListener("scroll",function(){lastScroll=performance.now();},{capture:true,passive:true});
   function canMove(t,dy){ if(t) return true; var max=document.documentElement.scrollHeight-window.innerHeight; return dy<0?window.scrollY>0:window.scrollY<max-1; }
+  /* Nov 3: after a pinch zoom the browser pans the zoomed view instead of the page, which this fallback used to misread
+     as "the browser isn't scrolling". Now it stands aside whenever the page is zoomed, and forgets its decision after every
+     zoom change, so it checks again on the next scroll. */
+  var vv=window.visualViewport, lastScale=vv?vv.scale:1;
+  function zoomed(){ return !!(vv&&vv.scale>1.01); }
+  if(vv) vv.addEventListener("resize",function(){ if(Math.abs(vv.scale-lastScale)>0.01){ lastScale=vv.scale; broken=null; clearTimeout(timer); timer=null; pend=0; } });
   window.addEventListener("wheel",function(e){
-    if(e.ctrlKey||Math.abs(e.deltaY)<=Math.abs(e.deltaX)) return;
+    if(e.ctrlKey||Math.abs(e.deltaY)<=Math.abs(e.deltaX)||zoomed()) return;
     var dy=e.deltaMode===1?e.deltaY*16:e.deltaMode===2?e.deltaY*window.innerHeight:e.deltaY;
     if(broken===false) return;
     var t=box(e.target,dy);
