@@ -6517,7 +6517,7 @@ document.addEventListener("keydown",function(e){ if(e.target&&e.target.id==="lc-
   function zoomed(){ return !!(vv&&vv.scale>1.01); }
   if(vv) vv.addEventListener("resize",function(){ if(Math.abs(vv.scale-lastScale)>0.01){ lastScale=vv.scale; broken=null; clearTimeout(timer); timer=null; pend=0; } });
   window.addEventListener("wheel",function(e){
-    if(e.ctrlKey||Math.abs(e.deltaY)<=Math.abs(e.deltaX)||zoomed()) return;
+    if(window.KC_NOWHEELFIX||e.ctrlKey||Math.abs(e.deltaY)<=Math.abs(e.deltaX)||zoomed()) return;
     var dy=e.deltaMode===1?e.deltaY*16:e.deltaMode===2?e.deltaY*window.innerHeight:e.deltaY;
     if(broken===false) return;
     var t=box(e.target,dy);
@@ -6531,6 +6531,49 @@ document.addEventListener("keydown",function(e){ if(e.target&&e.target.id==="lc-
       timer=null; pend=0;
     },120);
   },{passive:true});
+})();
+</script>
+<script>
+/* Nov 3: scroll test mode for the Lenovo tablet. Add #scrolltest to the address to show it. It shows what the touchpad sends,
+   and switches each suspect off live, so you can see which one frees a stuck scroll. Nothing changes unless you tap a switch. */
+(function(){
+  if(!/scrolltest/.test(location.hash)) return;
+  var css=document.createElement("style");
+  css.textContent='html.st-nota main,html.st-nota .shelf,html.st-nota .ladder,html.st-nota .seg,html.st-nota .themes,html.st-nota .dock-tools,html.st-nota .gq-track{touch-action:auto!important}'+
+    'html.st-nosticky nav.tabs{position:relative!important}html.st-noclip main{overflow-x:visible!important}'+
+    '#st-box{position:fixed;left:8px;bottom:8px;z-index:9999;width:300px;max-width:calc(100vw - 16px);box-sizing:border-box;padding:10px;border-radius:12px;background:rgba(28,34,32,.92);color:#F1F2EE;font:12px/1.45 system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.35)}'+
+    '#st-box b{color:#fff}#st-box .row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}#st-box button{min-height:36px;padding:0 10px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:transparent;color:#F1F2EE;font:inherit}'+
+    '#st-box button[aria-pressed="true"]{background:#F1F2EE;color:#1C2220}#st-log{margin-top:6px;max-height:84px;overflow:hidden;opacity:.85;font-family:ui-monospace,monospace;font-size:11px}';
+  document.head.appendChild(css);
+  var n={wheel:0,touch:0,scroll:0,pointer:""}, log=[];
+  function add(t){ log.unshift(t); log.length=Math.min(log.length,6); }
+  document.addEventListener("DOMContentLoaded",function(){
+    var b=document.createElement("div"); b.id="st-box"; b.setAttribute("role","region"); b.setAttribute("aria-label","Scroll test");
+    b.innerHTML='<b>Scroll test</b> <span id="st-s"></span><div id="st-n"></div><div id="st-log"></div>'+
+      '<div class="row"><button data-k="fix" aria-pressed="false">Fallback off</button><button data-k="nota" aria-pressed="false">touch-action off</button><button data-k="nosticky" aria-pressed="false">Sticky tabs off</button><button data-k="noclip" aria-pressed="false">Clip off</button><button data-k="hide">Hide</button></div>';
+    document.body.appendChild(b);
+    b.addEventListener("click",function(e){
+      var x=e.target.closest("button"); if(!x) return; var k=x.dataset.k;
+      if(k==="hide"){ b.remove(); return; }
+      var on=x.getAttribute("aria-pressed")!=="true"; x.setAttribute("aria-pressed",String(on));
+      if(k==="fix") window.KC_NOWHEELFIX=on; else document.documentElement.classList.toggle("st-"+k,on);
+      add((on?"OFF ":"on  ")+x.textContent);
+    });
+    function paint(){
+      var vv=window.visualViewport;
+      var s=document.getElementById("st-s"), m=document.getElementById("st-n"), l=document.getElementById("st-log"); if(!s) return;
+      s.textContent="zoom "+(vv?vv.scale.toFixed(2):"?")+" · page y "+Math.round(scrollY)+(vv?" · view y "+Math.round(vv.pageTop):"");
+      m.textContent="wheel "+n.wheel+" · touch "+n.touch+" · scroll "+n.scroll+(n.pointer?" · "+n.pointer:"");
+      l.innerHTML=log.map(function(t){ return t.replace(/[<>&]/g,""); }).join("<br>");
+      requestAnimationFrame(paint);
+    }
+    requestAnimationFrame(paint);
+  });
+  window.addEventListener("wheel",function(e){ n.wheel++; add("wheel dy "+Math.round(e.deltaY)+(e.ctrlKey?" ctrl":"")+" mode "+e.deltaMode); },{passive:true,capture:true});
+  document.addEventListener("touchstart",function(e){ n.touch++; add("touch x"+e.touches.length+" "+(e.cancelable?"":"(no-cancel)")); },{passive:true,capture:true});
+  document.addEventListener("pointerdown",function(e){ n.pointer=e.pointerType; },{passive:true,capture:true});
+  document.addEventListener("scroll",function(){ n.scroll++; },{passive:true,capture:true});
+  if(window.visualViewport) visualViewport.addEventListener("resize",function(){ add("zoom now "+visualViewport.scale.toFixed(2)); });
 })();
 </script>
 <script>if("serviceWorker" in navigator&&location.protocol==="https:"){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}</script>
