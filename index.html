@@ -6495,9 +6495,12 @@ document.addEventListener("keydown",function(e){ if(e.target&&e.target.id==="lc-
 })();
 </script>
 <script>
-/* trackpad / mouse-wheel fallback: if a wheel event doesn't move the page natively
-   (seen on some Android tablets with a trackpad), scroll it ourselves */
+/* Touchpad scroll watchdog (Nov 3). Some Android keyboard covers (seen on a Lenovo Yoga Tab) send two-finger scrolling in a way
+   Chrome sometimes drops, especially after a pinch zoom. The app never blocks the browser's own scrolling. Instead, for every
+   scroll gesture it checks whether the page or the zoomed view actually moved. If nothing moved, it scrolls the page itself for
+   the rest of that gesture. It handles both wheel scrolls and two-finger touch drags. Add #scrolltest to the address to see it. */
 (function(){
+  var vv=window.visualViewport;
   function box(el,dy){
     for(;el&&el.nodeType===1&&el!==document.body&&el!==document.documentElement;el=el.parentElement){
       var oy=getComputedStyle(el).overflowY;
@@ -6507,30 +6510,47 @@ document.addEventListener("keydown",function(e){ if(e.target&&e.target.id==="lc-
     }
     return null;
   }
-  var pend=0, tgt=null, t0=0, timer=null, broken=null, lastScroll=0;
-  document.addEventListener("scroll",function(){lastScroll=performance.now();},{capture:true,passive:true});
-  function canMove(t,dy){ if(t) return true; var max=document.documentElement.scrollHeight-window.innerHeight; return dy<0?window.scrollY>0:window.scrollY<max-1; }
-  /* Nov 3: after a pinch zoom the browser pans the zoomed view instead of the page, which this fallback used to misread
-     as "the browser isn't scrolling". Now it stands aside whenever the page is zoomed, and forgets its decision after every
-     zoom change, so it checks again on the next scroll. */
-  var vv=window.visualViewport, lastScale=vv?vv.scale:1;
-  function zoomed(){ return !!(vv&&vv.scale>1.01); }
-  if(vv) vv.addEventListener("resize",function(){ if(Math.abs(vv.scale-lastScale)>0.01){ lastScale=vv.scale; broken=null; clearTimeout(timer); timer=null; pend=0; } });
+  function snap(t){ return {y:window.scrollY,x:window.scrollX,vy:vv?vv.pageTop:0,vx:vv?vv.pageLeft:0,b:t?t.scrollTop:0}; }
+  function moved(a,t){ var b=snap(t); return Math.abs(b.y-a.y)>0.5||Math.abs(b.x-a.x)>0.5||Math.abs(b.vy-a.vy)>0.5||Math.abs(b.vx-a.vx)>0.5||Math.abs(b.b-a.b)>0.5; }
+  function push(t,dx,dy){ if(t) t.scrollTop+=dy; else window.scrollBy(dx,dy); }
+  function off(e){ return window.KC_NOWHEELFIX||(e.target&&e.target.closest&&e.target.closest(".lib-reader")); }
+  window.KC_SCROLLMODE="idle";
+  /* wheel gestures: a burst of wheel events with short gaps */
+  var W=null;
   window.addEventListener("wheel",function(e){
-    if(window.KC_NOWHEELFIX||e.ctrlKey||Math.abs(e.deltaY)<=Math.abs(e.deltaX)||zoomed()) return;
-    var dy=e.deltaMode===1?e.deltaY*16:e.deltaMode===2?e.deltaY*window.innerHeight:e.deltaY;
-    if(broken===false) return;
-    var t=box(e.target,dy);
-    if(broken===true){ if(t) t.scrollTop+=dy; else window.scrollBy(0,dy); return; }
-    if(!timer){ tgt=t; t0=performance.now(); pend=0; if(!canMove(tgt,dy)) return; }
-    pend+=dy;
-    clearTimeout(timer);
-    timer=setTimeout(function(){
-      if(lastScroll>=t0-150) broken=false;
-      else if(pend){ broken=true; if(tgt) tgt.scrollTop+=pend; else window.scrollBy(0,pend); }
-      timer=null; pend=0;
-    },120);
+    if(off(e)||e.ctrlKey) return;
+    var dx=e.deltaMode===1?e.deltaX*16:e.deltaX, dy=e.deltaMode===1?e.deltaY*16:e.deltaMode===2?e.deltaY*window.innerHeight:e.deltaY, now=performance.now();
+    if(!W||now-W.last>220){ var t=box(e.target,dy); W={t:t,s:snap(t),start:now,last:now,mode:"check",pdx:0,pdy:0}; }
+    W.last=now;
+    if(W.mode==="native") return;
+    if(W.mode==="manual"){ push(W.t,dx,dy); return; }
+    W.pdx+=dx; W.pdy+=dy;
+    if(now-W.start>90){
+      if(moved(W.s,W.t)){ W.mode="native"; window.KC_SCROLLMODE="wheel: native"; }
+      else { W.mode="manual"; window.KC_SCROLLMODE="wheel: app"; push(W.t,W.pdx,W.pdy); }
+    }
   },{passive:true});
+  /* two-finger touch drags (some covers send the touchpad as two fingers). Pinches are left to the browser. */
+  var T=null;
+  function mid(ts){ return {x:(ts[0].clientX+ts[1].clientX)/2,y:(ts[0].clientY+ts[1].clientY)/2,d:Math.hypot(ts[0].clientX-ts[1].clientX,ts[0].clientY-ts[1].clientY)}; }
+  document.addEventListener("touchstart",function(e){
+    if(off(e)||e.touches.length!==2){ if(e.touches.length!==2) T=null; return; }
+    var m=mid(e.touches), t=box(e.target,1); T={t:t,s:snap(t),m:m,d0:m.d,start:performance.now(),mode:"check",pdx:0,pdy:0};
+  },{passive:true});
+  document.addEventListener("touchmove",function(e){
+    if(!T||e.touches.length!==2) return;
+    var m=mid(e.touches), dx=T.m.x-m.x, dy=T.m.y-m.y; T.m=m;
+    if(T.mode==="pinch"||T.mode==="native") return;
+    if(Math.abs(m.d-T.d0)>Math.max(24,T.d0*0.15)){ T.mode="pinch"; return; }
+    if(T.mode==="manual"){ push(T.t,dx,dy); return; }
+    T.pdx+=dx; T.pdy+=dy;
+    if(performance.now()-T.start>90&&Math.abs(T.pdy)+Math.abs(T.pdx)>8){
+      if(moved(T.s,T.t)){ T.mode="native"; window.KC_SCROLLMODE="touch: native"; }
+      else { T.mode="manual"; window.KC_SCROLLMODE="touch: app"; push(T.t,T.pdx,T.pdy); }
+    }
+  },{passive:true});
+  document.addEventListener("touchend",function(e){ if(e.touches.length<2) T=null; },{passive:true});
+  document.addEventListener("touchcancel",function(){ T=null; },{passive:true});
 })();
 </script>
 <script>
@@ -6550,7 +6570,7 @@ document.addEventListener("keydown",function(e){ if(e.target&&e.target.id==="lc-
   document.addEventListener("DOMContentLoaded",function(){
     var b=document.createElement("div"); b.id="st-box"; b.setAttribute("role","region"); b.setAttribute("aria-label","Scroll test");
     b.innerHTML='<b>Scroll test</b> <span id="st-s"></span><div id="st-n"></div><div id="st-log"></div>'+
-      '<div class="row"><button data-k="fix" aria-pressed="false">Fallback off</button><button data-k="nota" aria-pressed="false">touch-action off</button><button data-k="nosticky" aria-pressed="false">Sticky tabs off</button><button data-k="noclip" aria-pressed="false">Clip off</button><button data-k="hide">Hide</button></div>';
+      '<div class="row"><button data-k="fix" aria-pressed="false">Watchdog off</button><button data-k="nota" aria-pressed="false">touch-action off</button><button data-k="nosticky" aria-pressed="false">Sticky tabs off</button><button data-k="noclip" aria-pressed="false">Clip off</button><button data-k="hide">Hide</button></div>';
     document.body.appendChild(b);
     b.addEventListener("click",function(e){
       var x=e.target.closest("button"); if(!x) return; var k=x.dataset.k;
@@ -6563,7 +6583,7 @@ document.addEventListener("keydown",function(e){ if(e.target&&e.target.id==="lc-
       var vv=window.visualViewport;
       var s=document.getElementById("st-s"), m=document.getElementById("st-n"), l=document.getElementById("st-log"); if(!s) return;
       s.textContent="zoom "+(vv?vv.scale.toFixed(2):"?")+" · page y "+Math.round(scrollY)+(vv?" · view y "+Math.round(vv.pageTop):"");
-      m.textContent="wheel "+n.wheel+" · touch "+n.touch+" · scroll "+n.scroll+(n.pointer?" · "+n.pointer:"");
+      m.textContent="wheel "+n.wheel+" · touch "+n.touch+" · scroll "+n.scroll+(n.pointer?" · "+n.pointer:"")+" · last: "+(window.KC_SCROLLMODE||"idle");
       l.innerHTML=log.map(function(t){ return t.replace(/[<>&]/g,""); }).join("<br>");
       requestAnimationFrame(paint);
     }
