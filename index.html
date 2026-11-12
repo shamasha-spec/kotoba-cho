@@ -2002,6 +2002,16 @@ body.lib-open{overflow:hidden}
 .lr-gph{display:grid;gap:1px;width:100%;padding:8px 2px;border:0;background:none;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
 .lr-gph b{font-family:var(--serif);font-size:1.02rem}.lr-gph span{font-size:.84rem;color:var(--muted)}
 .lr-gpb{display:grid;gap:4px;padding:0 2px 10px}
+/* Offline books (Nov 12) */
+.lib-book{position:relative}
+.lib-ok{position:absolute;top:6px;right:6px;z-index:3;min-width:22px;height:22px;padding:0 6px;box-sizing:border-box;border-radius:11px;background:var(--matcha);color:#fff;font-size:.72rem;font-weight:700;display:grid;place-items:center;box-shadow:0 2px 6px -2px rgba(0,0,0,.35)}
+.lib-miss{opacity:.45}
+.lib-offl{color:var(--ink)}
+.lib-saved{font-size:.8rem}
+.lib-saved .linkbtn{font-size:inherit}
+.ls-off{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--line);font-size:.85rem;color:var(--muted)}
+.ls-offt{flex:1;min-width:150px}
+.ls-ck{color:var(--matcha);font-weight:700;flex:none}
 /* Book view (Nov 11): pages turn like a book, two side by side in landscape */
 .lr-btn.lr-jisho{width:auto;min-width:44px;padding:0 9px;font-family:var(--serif);font-weight:700;font-size:.98rem}
 .lr-body.book{display:flex;padding:10px 0 calc(118px + env(safe-area-inset-bottom,0px))}
@@ -5710,6 +5720,7 @@ function libErr(e){
   if(/unknown action/.test(m)) return "Your script is running old code. Paste the new Code.gs and deploy a new version.";
   if(/too-big/.test(m)) return "This PDF is over the "+(LIB.max||30)+" MB limit. Split it into smaller files.";
   if(/not found/i.test(m)) return "This book is no longer in your Library folder. Refresh the shelf.";
+  if(e&&e.code==="lib_offline") return "This book isn’t saved on this device yet. Open it once while you’re online, or use Save all in its series.";
   if(e&&e.code==="server_unavailable") return "Can’t reach your script. Check your connection.";
   return esc(m||"Something went wrong.");
 }
@@ -5720,17 +5731,18 @@ async function libLoad(force){
   LIB.asked=true; LIB.loading=true; LIB.err="";
   if(S.tab==="library") renderLibrary();
   try{ var j=await window.kcLib.list(); LIB.books=j.books||[]; LIB.max=j.maxMb||30; store("kc-lib-list",LIB.books); }
-  catch(e){ LIB.err=libErr(e); }
+  catch(e){ if(LIB.books&&(!navigator.onLine||(e&&e.code==="server_unavailable"))){ LIB.offline=true; LIB.asked=false; } else LIB.err=libErr(e); }
   LIB.loading=false;
   if(S.tab==="library") renderLibrary();
   if(S.tab==="add"&&S.loaded) renderHome();
 }
 function libBookHtml(b,p){
-  if(b.series){ var L=libSeriesLast(b), n=(b.chapters||[]).length;
-    return '<button type="button" class="lib-book" data-act="lib-series" data-id="'+esc(b.id)+'">'+libCover(b)+'<span class="lib-name" title="'+esc(b.name)+'">'+esc(libTitle(b.name).t)+'</span>'+
+  var off=!navigator.onLine;
+  if(b.series){ var L=libSeriesLast(b), n=(b.chapters||[]).length, sv=(b.chapters||[]).filter(function(c){ return libOffHas(c.id); }).length;
+    return '<button type="button" class="lib-book'+(off&&!sv?' lib-miss':'')+'" data-act="lib-series" data-id="'+esc(b.id)+'">'+libCover(b)+(sv?'<span class="lib-ok" title="Saved on this device">'+(sv===n?'✓':sv+'/'+n)+'</span>':'')+'<span class="lib-name" title="'+esc(b.name)+'">'+esc(libTitle(b.name).t)+'</span>'+
       '<span class="lib-meta">'+n+(n===1?' chapter':' chapters')+(L?' · last: '+esc(libTitle(L.c.name).t):'')+'</span></button>'; }
-  var has=p&&p.n, pct=has?Math.round(p.p/p.n*100):0;
-  return '<button type="button" class="lib-book" data-act="lib-open" data-id="'+esc(b.id)+'"'+(b.tooBig?' disabled':'')+'>'+libCover(b)+
+  var has=p&&p.n, pct=has?Math.round(p.p/p.n*100):0, sb=libOffHas(b.id);
+  return '<button type="button" class="lib-book'+(off&&!sb?' lib-miss':'')+'" data-act="lib-open" data-id="'+esc(b.id)+'"'+(b.tooBig?' disabled':'')+'>'+libCover(b)+(sb?'<span class="lib-ok" title="Saved on this device">✓</span>':'')+
     '<span class="lib-name" title="'+esc(b.name)+'">'+esc(libTitle(b.name).t)+'</span>'+
     (has?'<span class="lib-bar"><i style="width:'+pct+'%"></i></span><span class="lib-meta">p. '+p.p+' of '+p.n+'</span>'
         :'<span class="lib-meta">'+(b.tooBig?'Over '+(LIB.max||30)+' MB. Split it to open.':libMb(b.size)+' · Not opened yet')+'</span>')+'</button>';
@@ -5740,7 +5752,9 @@ function renderLibrary(){
   if(!libOwner()){ el.innerHTML=""; return; }
   libLoad();
   var B=LIB.books, pos=libPos();
-  var h='<div class="lib-top"><p>'+(B?B.length+(B.length===1?' book':' books')+' in your Drive folder':'Your PDFs from Google Drive')+'</p>'+
+  var nOff=Object.keys(LOFF.ids).length;
+  var h='<div class="lib-top"><p>'+(!navigator.onLine||LIB.offline?'<b class="lib-offl">Offline</b> · saved books open. ':'')+(B?B.length+(B.length===1?' book':' books')+' in your Drive folder':'Your PDFs from Google Drive')+
+    (nOff?'<br><span class="lib-saved">'+nOff+' saved on this device · '+libMb(libOffBytes())+' · <button type="button" class="linkbtn" data-act="lib-rmall">'+(LOFF.rm==="all"?'Tap again to remove all':'Remove')+'</button></span>':'')+'</p>'+
     '<button class="iconbtn'+(LIB.loading?' spin':'')+'" data-act="lib-refresh" aria-label="Refresh the shelf" title="Refresh the shelf"'+(LIB.loading?' disabled':'')+'>'+ICO_REFRESH+'</button></div>';
   if(LIB.err) h+='<div class="msg err">'+LIB.err+'</div><div style="height:14px"></div>';
   if(!B) h+=LIB.loading?'<p class="lib-meta">Opening your shelf…</p>':'';
@@ -5750,6 +5764,7 @@ function renderLibrary(){
 }
 $("#library").addEventListener("click",function(e){
   var a=e.target.closest("[data-act]"); if(!a) return;
+  if(a.dataset.act==="lib-rmall"){ if(LOFF.rm!=="all"){ LOFF.rm="all"; renderLibrary(); setTimeout(function(){ if(LOFF.rm==="all"){ LOFF.rm=null; renderLibrary(); } },4000); return; } LOFF.rm=null; libOffDel(Object.keys(LOFF.ids)).then(function(){ renderLibrary(); toast("Saved books removed from this device."); }); return; }
   if(a.dataset.act==="lib-refresh") libLoad(true);
   else if(a.dataset.act==="lib-open") libOpen(a.dataset.id);
   else if(a.dataset.act==="lib-series") libSeries(a.dataset.id);
@@ -5757,16 +5772,19 @@ $("#library").addEventListener("click",function(e){
 /* the chapter list for a series. It stays open under the reader, so closing a chapter brings you back here. */
 function libSeriesHtml(b){
   var pos=libPos();
-  return '<div class="ls-card" role="document"><div class="ls-hd">'+libCover(b)+'<div class="ls-tt"><b>'+esc(libTitle(b.name).t)+'</b><span>'+(b.chapters||[]).length+' chapters</span></div><button class="lr-btn" data-act="ls-close" aria-label="Close" title="Close">×</button></div>'+
+  return '<div class="ls-card" role="document"><div class="ls-hd">'+libCover(b)+'<div class="ls-tt"><b>'+esc(libTitle(b.name).t)+'</b><span>'+(b.chapters||[]).length+' chapters</span></div><button class="lr-btn" data-act="ls-close" aria-label="Close" title="Close">×</button></div>'+libOffHtml(b)+
     '<div class="ls-list">'+(b.chapters||[]).map(function(c,i){ var p=pos[c.id], pct=p&&p.n?Math.round(p.p/p.n*100):0;
-      return '<button type="button" class="ls-row" data-act="lib-open" data-id="'+esc(c.id)+'"'+(c.tooBig?' disabled':'')+'><span class="ls-n" style="background:'+LIB_COLORS[i%LIB_COLORS.length]+'">'+libChNum(c,i)+'</span><span class="ls-t" lang="ja">'+esc(libTitle(c.name).t)+'</span>'+
+      return '<button type="button" class="ls-row" data-act="lib-open" data-id="'+esc(c.id)+'"'+(c.tooBig?' disabled':'')+'><span class="ls-n" style="background:'+LIB_COLORS[i%LIB_COLORS.length]+'">'+libChNum(c,i)+'</span><span class="ls-t" lang="ja">'+esc(libTitle(c.name).t)+'</span>'+(libOffHas(c.id)?'<span class="ls-ck" title="Saved on this device" aria-label="Saved">✓</span>':'')+
         (c.tooBig?'<span class="ls-m">Over '+(LIB.max||30)+' MB</span>':p&&p.n?'<span class="lib-bar ls-b"><i style="width:'+pct+'%"></i></span>':'<span class="ls-m">not opened</span>')+'</button>'; }).join("")+'</div></div>';
 }
 function libSeries(id){
   var b=(LIB.books||[]).find(function(x){ return x.id===id&&x.series; }); if(!b) return;
   libSeriesClose(); var d=document.createElement("div"); d.className="lib-series"; d.setAttribute("role","dialog"); d.setAttribute("aria-modal","true"); d.setAttribute("aria-label",libTitle(b.name).t);
   d.innerHTML=libSeriesHtml(b); document.body.appendChild(d); document.body.classList.add("lib-open"); LIB.sheet={b:b,el:d};
-  d.addEventListener("click",function(e){ var a=e.target.closest("[data-act]"); if(e.target===d||(a&&a.dataset.act==="ls-close")){ libSeriesClose(); return; } if(a&&a.dataset.act==="lib-open") libOpen(a.dataset.id); });
+  d.addEventListener("click",function(e){ var a=e.target.closest("[data-act]"); if(e.target===d||(a&&a.dataset.act==="ls-close")){ libSeriesClose(); return; } if(a&&a.dataset.act==="lib-open") libOpen(a.dataset.id);
+    if(a&&a.dataset.act==="ls-save") libSaveAll(b);
+    if(a&&a.dataset.act==="ls-stop"&&LOFF.run) LOFF.run.stop=true;
+    if(a&&a.dataset.act==="ls-rm"){ if(LOFF.rm!==b.id){ LOFF.rm=b.id; libSeriesRefresh(); setTimeout(function(){ if(LOFF.rm===b.id){ LOFF.rm=null; libSeriesRefresh(); } },4000); return; } LOFF.rm=null; libOffDel((b.chapters||[]).map(function(c){ return c.id; }).filter(libOffHas)).then(function(){ libSeriesRefresh(); if(S.tab==="library") renderLibrary(); }); } });
 }
 function libSeriesClose(){ if(!LIB.sheet) return; LIB.sheet.el.remove(); LIB.sheet=null; if(!LIB.open) document.body.classList.remove("lib-open"); }
 
@@ -5790,24 +5808,102 @@ function libHomeHtml(){
 function libLoadPdfJs(){
   if(window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
   if(LIB.jsP) return LIB.jsP;
-  LIB.jsP=new Promise(function(res,rej){
-    var s=document.createElement("script"); s.src=PDFJS_BASE+"pdf.min.js";
-    s.onload=function(){ if(window.pdfjsLib){ window.pdfjsLib.GlobalWorkerOptions.workerSrc=PDFJS_BASE+"pdf.worker.min.js"; res(window.pdfjsLib); } else { LIB.jsP=null; rej(new Error("The PDF reader didn’t load.")); } };
-    s.onerror=function(){ LIB.jsP=null; s.remove(); rej(new Error("Couldn’t load the PDF reader. Check your connection.")); };
-    document.head.appendChild(s);
-  });
+  LIB.jsP=(async function(){
+    var main=await libJsUrl("pdf.min.js"), wk=await libJsUrl("pdf.worker.min.js");
+    await new Promise(function(res,rej){
+      var s=document.createElement("script"); s.src=main; s.onload=res;
+      s.onerror=function(){ s.remove(); rej(new Error("Couldn’t load the PDF reader. Check your connection.")); };
+      document.head.appendChild(s);
+    });
+    if(!window.pdfjsLib) throw new Error("The PDF reader didn’t load.");
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc=wk; return window.pdfjsLib;
+  })().catch(function(e){ LIB.jsP=null; throw e; });
   return LIB.jsP;
 }
+/* Nov 12: the PDF reader is kept on this device after the first time, so books open offline */
+async function libJsUrl(f){
+  var url=PDFJS_BASE+f;
+  try{
+    if(!window.caches) return url;
+    var c=await caches.open("kc-pdfjs"), r=await c.match(url);
+    if(!r){ r=await fetch(url,{mode:"cors"}); if(!r.ok) return url; await c.put(url,r.clone()); }
+    return URL.createObjectURL(new Blob([await r.blob()],{type:"text/javascript"}));
+  }catch(e){ return url; }
+}
 function libB64(str){ var bin=atob(str), u=new Uint8Array(bin.length); for(var k=0;k<bin.length;k++) u[k]=bin.charCodeAt(k); return u; }
-async function libFetch(b,onProg){
-  var c=LIB.bytes[b.id]; if(c&&c.updated===b.updated) return c.data;
-  var first=await window.kcLib.part(b.id,0), parts=first.parts||1, bins=[libB64(first.data)]; onProg(1,parts);
-  for(var i=1;i<parts;i++){ if(!LIB.open||LIB.open.b.id!==b.id) throw new Error("closed"); var j=await window.kcLib.part(b.id,i); bins.push(libB64(j.data)); onProg(i+1,parts); }
+async function libFetchNet(b,onProg,bg){
+  var first=await window.kcLib.part(b.id,0), parts=first.parts||1, bins=[libB64(first.data)]; if(onProg) onProg(1,parts);
+  for(var i=1;i<parts;i++){ if(!bg&&(!LIB.open||LIB.open.b.id!==b.id)) throw new Error("closed"); var j=await window.kcLib.part(b.id,i); bins.push(libB64(j.data)); if(onProg) onProg(i+1,parts); }
   var total=bins.reduce(function(a,u){ return a+u.length; },0), out=new Uint8Array(total), o=0;
   bins.forEach(function(u){ out.set(u,o); o+=u.length; });
-  LIB.bytes={}; LIB.bytes[b.id]={updated:first.updated,data:out}; // one book in memory at a time
-  return out;
+  return {u:first.updated,data:out};
 }
+function libKeep(b,u,data){ LIB.bytes={}; LIB.bytes[b.id]={updated:u,data:data}; return data; } // one book in memory at a time
+async function libFetch(b,onProg){
+  var c=LIB.bytes[b.id]; if(c&&c.updated===b.updated) return c.data;
+  var off=await libOffGet(b.id);
+  if(off&&(off.u===b.updated||!navigator.onLine)) return libKeep(b,off.u,new Uint8Array(await off.d.arrayBuffer()));
+  if(!off&&!navigator.onLine) throw Object.assign(new Error("offline"),{code:"lib_offline"});
+  var got;
+  try{ got=await libFetchNet(b,onProg); }
+  catch(e){
+    if(off) return libKeep(b,off.u,new Uint8Array(await off.d.arrayBuffer()));
+    if(!navigator.onLine||(e&&e.code==="server_unavailable")) throw Object.assign(new Error("offline"),{code:"lib_offline"});
+    throw e;
+  }
+  libOffPut(b.id,got.u,got.data).then(function(){ if(S.tab==="library") renderLibrary(); if(LIB.sheet) libSeriesRefresh(); });
+  return libKeep(b,got.u,got.data);
+}
+/* ---------- Offline books (Nov 12): every book you open is saved on this device (IndexedDB "kc-lib"), and a series can be
+   saved all at once. The list of saved books is in kc-lib-off. Saved books open with no internet. ---------- */
+var LOFF={ids:recall("kc-lib-off")||{},p:null,run:null};
+function libIdb(){
+  if(LOFF.p) return LOFF.p;
+  LOFF.p=new Promise(function(res,rej){ try{ var r=indexedDB.open("kc-lib",1); r.onupgradeneeded=function(){ r.result.createObjectStore("books"); }; r.onsuccess=function(){ res(r.result); }; r.onerror=function(){ rej(r.error); }; }catch(e){ rej(e); } });
+  LOFF.p.catch(function(){ LOFF.p=null; }); return LOFF.p;
+}
+function libIdbDo(mode,fn){ return libIdb().then(function(db){ return new Promise(function(res,rej){ var tx=db.transaction("books",mode), q=fn(tx.objectStore("books")), out; if(q) q.onsuccess=function(){ out=q.result; }; tx.oncomplete=function(){ res(out); }; tx.onerror=tx.onabort=function(){ rej(tx.error); }; }); }); }
+function libOffSave(){ store("kc-lib-off",LOFF.ids); }
+function libOffHas(id){ return !!LOFF.ids[id]; }
+function libOffBytes(ids){ var n=0; (ids||Object.keys(LOFF.ids)).forEach(function(k){ n+=(LOFF.ids[k]&&LOFF.ids[k].s)||0; }); return n; }
+async function libOffGet(id){
+  if(!LOFF.ids[id]) return null;
+  try{ var r=await libIdbDo("readonly",function(st){ return st.get(id); }); if(!r||!r.d){ delete LOFF.ids[id]; libOffSave(); return null; } return r; }catch(e){ return null; }
+}
+async function libOffPut(id,u,data){
+  try{
+    await libIdbDo("readwrite",function(st){ st.put({u:u,d:new Blob([data],{type:"application/pdf"})},id); });
+    LOFF.ids[id]={u:u,s:data.length,at:Date.now()}; libOffSave();
+    if(navigator.storage&&navigator.storage.persist&&!LOFF.asked){ LOFF.asked=true; navigator.storage.persist().catch(function(){}); }
+    return true;
+  }catch(e){ return false; }
+}
+async function libOffDel(ids){ try{ await libIdbDo("readwrite",function(st){ ids.forEach(function(id){ st.delete(id); }); }); }catch(e){} ids.forEach(function(id){ delete LOFF.ids[id]; }); libOffSave(); }
+/* save a whole series, one book at a time */
+async function libSaveAll(b){
+  if(LOFF.run||!navigator.onLine) { if(!navigator.onLine) toast("You’re offline. Connect to save books."); return; }
+  var todo=(b.chapters||[]).filter(function(c){ return !c.tooBig&&(!LOFF.ids[c.id]||LOFF.ids[c.id].u!==c.updated); });
+  if(!todo.length) return;
+  LOFF.run={id:b.id,i:0,n:todo.length}; libSeriesRefresh();
+  var ok=0, fail=0;
+  for(var k=0;k<todo.length;k++){
+    if(!LOFF.run||LOFF.run.stop) break;
+    LOFF.run.i=k+1; libSeriesRefresh();
+    try{ var got=await libFetchNet(todo[k],null,true); if(await libOffPut(todo[k].id,got.u,got.data)) ok++; else { fail++; break; } }
+    catch(e){ fail++; if(!navigator.onLine||(e&&e.code==="server_unavailable")) break; }
+  }
+  LOFF.run=null; libSeriesRefresh(); if(S.tab==="library") renderLibrary();
+  toast(fail?("Saved "+ok+". Some books didn’t save. Tap Save all again."):(ok+(ok===1?" book":" books")+" saved for offline."));
+}
+function libOffHtml(b){
+  var cs=(b.chapters||[]).filter(function(c){ return !c.tooBig; }), have=cs.filter(function(c){ return libOffHas(c.id); }).length, R=LOFF.run;
+  if(R&&R.id===b.id) return '<div class="ls-off"><span class="ls-offt">Saving '+R.i+' of '+R.n+'…</span><button type="button" class="linkbtn" data-act="ls-stop">Stop</button></div>';
+  if(cs.length&&have===cs.length) return '<div class="ls-off"><span class="ls-offt"><b class="ls-ck" aria-hidden="true">✓</b> All saved for offline · '+libMb(libOffBytes(cs.map(function(c){ return c.id; })))+'</span><button type="button" class="linkbtn" data-act="ls-rm">'+(LOFF.rm===b.id?'Tap again to remove':'Remove')+'</button></div>';
+  return '<div class="ls-off"><span class="ls-offt">'+(have?have+' of '+cs.length+' saved for offline':'Read these without internet')+'</span><button type="button" class="btn small" data-act="ls-save">Save all</button>'+(have?'<button type="button" class="linkbtn" data-act="ls-rm">'+(LOFF.rm===b.id?'Tap again to remove':'Remove')+'</button>':'')+'</div>';
+}
+function libSeriesRefresh(){ var S0=LIB.sheet; if(!S0) return; var sc=S0.el.querySelector(".ls-list"), st=sc?sc.scrollTop:0; S0.el.innerHTML=libSeriesHtml(S0.b); sc=S0.el.querySelector(".ls-list"); if(sc) sc.scrollTop=st; }
+window.addEventListener("online",function(){ if(LIB.err||LIB.offline){ LIB.offline=false; libLoad(true); } if(S.tab==="library") renderLibrary(); });
+window.addEventListener("offline",function(){ if(S.tab==="library") renderLibrary(); if(LIB.sheet) libSeriesRefresh(); });
 /* Oct 30: the book loader is the same spinning 言 notebook as Home's loader, so the app feels like one piece */
 function libLoadHtml(jp,en,bar){
   return '<div class="loader lr-load" aria-label="Loading"><div class="ld-spin" aria-hidden="true"><div class="ld-bob"><div class="ld-b3"><span class="f front"><i>言</i></span><span class="f back"></span><span class="f spine"></span><span class="f edge"></span><span class="f top"></span><span class="f bot"></span></div></div><span class="ld-shadow"></span></div>'+
