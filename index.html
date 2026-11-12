@@ -2002,6 +2002,25 @@ body.lib-open{overflow:hidden}
 .lr-gph{display:grid;gap:1px;width:100%;padding:8px 2px;border:0;background:none;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
 .lr-gph b{font-family:var(--serif);font-size:1.02rem}.lr-gph span{font-size:.84rem;color:var(--muted)}
 .lr-gpb{display:grid;gap:4px;padding:0 2px 10px}
+/* Book view (Nov 11): pages turn like a book, two side by side in landscape */
+.lr-btn.lr-jisho{width:auto;min-width:44px;padding:0 9px;font-family:var(--serif);font-weight:700;font-size:.98rem}
+.lr-body.book{display:flex;padding:10px 0 calc(118px + env(safe-area-inset-bottom,0px))}
+.lib-reader.desk>.lr-body.book{padding:14px 0 18px}
+.lr-body.book.fit{overflow:hidden;touch-action:none}
+.lr-book{position:relative;display:block;margin:auto;flex:none;gap:0;padding:0;min-width:0}
+.lr-book .lr-page{position:absolute;visibility:hidden}
+.lr-book .lr-page.on{visibility:visible}
+.lr-book.turning .lr-page,.lr-book.turning::after{visibility:hidden}
+.lr-book.two::after{content:"";position:absolute;top:0;bottom:0;left:50%;width:44px;margin-left:-22px;background:linear-gradient(90deg,rgba(0,0,0,0),rgba(0,0,0,.1),rgba(0,0,0,0));pointer-events:none;z-index:5}
+.lr-curl{position:absolute;z-index:8;pointer-events:none}
+.lr-book.bump-r{animation:lrBumpR .34s ease}.lr-book.bump-l{animation:lrBumpL .34s ease}
+@keyframes lrBumpR{40%{transform:translateX(-10px)}}@keyframes lrBumpL{40%{transform:translateX(10px)}}
+.lr-turn{position:absolute;top:50%;z-index:9;transform:translateY(-50%);width:40px;height:72px;border:0;border-radius:12px;background:transparent;color:var(--muted);font-size:1.9rem;line-height:1;cursor:pointer;display:none;place-items:center;opacity:.5;transition:opacity .2s,background .2s}
+.lr-turn.prev{left:4px}.lr-turn.next{right:4px}
+.lr-turn:hover{opacity:1;background:var(--surface)}
+.lr-turn:disabled{display:none!important}
+@media (hover:hover){.lr-body.book .lr-turn{display:grid}}
+.lib-reader[data-tool="hl"] .lr-body.book .lr-turn,.lib-reader[data-tool="pen"] .lr-body.book .lr-turn,.lib-reader[data-tool="erase"] .lr-body.book .lr-turn{display:grid;opacity:.7}
 
 /* Desktop Home, layout B3 (Oct 30). Only used at 1,100px and wider. */
 @media (min-width:1100px){body[data-tab="add"] main.wrap{max-width:1240px}}
@@ -5801,7 +5820,8 @@ async function libOpen(id){
   libClose(true);
   var R=document.createElement("div"); R.className="lib-reader"; R.setAttribute("role","dialog"); R.setAttribute("aria-modal","true"); R.setAttribute("aria-label",b.name);
   R.innerHTML='<div class="lr-bar"><button class="lr-btn" data-act="lr-close" aria-label="Close book" title="Close book">‹</button><span class="lr-t" title="'+esc(b.name)+'">'+esc(libTitle(b.name).t)+'</span><span class="lr-pg" id="lr-pg" aria-live="polite"></span>'+
-    '<button class="lr-btn" data-act="lr-find" aria-label="Search your words" title="Search your words"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg></button>'+
+    '<button class="lr-btn lr-mode" data-act="lr-mode" aria-label="'+(libBook()?'Scroll view':'Book view')+'" title="'+(libBook()?'Scroll view':'Book view')+'">'+(libBook()?LR_ICO.scroll:LR_ICO.book)+'</button>'+
+    '<button class="lr-btn lr-jisho" data-act="lr-find" aria-label="Look up a word (辞書)" title="Look up a word"><span lang="ja">辞書</span></button>'+
     '<button class="lr-btn" data-act="lr-zoom" data-d="-1" aria-label="Zoom out" title="Zoom out">−</button><button class="lr-btn" data-act="lr-zoom" data-d="1" aria-label="Zoom in" title="Zoom in">＋</button><button class="lr-btn lr-full" data-act="lr-full" aria-pressed="false" aria-label="Full screen" title="Full screen"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4"/></svg></button></div>'+
     '<div class="lr-body" id="lr-body"><div class="lr-msg" id="lr-msg" role="status">'+libLoadHtml("本(ほん)を開(ひら)いています","Opening your book…",true)+'</div></div><div class="lr-dock" id="lr-dock" hidden></div><aside class="lr-side" id="lr-side" aria-label="Study tools">'+libSideHtml()+'</aside>';
   document.body.appendChild(R); document.body.classList.add("lib-open"); R.classList.toggle("desk",jWide());
@@ -5834,6 +5854,8 @@ async function libOpen(id){
 }
 function libLayout(){
   var O=LIB.open, body=$("#lr-body"); if(!O||!O.sizes||!body) return;
+  if(libBook()) return libBookLayout();
+  body.classList.remove("book","fit"); O.sp=null;
   var W=Math.round(Math.max(200,Math.min(body.clientWidth-24,900))*LIB.zoom); O.W=W; O.bw=body.clientWidth;
   if(O.io) O.io.disconnect();
   body.innerHTML='<div class="lr-pages">'+O.sizes.map(function(s,i){ return '<div class="lr-page" data-n="'+(i+1)+'" style="width:'+W+'px;height:'+Math.round(W*s.h/s.w)+'px"><span class="lr-n">'+(i+1)+'</span></div>'; }).join("")+'</div>';
@@ -5841,6 +5863,226 @@ function libLayout(){
   body.querySelectorAll(".lr-page").forEach(function(d){ O.io.observe(d); });
   body.onscroll=function(){ libSelHide(); clearTimeout(O.st); O.st=setTimeout(libSavePos,150); };
 }
+/* ---------- Book view (Nov 11): pages turn like a book instead of scrolling. A page curl follows your finger (or the mouse
+   from the page edge); tap the outer edge of the page, use the arrow keys or the side arrows to turn. Landscape shows two
+   pages side by side, with the first page alone like a cover. Scroll view is one tap away in the bar and is remembered on
+   this device (kc-lib-mode). While a page turns, small copies of the pages are used, then the sharp pages come back. ---------- */
+LIB.mode=recall("kc-lib-mode")||"book";
+var LR_ICO={
+  book:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.5C10 5 7 4.5 3 5v13c4-.5 7 0 9 1.5 2-1.5 5-2 9-1.5V5c-4-.5-7 0-9 1.5Z"/><path d="M12 6.5v13"/></svg>',
+  scroll:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="8" rx="1.5"/><rect x="6" y="13.5" width="12" height="8" rx="1.5"/></svg>'
+};
+function libBook(){ return LIB.mode==="book"; }
+function libSetMode(m){
+  var O=LIB.open; if(!O||LIB.turn) return; var cur=libCurPage();
+  LIB.mode=m; store("kc-lib-mode",m); libSelHide();
+  var b=O.el.querySelector('[data-act="lr-mode"]'); if(b){ var t=m==="book"?"Scroll view":"Book view"; b.innerHTML=m==="book"?LR_ICO.scroll:LR_ICO.book; b.title=t; b.setAttribute("aria-label",t); }
+  if(!O.sizes) return; libLayout(); libGo(cur); libSavePos();
+}
+function libSpreads(n,two){
+  var out=[], p;
+  if(!two){ for(p=1;p<=n;p++) out.push([p,0]); return out; }
+  out.push([0,1]); for(p=2;p<=n;p+=2) out.push([p,p+1<=n?p+1:0]); return out;
+}
+function libBookLayout(){
+  var O=LIB.open, body=$("#lr-body"); if(!O||!O.sizes||!body) return;
+  var keep=O.sp?libCurPage():(O.bpage||1);
+  if(O.io){ O.io.disconnect(); O.io=null; }
+  body.classList.add("book"); body.scrollTop=0; body.scrollLeft=0;
+  var cs=getComputedStyle(body), aw=body.clientWidth-24, ah=body.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom)-8;
+  var two=body.clientWidth>=700&&body.clientWidth>body.clientHeight*1.1&&O.sizes.length>1, cols=two?2:1;
+  var r=0; O.sizes.forEach(function(s){ r=Math.max(r,s.h/s.w); }); r=r||1.414;
+  var W=Math.max(120,Math.floor(Math.min(aw/cols,ah/r)));
+  W=Math.round(W*LIB.zoom); var H=Math.round(W*r);
+  O.W=W; O.H=H; O.two=two; O.bw=body.clientWidth; O.bh=body.clientHeight;
+  O.sp=libSpreads(O.sizes.length,two); O.si=0; O.slot={};
+  O.sp.forEach(function(sp,i){ if(sp[0]) O.slot[sp[0]]={x:0,si:i}; if(sp[1]) O.slot[sp[1]]={x:two?W:0,si:i}; });
+  body.innerHTML='<div class="lr-pages lr-book'+(two?' two':'')+'" style="width:'+(W*cols)+'px;height:'+H+'px">'+O.sizes.map(function(s,i){
+      var n=i+1, ph=Math.round(W*s.h/s.w), sl=O.slot[n];
+      return '<div class="lr-page" data-n="'+n+'" style="width:'+W+'px;height:'+ph+'px;left:'+sl.x+'px;top:'+Math.round((H-ph)/2)+'px"><span class="lr-n">'+n+'</span></div>'; }).join("")+
+    '</div><button type="button" class="lr-turn prev" data-act="lr-turn" data-d="-1" aria-label="Previous page" title="Previous page">‹</button><button type="button" class="lr-turn next" data-act="lr-turn" data-d="1" aria-label="Next page" title="Next page">›</button>';
+  body.classList.toggle("fit",LIB.zoom<=1.001);
+  body.onscroll=function(){ libSelHide(); };
+  O.si=(O.slot[Math.min(keep,O.sizes.length)]||{si:0}).si; libBookShow();
+}
+function libBookPage(n){ var body=$("#lr-body"); return body&&body.querySelector('.lr-page[data-n="'+n+'"]'); }
+function libBookShow(){
+  var O=LIB.open, body=$("#lr-body"); if(!O||!O.sp||!body) return;
+  var on=O.sp[O.si]||[0,0]; O.bpage=on[0]||on[1]||1;
+  body.querySelectorAll(".lr-page").forEach(function(d){
+    var n=+d.dataset.n, si=(O.slot[n]||{}).si, far=Math.abs(si-O.si);
+    d.classList.toggle("on",si===O.si);
+    if(far<=1) libRender(d); else if(far>2) libUnrender(d);
+  });
+  body.querySelectorAll(".lr-turn").forEach(function(b){ b.disabled=+b.dataset.d<0?O.si<=0:O.si>=O.sp.length-1; });
+}
+function libBookGo(n){ var O=LIB.open; if(!O||!O.sp) return; var sl=O.slot[Math.max(1,Math.min(O.sizes.length,n))]; if(!sl) return; O.si=sl.si; libBookShow(); libSelHide(); }
+function libBump(dir){ var st=$("#lr-body")&&$("#lr-body").querySelector(".lr-book"); if(!st) return; st.classList.remove("bump-l","bump-r"); void st.offsetWidth; st.classList.add(dir>0?"bump-r":"bump-l"); }
+
+/* the curl: one canvas over the book. Pages are drawn from small copies; the folded part is the page mirrored across the
+   fold line, with its back (the next page) on it, soft shadows on both sides of the fold. */
+function libSnap(n){
+  var O=LIB.open; if(!n) return null; var d=libBookPage(n); if(!d) return null;
+  var w=O.W, h=d.offsetHeight, k=Math.min(window.devicePixelRatio||1,1.5), c=document.createElement("canvas");
+  c.width=Math.max(1,Math.round(w*k)); c.height=Math.max(1,Math.round(h*k)); var g=c.getContext("2d");
+  g.fillStyle="#fff"; g.fillRect(0,0,c.width,c.height);
+  var main=d.querySelector("canvas:not(.lr-ink)"), ink=d.querySelector("canvas.lr-ink");
+  if(main&&main.width) g.drawImage(main,0,0,c.width,c.height);
+  else { g.fillStyle="#9aa09a"; g.font=(14*k)+"px sans-serif"; g.textAlign="center"; g.fillText(String(n),c.width/2,c.height/2); }
+  if(ink&&ink.width) g.drawImage(ink,0,0,c.width,c.height);
+  return {c:c,y:d.offsetTop,h:h,x:(O.slot[n]||{}).x||0};
+}
+function libClipHalf(poly,M,nv,side){
+  var out=[], f=function(p){ return ((p[0]-M[0])*nv[0]+(p[1]-M[1])*nv[1])*side; };
+  for(var i=0;i<poly.length;i++){
+    var a=poly[i], b=poly[(i+1)%poly.length], fa=f(a), fb=f(b);
+    if(fa<=0) out.push(a);
+    if((fa<0&&fb>0)||(fa>0&&fb<0)){ var t=fa/(fa-fb); out.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]); }
+  }
+  return out;
+}
+function libPath(g,poly){ g.beginPath(); poly.forEach(function(p,i){ if(i) g.lineTo(p[0],p[1]); else g.moveTo(p[0],p[1]); }); g.closePath(); }
+/* T: {g,k,ox,oy,s (spine x),W,lf (leaf),bk (its back),under:[pages],C (corner),P (finger corner),two} */
+function libCurlDraw(T){
+  var g=T.g, W=T.W, s=T.s, L=T.lf, cv=g.canvas;
+  g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,cv.width,cv.height);
+  g.setTransform(T.k,0,0,T.k,T.ox*T.k,T.oy*T.k);
+  T.under.forEach(function(u){ if(u) g.drawImage(u.c,u.x,u.y,W,u.h); });
+  var C=T.C, P=T.P, ly=L.y, lh=L.h;
+  /* paper doesn't stretch: keep the corner within reach of both spine ends */
+  var B0=[s,C[1]], T0=[s,C[1]===ly?ly+lh:ly], dg=Math.sqrt(W*W+lh*lh);
+  var dx=P[0]-B0[0], dy=P[1]-B0[1], dd=Math.sqrt(dx*dx+dy*dy); if(dd>W){ P=[B0[0]+dx/dd*W,B0[1]+dy/dd*W]; }
+  dx=P[0]-T0[0]; dy=P[1]-T0[1]; dd=Math.sqrt(dx*dx+dy*dy); if(dd>dg){ P=[T0[0]+dx/dd*dg,T0[1]+dy/dd*dg]; }
+  var vx=C[0]-P[0], vy=C[1]-P[1], vl=Math.sqrt(vx*vx+vy*vy), leaf=[[s,ly],[s+W,ly],[s+W,ly+lh],[s,ly+lh]];
+  if(vl<0.5){ g.drawImage(L.c,s,ly,W,lh); if(T.two) libGutter(g,s,T); return; }
+  var nv=[vx/vl,vy/vl], M=[(C[0]+P[0])/2,(C[1]+P[1])/2];
+  var keep=libClipHalf(leaf,M,nv,1), fold=libClipHalf(leaf,M,nv,-1);
+  if(keep.length>2){ g.save(); libPath(g,keep); g.clip(); g.drawImage(L.c,s,ly,W,lh); g.restore(); }
+  if(T.two) libGutter(g,s,T);
+  if(fold.length<3) return;
+  var far=0; fold.forEach(function(p){ far=Math.max(far,(p[0]-M[0])*nv[0]+(p[1]-M[1])*nv[1]); }); far=Math.max(far,1);
+  /* shadow on the page underneath, along the fold */
+  g.save(); libPath(g,fold); g.clip();
+  var sl=Math.min(far,60), gr=g.createLinearGradient(M[0],M[1],M[0]+nv[0]*sl,M[1]+nv[1]*sl);
+  gr.addColorStop(0,"rgba(0,0,0,.28)"); gr.addColorStop(1,"rgba(0,0,0,0)"); g.fillStyle=gr; g.fillRect(s-W,ly-lh,W*3,lh*3); g.restore();
+  /* the flap: fold mirrored across the fold line */
+  var a=1-2*nv[0]*nv[0], b=-2*nv[0]*nv[1], d=1-2*nv[1]*nv[1], mn=2*(M[0]*nv[0]+M[1]*nv[1]), e=mn*nv[0], f=mn*nv[1];
+  var flap=fold.map(function(p){ return [a*p[0]+b*p[1]+e,b*p[0]+d*p[1]+f]; });
+  g.save(); g.shadowColor="rgba(0,0,0,.28)"; g.shadowBlur=16*T.k; g.shadowOffsetX=0; g.shadowOffsetY=2; g.fillStyle="#fbfaf6"; libPath(g,flap); g.fill(); g.restore();
+  g.save(); libPath(g,flap); g.clip();
+  g.transform(a,b,b,d,e,f); g.translate(2*s+W,0); g.scale(-1,1);
+  if(T.bk) g.drawImage(T.bk.c,s,T.bk.y,W,T.bk.h);
+  else { g.globalAlpha=0.08; g.drawImage(L.c,s,ly,W,lh); g.globalAlpha=1; }
+  g.restore();
+  g.save(); libPath(g,flap); g.clip();
+  var gf=g.createLinearGradient(M[0],M[1],M[0]-nv[0]*far,M[1]-nv[1]*far);
+  gf.addColorStop(0,"rgba(0,0,0,.16)"); gf.addColorStop(0.18,"rgba(255,255,255,.10)"); gf.addColorStop(0.55,"rgba(255,255,255,0)"); gf.addColorStop(1,"rgba(0,0,0,.08)");
+  g.fillStyle=gf; g.fillRect(s-2*W,ly-lh,W*4,lh*3); g.restore();
+}
+function libGutter(g,s,T){ var gr=g.createLinearGradient(s-22,0,s+22,0); gr.addColorStop(0,"rgba(0,0,0,0)"); gr.addColorStop(0.5,"rgba(0,0,0,.10)"); gr.addColorStop(1,"rgba(0,0,0,0)"); g.fillStyle=gr; g.fillRect(s-22,T.lf.y,44,T.lf.h); }
+/* set up a turn from spread i to spread i+1 (dir 1). A turn back is the same curl played in reverse. */
+function libCurlStart(i,top){
+  var O=LIB.open, body=$("#lr-body"), st=body&&body.querySelector(".lr-book"); if(!O||!st) return null;
+  var A=O.sp[i], B=O.sp[i+1]; if(!A||!B) return null;
+  var lfN=O.two?A[1]:A[0]; if(!lfN) return null;
+  var lf=libSnap(lfN), bk=O.two?libSnap(B[0]):null, under=O.two?[libSnap(A[0]),libSnap(B[1])]:[libSnap(B[0])];
+  var W=O.W, s=O.two?W:0, padX=O.two?24:W+24, padY=60, k=Math.min(window.devicePixelRatio||1,2);
+  var cv=document.createElement("canvas"); cv.className="lr-curl"; cv.setAttribute("aria-hidden","true");
+  var cw=st.offsetWidth+padX+24, ch=st.offsetHeight+padY*2;
+  cv.width=Math.round(cw*k); cv.height=Math.round(ch*k); cv.style.width=cw+"px"; cv.style.height=ch+"px"; cv.style.left=(-padX)+"px"; cv.style.top=(-padY)+"px";
+  st.appendChild(cv); st.classList.add("turning");
+  var C=[s+W,top?lf.y:lf.y+lf.h];
+  return {i:i,cv:cv,st:st,T:{g:cv.getContext("2d"),k:k,ox:padX,oy:padY,s:s,W:W,lf:lf,bk:bk,under:under,C:C,P:C.slice(),two:O.two},E:[s-W,C[1]]};
+}
+function libCurlEnd(cu){ if(!cu) return; cu.cv.width=0; cu.cv.height=0; cu.cv.remove(); cu.st.classList.remove("turning"); }
+function libEase(t){ return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2; }
+function libCurlAnim(cu,from,to,ms,lift,done){
+  var t0=performance.now(), lh=cu.T.lf.h, up=cu.T.C[1]===cu.T.lf.y?1:-1;
+  function step(now){
+    var t=Math.min(1,(now-t0)/ms), e=libEase(t);
+    cu.T.P=[from[0]+(to[0]-from[0])*e, from[1]+(to[1]-from[1])*e+up*Math.sin(Math.PI*e)*lh*lift];
+    libCurlDraw(cu.T);
+    if(t<1) cu.raf=requestAnimationFrame(step); else done();
+  }
+  cu.raf=requestAnimationFrame(step);
+}
+function libReduced(){ return !!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches); }
+/* turn one spread: dir 1 forward, -1 back */
+function libTurn(dir){
+  var O=LIB.open; if(!O||!O.sp||LIB.turn) return;
+  var to=O.si+dir; if(to<0||to>=O.sp.length){ libBump(dir); return; }
+  libSelHide(); try{ window.getSelection().removeAllRanges(); }catch(e){}
+  var fin=function(){ O.si=to; libBookShow(); libSavePos(); };
+  if(libReduced()){ fin(); return; }
+  var cu=libCurlStart(dir>0?O.si:to,false); if(!cu){ fin(); return; }
+  LIB.turn=cu; libCurlDraw(cu.T);
+  var a=dir>0?cu.T.C:cu.E, b=dir>0?cu.E:cu.T.C;
+  if(dir<0){ O.si=to; libBookShow(); }
+  libCurlAnim(cu,a,b,520,0.16,function(){ if(dir>0) fin(); else libSavePos(); libCurlEnd(cu); LIB.turn=null; });
+}
+/* finger and mouse: drag to curl, tap the outer edge to turn, wheel or touchpad swipe to turn */
+(function(){
+  var G=null;
+  function inBook(e){ var b=e.target.closest&&e.target.closest("#lr-body.book"); return b&&LIB.open&&LIB.open.sp?b:null; }
+  document.addEventListener("pointerdown",function(e){
+    var body=inBook(e); if(!body||LIB.turn||!e.isPrimary||(e.button&&e.button!==0)) return;
+    var t=LIB.tool; if(t!=="read"&&t!=="add") return;
+    if(e.target.closest("[data-act],.lr-card,.lr-sheet,.lr-pin")) return;
+    var st=body.querySelector(".lr-book"), r=st.getBoundingClientRect(), O=LIB.open;
+    var edge=e.clientX<r.left+r.width*0.12||e.clientX>r.right-r.width*0.12;
+    G={id:e.pointerId,x0:e.clientX,y0:e.clientY,t0:performance.now(),body:body,r:r,touch:e.pointerType!=="mouse",edge:edge,cu:null,dir:0,lx:e.clientX,lt:performance.now(),vx:0,top:e.clientY<r.top+r.height/2};
+  },true);
+  document.addEventListener("pointermove",function(e){
+    if(!G||e.pointerId!==G.id||window.KC_PINCHING) return;
+    var dx=e.clientX-G.x0, dy=e.clientY-G.y0, O=LIB.open; if(!O||!O.sp){ G=null; return; }
+    if(!G.cu){
+      if(!G.body.classList.contains("fit")) return;
+      if(Math.abs(dx)<12||Math.abs(dx)<Math.abs(dy)*1.2) { if(Math.abs(dy)>24) G=null; return; }
+      if(!G.touch&&!G.edge) { G=null; return; }
+      var s=window.getSelection&&window.getSelection(); if(s&&!s.isCollapsed&&String(s).trim()) { G=null; return; }
+      G.dir=dx<0?1:-1; var i=G.dir>0?O.si:O.si-1;
+      if(i<0||i+1>=O.sp.length){ libBump(G.dir); G=null; return; }
+      libSelHide(); G.cu=libCurlStart(i,G.top); if(!G.cu){ G=null; return; }
+      LIB.turn=G.cu; if(G.dir<0){ O.si=i; libBookShow(); }
+      try{ e.target.setPointerCapture&&G.body.setPointerCapture(e.pointerId); }catch(err){}
+    }
+    var now=performance.now(); G.vx=(e.clientX-G.lx)/Math.max(1,now-G.lt); G.lx=e.clientX; G.lt=now;
+    var cu=G.cu, base=G.dir>0?cu.T.C:cu.E, sc=O.two?1.15:1.6;
+    cu.T.P=[base[0]+dx*sc, base[1]+dy*0.5];
+    libCurlDraw(cu.T);
+  },true);
+  function up(e){
+    if(!G||e.pointerId!==G.id) return; var g=G; G=null; var O=LIB.open;
+    if(!g.cu){
+      /* a tap on the outer part of the page turns it (Read only, not on text you are selecting) */
+      if(e.type!=="pointerup"||LIB.tool!=="read"||performance.now()-g.t0>350||Math.abs(e.clientX-g.x0)+Math.abs(e.clientY-g.y0)>10) return;
+      var s=window.getSelection&&window.getSelection(); if(s&&!s.isCollapsed&&String(s).trim()) return;
+      var bw=g.body.getBoundingClientRect(), x=(e.clientX-bw.left)/bw.width;
+      if(x<0.2) libTurn(-1); else if(x>0.8) libTurn(1);
+      return;
+    }
+    LIB.noClick=true; setTimeout(function(){ LIB.noClick=false; },400);
+    var cu=g.cu, T=cu.T, P=T.P.slice(), mid=T.s+T.W*(g.dir>0?0.25:-0.25);
+    var go=g.dir>0?(g.vx<-0.35||(g.vx<0.2&&P[0]<mid)):(g.vx>0.35||(g.vx>-0.2&&P[0]>mid));
+    if(e.type==="pointercancel") go=false;
+    var target=(g.dir>0)===go?cu.E:T.C;
+    libCurlAnim(cu,P,target,go?320:260,0,function(){
+      if(O&&LIB.open===O){ if(g.dir>0&&go) O.si=cu.i+1; if(g.dir<0&&!go) O.si=cu.i+1; libBookShow(); libSavePos(); }
+      libCurlEnd(cu); LIB.turn=null;
+    });
+  }
+  document.addEventListener("pointerup",up,true);
+  document.addEventListener("pointercancel",up,true);
+  var acc=0, last=0;
+  document.addEventListener("wheel",function(e){
+    var body=inBook(e); if(!body||!body.classList.contains("fit")||e.ctrlKey) return;
+    if(e.target.closest(".lr-card,.lr-sheet")) return;
+    e.preventDefault(); var now=performance.now(); if(now-last<650){ return; }
+    var d=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY; acc+=d;
+    if(Math.abs(acc)>60){ var dir=acc>0?1:-1; acc=0; last=now; libTurn(dir); }
+    clearTimeout(libBook.wt); libBook.wt=setTimeout(function(){ acc=0; },200);
+  },{passive:false});
+})();
 function libRender(d){
   var O=LIB.open; if(!O||!O.doc||d._r) return; d._r=1; var W=O.W;
   O.doc.getPage(+d.dataset.n).then(function(pg){
@@ -5866,7 +6108,8 @@ function libText(d,pg,scale){
 function libSelHide(){ var x=document.querySelector(".lr-sel"); if(x) x.remove(); }
 function libSelText(){ var s=window.getSelection&&window.getSelection(); if(!s||s.isCollapsed) return ""; var n=s.anchorNode; n=n&&(n.nodeType===1?n:n.parentElement); if(!n||!n.closest||!n.closest(".lib-reader .textLayer")) return ""; return String(s).replace(/\s+/g," ").trim(); }
 function libSelShow(){
-  libSelHide(); if(LIB.tool!=="read"||LIB.card) return; var t=libSelText(); if(!t||!LIB.open) return;
+  libSelHide(); if(LIB.tool!=="read"||LIB.turn) return; var t=libSelText(); if(!t||!LIB.open) return;
+  var C=LIB.card; if(C&&C.st==="search"&&t.length<=40&&C.q!==t){ C.q=t; libCardRender(); }
   var sel=window.getSelection(), r=sel.getRangeAt(0).getBoundingClientRect(); if(!r.width&&!r.height) return;
   var an=sel.anchorNode, span=an&&(an.nodeType===1?an:an.parentElement), sp=span&&span.closest&&span.closest(".textLayer span");
   var m=document.createElement("div"); m.className="lr-sel"; m.setAttribute("role","toolbar");
@@ -5891,15 +6134,16 @@ function libUnrender(d){
   d.innerHTML='<span class="lr-n">'+d.dataset.n+'</span>';
 }
 function libCurPage(){
+  var O=LIB.open; if(O&&O.sp){ var sp=O.sp[O.si]||[1]; return sp[0]||sp[1]||1; }
   var body=$("#lr-body"); if(!body) return 1;
   var mid=body.scrollTop+body.clientHeight*0.35, ds=body.querySelectorAll(".lr-page"), n=1;
   for(var i=0;i<ds.length;i++){ if(ds[i].offsetTop<=mid) n=i+1; else break; }
   return n;
 }
-function libGo(n){ var body=$("#lr-body"), d=body&&body.querySelector('.lr-page[data-n="'+n+'"]'); if(d) body.scrollTop=Math.max(0,d.offsetTop-12); }
+function libGo(n){ if(LIB.open&&LIB.open.sp) return libBookGo(n); var body=$("#lr-body"), d=body&&body.querySelector('.lr-page[data-n="'+n+'"]'); if(d) body.scrollTop=Math.max(0,d.offsetTop-12); }
 function libSavePos(){
   var O=LIB.open; if(!O||!O.sizes) return;
-  var n=libCurPage(), pg=$("#lr-pg"); if(pg) pg.textContent=n+" / "+O.sizes.length;
+  var n=libCurPage(), pg=$("#lr-pg"), sp=O.sp&&O.sp[O.si], lab=sp&&sp[0]&&sp[1]?sp[0]+"–"+sp[1]:String(n); if(pg) pg.textContent=lab+" / "+O.sizes.length;
   var all=libPos(); all[O.b.id]={p:n,n:O.sizes.length,at:Date.now()}; store("kc-lib-pos",all);
 }
 function libZoomBtns(){
@@ -5955,6 +6199,7 @@ function libZoom(dir){
 function libClose(quiet){
   var O=LIB.open; if(!O) return;
   if(O.sizes) libSavePos();
+  if(LIB.turn){ cancelAnimationFrame(LIB.turn.raf); LIB.turn=null; }
   libMarksFlush(); libCardClose(true); libNoteClose();
   clearTimeout(O.st); if(O.io) O.io.disconnect();
   if(O.doc){ try{ O.doc.destroy(); }catch(e){} }
@@ -5973,6 +6218,12 @@ document.addEventListener("keydown",function(e){
   var a=document.activeElement; if(a&&(/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)||a.isContentEditable)) return;
   var box=LIB.open?$("#lr-body"):(LIB.sheet&&LIB.sheet.el.querySelector(".ls-list")); if(!box) return;
   var h=box.clientHeight, k=e.key, dy=null;
+  if(LIB.open&&LIB.open.sp&&!LIB.turn){
+    var zoomed=box.scrollHeight>box.clientHeight+2||box.scrollWidth>box.clientWidth+2;
+    var nx=k==="ArrowRight"||k==="PageDown"||(k===" "&&!e.shiftKey)||(!zoomed&&k==="ArrowDown"), pv=k==="ArrowLeft"||k==="PageUp"||(k===" "&&e.shiftKey)||(!zoomed&&k==="ArrowUp");
+    if(nx||pv){ e.preventDefault(); libTurn(nx?1:-1); return; }
+    if(k==="Home"||k==="End"){ e.preventDefault(); libGo(k==="Home"?1:LIB.open.sizes.length); libSavePos(); return; }
+  }
   if(k==="ArrowDown") dy=90; else if(k==="ArrowUp") dy=-90;
   else if(k==="PageDown"||(k===" "&&!e.shiftKey)) dy=h*0.85; else if(k==="PageUp"||(k===" "&&e.shiftKey)) dy=-h*0.85;
   else if(k==="Home"){ e.preventDefault(); box.scrollTo({top:0,behavior:"smooth"}); return; }
@@ -5982,7 +6233,7 @@ document.addEventListener("keydown",function(e){
 });
 document.addEventListener("keydown",function(e){ if(e.key!=="Escape") return; if(LIB.card&&!LIB.card.idle) libCardClose(); else if(LIB.note) libNoteClose(); else if(LIB.open) libClose(); else if(LIB.sheet) libSeriesClose(); });
 window.addEventListener("resize",function(){
-  var O=LIB.open, body=$("#lr-body"); if(!O||!O.sizes||!body||Math.abs(body.clientWidth-O.bw)<8) return;
+  var O=LIB.open, body=$("#lr-body"); if(!O||!O.sizes||!body||(Math.abs(body.clientWidth-O.bw)<8&&(!O.sp||Math.abs(body.clientHeight-(O.bh||0))<8))) return;
   clearTimeout(O.rt); O.rt=setTimeout(function(){ if(LIB.open!==O) return; var cur=libCurPage(); libLayout(); libGo(cur); },200);
 });
 
@@ -6025,12 +6276,17 @@ function libDock(){
 }
 function libTool(t){ LIB.tool=t; libSelHide(); if(t!=="read"){ try{ window.getSelection().removeAllRanges(); }catch(e){} } libDock(); }
 function libReaderClick(e){
+  if(LIB.noClick){ LIB.noClick=false; return; }
   var a=e.target.closest("[data-act]");
   if(!a){ if(LIB.tool==="add") libPick(e); return; }
   var act=a.dataset.act;
   if(act==="lr-close") libClose();
   else if(act==="lr-zoom") libZoom(+a.dataset.d);
-  else if(act==="lr-find"){ if(LIB.card&&LIB.card.st==="search") libCardClose(); else libCardOpen("","",libCurPage(),"search"); }
+  else if(act==="lr-find"){
+    if(libDesk()){ if(!LIB.card||LIB.card.st!=="search") libCardOpen("","",libCurPage(),"search"); var si=LIB.card&&LIB.card.el.querySelector("#lc-s"); if(si) si.focus({preventScroll:true}); }
+    else if(LIB.card&&LIB.card.st==="search") libCardClose(); else libCardOpen("","",libCurPage(),"search"); }
+  else if(act==="lr-mode") libSetMode(libBook()?"scroll":"book");
+  else if(act==="lr-turn") libTurn(+a.dataset.d);
   else if(act==="lt-tool") libTool(a.dataset.t);
   else if(act==="lt-hc"){ LIB.hc=a.dataset.c; store("kc-lib-hl",LIB.hc); libDock(); }
   else if(act==="lt-pc"){ LIB.pc=a.dataset.c; store("kc-lib-pen",LIB.pc); libDock(); }
@@ -6401,7 +6657,7 @@ function libSetDesk(){
   var O=LIB.open; if(!O) return; var was=O.el.classList.contains("desk"), now=jWide();
   O.el.classList.toggle("desk",now); libDockPlace();
   if(now!==was){ var c=LIB.card; if(c&&c.el) { c.el.remove(); LIB.card=null; O.el.classList.remove("has-sheet"); } }
-  if(now&&O.sizes){ libPanel(); if(!LIB.card) libCardOpen("","",libCurPage(),"search"); }
+  if(libDesk()&&O.sizes){ libPanel(); if(!LIB.card) libCardOpen("","",libCurPage(),"search"); }
 }
 function libPanel(){
   var tp=LIB.open&&LIB.open.el.querySelector("#lr-tp"); if(!tp) return;
