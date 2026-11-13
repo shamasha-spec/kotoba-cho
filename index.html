@@ -2002,6 +2002,27 @@ body.lib-open{overflow:hidden}
 .lr-gph{display:grid;gap:1px;width:100%;padding:8px 2px;border:0;background:none;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
 .lr-gph b{font-family:var(--serif);font-size:1.02rem}.lr-gph span{font-size:.84rem;color:var(--muted)}
 .lr-gpb{display:grid;gap:4px;padding:0 2px 10px}
+/* Next story (Nov 12) */
+.lr-end{position:absolute;inset:0;z-index:10;display:grid;place-items:center;padding:16px 16px 120px;background:var(--paper);animation:leIn .42s cubic-bezier(.22,.9,.24,1)}
+.lib-reader.desk .lr-end{padding-bottom:16px}
+.lr-end.out{animation:leOut .26s ease forwards}
+.lr-end.flow{position:static;inset:auto;width:min(520px,100%);padding:36px 0 20px;background:none;animation:none}
+@keyframes leIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+@keyframes leOut{to{opacity:0;transform:translateX(40px)}}
+@media (prefers-reduced-motion: reduce){.lr-end{animation:none}}
+.lr-end-in{width:min(460px,100%);display:grid;justify-items:center;gap:12px;text-align:center}
+.le-done{font-family:var(--serif);font-weight:700;font-size:2.4rem;color:var(--ink)}
+.le-sub{margin:0;color:var(--muted);font-size:.88rem}
+.le-next{display:flex;gap:16px;align-items:center;width:100%;text-align:left;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;cursor:pointer;transition:border-color .2s,box-shadow .25s}
+.le-next:hover{border-color:color-mix(in srgb,var(--matcha) 45%,var(--line));box-shadow:0 10px 22px -14px color-mix(in srgb,var(--matcha) 55%,transparent)}
+.le-next .lib-cover{width:64px;flex:none;padding:6px 6px 6px 12px}.le-next .lib-cover b{font-size:.6rem}
+.le-next .lib-cover .lc-sub,.le-next .lib-cover .lc-seal,.le-next .lib-cover .lc-mk,.le-next .lib-cover .lc-band{display:none}
+.le-txt{display:grid;gap:3px;min-width:0}.le-txt b{font-family:var(--serif);font-size:1.2rem}
+.le-k{font-size:.78rem;font-weight:700;color:var(--matcha)}.le-go{font-size:.85rem;font-weight:700}
+.le-hint{margin:0;font-size:.8rem;color:var(--muted)}
+.le-last{margin:0;font-size:1rem;line-height:2}
+.lib-reader.cont{animation:lrCont .35s ease}
+@keyframes lrCont{from{opacity:.4}to{opacity:1}}
 /* Offline books (Nov 12) */
 .lib-book{position:relative}
 .lib-ok{position:absolute;top:6px;right:6px;z-index:3;min-width:22px;height:22px;padding:0 6px;box-sizing:border-box;border-radius:11px;background:var(--matcha);color:#fff;font-size:.72rem;font-weight:700;display:grid;place-items:center;box-shadow:0 2px 6px -2px rgba(0,0,0,.35)}
@@ -5911,10 +5932,11 @@ function libLoadHtml(jp,en,bar){
 }
 function libLive(tok){ return !!(LIB.open&&LIB.open.tok===tok); }
 function libMsg(html){ var m=$("#lr-msg"); if(m) m.innerHTML=html; }
-async function libOpen(id){
+async function libOpen(id,cont){
   var b=libFind(id); if(!b||b.tooBig||b.series) return;
+  var keepTool=cont?LIB.tool:"read";
   libClose(true);
-  var R=document.createElement("div"); R.className="lib-reader"; R.setAttribute("role","dialog"); R.setAttribute("aria-modal","true"); R.setAttribute("aria-label",b.name);
+  var R=document.createElement("div"); R.className="lib-reader"+(cont?" cont":""); R.setAttribute("role","dialog"); R.setAttribute("aria-modal","true"); R.setAttribute("aria-label",b.name);
   R.innerHTML='<div class="lr-bar"><button class="lr-btn" data-act="lr-close" aria-label="Close book" title="Close book">‹</button><span class="lr-t" title="'+esc(b.name)+'">'+esc(libTitle(b.name).t)+'</span><span class="lr-pg" id="lr-pg" aria-live="polite"></span>'+
     '<button class="lr-btn lr-mode" data-act="lr-mode" aria-label="'+(libBook()?'Scroll view':'Book view')+'" title="'+(libBook()?'Scroll view':'Book view')+'">'+(libBook()?LR_ICO.scroll:LR_ICO.book)+'</button>'+
     '<button class="lr-btn lr-jisho" data-act="lr-find" aria-label="Look up a word (辞書)" title="Look up a word"><span lang="ja">辞書</span></button>'+
@@ -5922,7 +5944,7 @@ async function libOpen(id){
     '<div class="lr-body" id="lr-body"><div class="lr-msg" id="lr-msg" role="status">'+libLoadHtml("本(ほん)を開(ひら)いています","Opening your book…",true)+'</div></div><div class="lr-dock" id="lr-dock" hidden></div><aside class="lr-side" id="lr-side" aria-label="Study tools">'+libSideHtml()+'</aside>';
   document.body.appendChild(R); document.body.classList.add("lib-open"); R.classList.toggle("desk",jWide());
   var tok={}; LIB.open={b:b,el:R,tok:tok,back:document.activeElement};
-  LIB.tool="read"; LIB.marks={}; LIB.bookNotes=""; LIB.recent=[]; LIB.pgram={}; LIB.hist=[]; LIB.redo=[]; R.dataset.tool="read"; libDockPlace();
+  LIB.tool=keepTool; LIB.marks={}; LIB.bookNotes=""; LIB.recent=[]; LIB.pgram={}; LIB.hist=[]; LIB.redo=[]; R.dataset.tool=LIB.tool; libDockPlace();
   R.addEventListener("click",libReaderClick);
   libZoomBtns();
   setTimeout(function(){ var c=R.querySelector('[data-act="lr-close"]'); if(c) c.focus({preventScroll:true}); },60);
@@ -5941,7 +5963,8 @@ async function libOpen(id){
     var mk=await marksP; if(!libLive(tok)) return; LIB.marks=mk.m; LIB.bookNotes=mk.notes||"";
     LIB.open.sizes=sizes; libLayout(); libDock();
     if(libDesk()){ libPanel(); libCardOpen("","",1,"search"); }
-    var p=libPos()[b.id]; libGo(p&&p.p?Math.min(p.p,sizes.length):1);
+    var p=libPos()[b.id]; libGo(p&&p.p&&!(cont&&p.p>=p.n)?Math.min(p.p,sizes.length):1);
+    if(cont&&cont.focus&&R.classList.contains("desk")&&!R.classList.contains("focus")){ R.classList.add("focus"); var fb=R.querySelector('[data-act="lr-full"]'); if(fb){ fb.setAttribute("aria-pressed","true"); fb.title="Exit full screen"; fb.setAttribute("aria-label",fb.title); } if(LIB.card&&LIB.card.el){ LIB.card.el.remove(); LIB.card=null; R.classList.remove("has-sheet"); } libLayout(); libGo(p&&p.p&&p.p<p.n?p.p:1); }
     libSavePos();
   }catch(e){
     if(!libLive(tok)) return;
@@ -5957,7 +5980,8 @@ function libLayout(){
   body.innerHTML='<div class="lr-pages">'+O.sizes.map(function(s,i){ return '<div class="lr-page" data-n="'+(i+1)+'" style="width:'+W+'px;height:'+Math.round(W*s.h/s.w)+'px"><span class="lr-n">'+(i+1)+'</span></div>'; }).join("")+'</div>';
   O.io=new IntersectionObserver(function(ents){ ents.forEach(function(en){ if(en.isIntersecting) libRender(en.target); else libUnrender(en.target); }); },{root:body,rootMargin:"120% 0px"});
   body.querySelectorAll(".lr-page").forEach(function(d){ O.io.observe(d); });
-  body.onscroll=function(){ libSelHide(); clearTimeout(O.st); O.st=setTimeout(libSavePos,150); };
+  body.onscroll=function(){ libSelHide(); clearTimeout(O.st); O.st=setTimeout(libSavePos,150); if(O.b.parent&&body.scrollTop+body.clientHeight>body.scrollHeight-body.clientHeight*2.5) libPrefetch(); };
+  if(O.b.parent){ var ee=document.createElement("div"); ee.className="lr-end flow"; ee.innerHTML=libEndHtml(); body.querySelector(".lr-pages").appendChild(ee); }
 }
 /* ---------- Book view (Nov 11): pages turn like a book instead of scrolling. A page curl follows your finger (or the mouse
    from the page edge); tap the outer edge of the page, use the arrow keys or the side arrows to turn. Landscape shows two
@@ -6005,6 +6029,7 @@ function libBookPage(n){ var body=$("#lr-body"); return body&&body.querySelector
 function libBookShow(){
   var O=LIB.open, body=$("#lr-body"); if(!O||!O.sp||!body) return;
   var on=O.sp[O.si]||[0,0]; O.bpage=on[0]||on[1]||1;
+  if(O.b.parent&&O.si>=O.sp.length-3) libPrefetch();
   body.querySelectorAll(".lr-page").forEach(function(d){
     var n=+d.dataset.n, si=(O.slot[n]||{}).si, far=Math.abs(si-O.si);
     d.classList.toggle("on",si===O.si);
@@ -6015,6 +6040,36 @@ function libBookShow(){
 function libBookGo(n){ var O=LIB.open; if(!O||!O.sp) return; var sl=O.slot[Math.max(1,Math.min(O.sizes.length,n))]; if(!sl) return; O.si=sl.si; libBookShow(); libSelHide(); }
 function libBump(dir){ var st=$("#lr-body")&&$("#lr-body").querySelector(".lr-book"); if(!st) return; st.classList.remove("bump-l","bump-r"); void st.offsetWidth; st.classList.add(dir>0?"bump-r":"bump-l"); }
 
+/* Nov 12: stories in a series run on. Past the last page an end page slides in with the next story; turn again (swipe,
+   tap the edge, arrow key) and it opens right away, keeping full screen, the view and the tool. The next story is
+   downloaded in the background when you reach the last pages, so it opens without a wait. */
+function libSib(b,d){ var P=b&&b.parent, cs=P&&P.chapters; if(!cs) return null; var i=cs.findIndex(function(c){ return c.id===b.id; }); for(var k=i+d;k>=0&&k<cs.length;k+=d){ if(!cs[k].tooBig) return cs[k]; } return null; }
+function libEndHtml(){
+  var O=LIB.open, b=O.b, nx=libSib(b,1), P=b.parent, cs=P.chapters, i=cs.indexOf(b)+1;
+  return '<div class="lr-end-in"><div class="le-done" lang="ja">'+rubyText("おわり")+'</div><p class="le-sub">'+esc(libTitle(b.name).t)+' · '+i+' of '+cs.length+' in '+esc(libTitle(P.name).t)+'</p>'+
+    (nx?'<button type="button" class="le-next" data-act="le-next">'+libCover(nx)+'<span class="le-txt"><span class="le-k">Next story</span><b lang="ja">'+esc(libTitle(nx.name).t)+'</b><span class="le-go">Start reading ›</span></span></button><p class="le-hint">Turn the page to keep reading.</p>'
+       :'<p class="le-last" lang="ja">'+rubyText("最後(さいご)の本(ほん)です。お疲(つか)れ様(さま)でした！")+'</p>')+
+    '<button type="button" class="linkbtn" data-act="le-list">Story list</button></div>';
+}
+function libEndShow(){
+  var O=LIB.open; if(!O||!O.b.parent||O.endOn) return false;
+  var body=$("#lr-body"); if(!body) return false;
+  var all=libPos(); all[O.b.id]={p:O.sizes.length,n:O.sizes.length,at:Date.now()}; store("kc-lib-pos",all);
+  var el=document.createElement("div"); el.className="lr-end"; el.id="lr-end"; el.setAttribute("role","region"); el.setAttribute("aria-label","End of story");
+  el.innerHTML=libEndHtml(); body.appendChild(el); O.endOn=true; libSelHide();
+  var pg=$("#lr-pg"); if(pg) pg.textContent="おわり";
+  return true;
+}
+function libEndHide(){ var O=LIB.open; if(!O||!O.endOn) return; O.endOn=false; var el=$("#lr-end"); if(el){ el.classList.add("out"); setTimeout(function(){ el.remove(); },260); } libSavePos(); }
+function libNext(){
+  var O=LIB.open; if(!O) return; var nx=libSib(O.b,1);
+  if(!nx){ libBump(1); return; }
+  libOpen(nx.id,{focus:O.el.classList.contains("focus")});
+}
+function libPrefetch(){
+  var O=LIB.open; if(!O||O.pf||!navigator.onLine) return; var nx=libSib(O.b,1); if(!nx||LOFF.ids[nx.id]&&LOFF.ids[nx.id].u===nx.updated) return;
+  O.pf=true; libFetchNet(nx,null,true).then(function(got){ return libOffPut(nx.id,got.u,got.data); }).catch(function(){});
+}
 /* the curl: one canvas over the book. Pages are drawn from small copies; the folded part is the page mirrored across the
    fold line, with its back (the next page) on it, soft shadows on both sides of the fold. */
 function libSnap(n){
@@ -6106,7 +6161,9 @@ function libReduced(){ return !!(window.matchMedia&&matchMedia("(prefers-reduced
 /* turn one spread: dir 1 forward, -1 back */
 function libTurn(dir){
   var O=LIB.open; if(!O||!O.sp||LIB.turn) return;
-  var to=O.si+dir; if(to<0||to>=O.sp.length){ libBump(dir); return; }
+  if(O.endOn){ if(dir>0) libNext(); else libEndHide(); return; }
+  var to=O.si+dir; if(to>=O.sp.length&&libEndShow()) return;
+  if(to<0||to>=O.sp.length){ libBump(dir); return; }
   libSelHide(); try{ window.getSelection().removeAllRanges(); }catch(e){}
   var fin=function(){ O.si=to; libBookShow(); libSavePos(); };
   if(libReduced()){ fin(); return; }
@@ -6137,6 +6194,7 @@ function libTurn(dir){
       if(!G.touch&&!G.edge) { G=null; return; }
       var s=window.getSelection&&window.getSelection(); if(s&&!s.isCollapsed&&String(s).trim()) { G=null; return; }
       G.dir=dx<0?1:-1; var i=G.dir>0?O.si:O.si-1;
+      if(O.endOn||(G.dir>0&&i+1>=O.sp.length)){ G=null; LIB.noClick=true; setTimeout(function(){ LIB.noClick=false; },400); libTurn(dx<0?1:-1); return; }
       if(i<0||i+1>=O.sp.length){ libBump(G.dir); G=null; return; }
       libSelHide(); G.cu=libCurlStart(i,G.top); if(!G.cu){ G=null; return; }
       LIB.turn=G.cu; if(G.dir<0){ O.si=i; libBookShow(); }
@@ -6383,6 +6441,8 @@ function libReaderClick(e){
     else if(LIB.card&&LIB.card.st==="search") libCardClose(); else libCardOpen("","",libCurPage(),"search"); }
   else if(act==="lr-mode") libSetMode(libBook()?"scroll":"book");
   else if(act==="lr-turn") libTurn(+a.dataset.d);
+  else if(act==="le-next") libNext();
+  else if(act==="le-list") libClose();
   else if(act==="lt-tool") libTool(a.dataset.t);
   else if(act==="lt-hc"){ LIB.hc=a.dataset.c; store("kc-lib-hl",LIB.hc); libDock(); }
   else if(act==="lt-pc"){ LIB.pc=a.dataset.c; store("kc-lib-pen",LIB.pc); libDock(); }
