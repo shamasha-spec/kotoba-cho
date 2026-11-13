@@ -5589,6 +5589,7 @@ function mergeData(key,a,b){
   if(!a) return b; if(!b) return a;
   function mx(x,y){return Math.max(+x||0,+y||0);}
   var o;
+  if(key==="lib-pos"){ o={p:{}}; [b,a].forEach(function(s){ var P=(s&&s.p)||{}; Object.keys(P).forEach(function(id){ var x=P[id]; if(x&&(!o.p[id]||(+x.at||0)>(+o.p[id].at||0))) o.p[id]=x; }); }); return o; }
   if(key==="review-stats"){ o={w:{},m:{}};
     [a,b].forEach(function(s){ ["w","m"].forEach(function(f){ var src=(s&&s[f])||{}; Object.keys(src).forEach(function(k){ var p=o[f][k]||[0,0], q=src[k]||[0,0]; var newer=((p[0]||0)+(p[1]||0))>=((q[0]||0)+(q[1]||0))?p:q; o[f][k]=[mx(p[0],q[0]),mx(p[1],q[1]),+(newer[2]||0)]; }); }); });
     return o; }
@@ -5619,6 +5620,7 @@ function sheetDb(){
     if(key==="review-stats"){ S.stats=obj.w||{}; S.mstats=obj.m||{}; }
     else if(key==="grammar"){ S.gram={st:obj.st||{},mine:obj.mine||{},custom:Array.isArray(obj.custom)?obj.custom:[],xp:obj.xp||{},cov3:!!obj.cov3}; }
     else if(/^e-/.test(key)&&S.marks[key]){ S.marks[key]={hl:obj.hl||[],ink:obj.ink||{}}; }
+    else if(key==="lib-pos"){ libPosApply(obj); return; }
     else if(/^lib-/.test(key)){ if(LIB.open&&key==="lib-"+LIB.open.b.id){ LIB.marks=obj.m||{}; libRepaintAll(); var np=document.getElementById("lr-npad"); if(typeof obj.notes==="string"&&(!np||document.activeElement!==np)){ LIB.bookNotes=obj.notes; if(np) np.value=obj.notes; } libHlRefresh(); } return; }
     setTimeout(function(){
       if(S.tab==="grammar"&&!S.drill&&!S.quiz&&!S.gex) renderGrammar();
@@ -5687,7 +5689,14 @@ function sheetDb(){
     if(st.broken) return;
     return write(key,body);
   }
-  return {reset:function(){ st.loaded=null; st.rows={}; st.broken=false; st.wwarn=false; }, age:function(){return Date.now()-st.at;},
+  /* Nov 13: read one row again from the sheet (used for Library positions) */
+  async function fresh(k){
+    await load(); var ex=st.rows[k]; if(st.broken||!ex) return (await get(k)).data();
+    var v=await getValues(TAB+"!A"+ex.row+":Z"+ex.row), r=v[0]||[]; if(r[0]!==k) return ex.data;
+    var obj=null; try{ obj=JSON.parse(r.slice(2).join("")); }catch(e){ return ex.data; }
+    st.rows[k]={row:ex.row,n:Math.max(1,r.length-2),data:obj,u:r[1]||""}; return obj;
+  }
+  return {reset:function(){ st.loaded=null; st.rows={}; st.broken=false; st.wwarn=false; }, age:function(){return Date.now()-st.at;}, fresh:fresh,
     collection:function(){return {doc:function(k){return {get:function(){return get(k);},set:function(b){return set(k,b);}};}};}};
 }
 document.addEventListener("visibilitychange",function(){
@@ -5767,6 +5776,7 @@ function libErr(e){
 
 /* the shelf */
 async function libLoad(force){
+  if(LIB&&libOwner()) libPosPull(force);
   if(!LIB||!libOwner()||LIB.loading||(LIB.asked&&!force)) return;
   LIB.asked=true; LIB.loading=true; LIB.err="";
   if(S.tab==="library") renderLibrary();
@@ -5828,6 +5838,29 @@ function libSeries(id){
 }
 function libSeriesClose(){ if(!LIB.sheet) return; LIB.sheet.el.remove(); LIB.sheet=null; if(!LIB.open) document.body.classList.remove("lib-open"); }
 
+/* Nov 13: reading positions sync across devices through App Data (key lib-pos, {p:{fileId:{p,n,at}}}). For each book the
+   newest reading wins. Saved on this device first (kc-lib-pos); sent 5 seconds after you stop turning pages, when a book
+   closes or the app goes to the background; read again when the Library or Home opens and when you come back to the app. */
+function libPosApply(obj){
+  var R=(obj&&obj.p)||{}, all=libPos(), ch=false;
+  Object.keys(R).forEach(function(id){ var x=R[id]; if(!x||!x.n) return; var me=all[id]; if(LIB.open&&LIB.open.b.id===id) return; if(!me||(+x.at||0)>(+me.at||0)){ all[id]=x; ch=true; } });
+  if(!ch) return; store("kc-lib-pos",all);
+  setTimeout(function(){ if(S.tab==="library"&&!LIB.open) renderLibrary(); if(LIB.sheet) libSeriesRefresh(); if(S.tab==="add"&&S.loaded) renderHome(); },0);
+}
+function libPosPull(force){
+  if(!db||!uid||!navigator.onLine) return; var now=Date.now(); if(!force&&LIB.posAt&&now-LIB.posAt<60000) return; LIB.posAt=now;
+  try{
+    if(db.fresh) db.fresh("lib-pos").then(function(d){ if(d) libPosApply(d); }).catch(function(){});
+    else db.collection("data/users/"+uid).doc("lib-pos").get().then(function(sn){ if(sn&&sn.exists) libPosApply(sn.data()); }).catch(function(){});
+  }catch(e){}
+}
+function libPosPush(){ if(!libOwner()) return; LIB.posDirty=true; clearTimeout(LIB.posT); LIB.posT=setTimeout(libPosFlush,5000); }
+function libPosFlush(){
+  clearTimeout(LIB.posT); if(!LIB.posDirty||!db||!uid||!navigator.onLine) return; LIB.posDirty=false;
+  try{ db.collection("data/users/"+uid).doc("lib-pos").set({p:libPos()}).catch(function(){ LIB.posDirty=true; }); }catch(e){ LIB.posDirty=true; }
+}
+document.addEventListener("visibilitychange",function(){ if(document.visibilityState==="hidden") libPosFlush(); else if(libOwner()) setTimeout(function(){ libPosPull(true); },1200); });
+window.addEventListener("online",function(){ if(LIB.posDirty) libPosFlush(); });
 /* Home: Continue reading card (option A) */
 function libHomeHtml(){
   if(!LIB||!libOwner()) return "";
@@ -6073,7 +6106,7 @@ function libEndHtml(){
 function libEndShow(){
   var O=LIB.open; if(!O||!O.b.parent||O.endOn) return false;
   var body=$("#lr-body"); if(!body) return false;
-  var all=libPos(); all[O.b.id]={p:O.sizes.length,n:O.sizes.length,at:Date.now()}; store("kc-lib-pos",all);
+  var all=libPos(); all[O.b.id]={p:O.sizes.length,n:O.sizes.length,at:Date.now()}; store("kc-lib-pos",all); libPosPush();
   var el=document.createElement("div"); el.className="lr-end"; el.id="lr-end"; el.setAttribute("role","region"); el.setAttribute("aria-label","End of story");
   el.innerHTML=libEndHtml(); body.appendChild(el); O.endOn=true; libSelHide();
   var pg=$("#lr-pg"); if(pg) pg.textContent="おわり";
@@ -6317,7 +6350,7 @@ function libGo(n){ if(LIB.open&&LIB.open.sp) return libBookGo(n); var body=$("#l
 function libSavePos(){
   var O=LIB.open; if(!O||!O.sizes) return;
   var n=libCurPage(), pg=$("#lr-pg"), sp=O.sp&&O.sp[O.si], lab=sp&&sp[0]&&sp[1]?sp[0]+"–"+sp[1]:String(n); if(pg) pg.textContent=lab+" / "+O.sizes.length;
-  var all=libPos(); all[O.b.id]={p:n,n:O.sizes.length,at:Date.now()}; store("kc-lib-pos",all);
+  var all=libPos(); all[O.b.id]={p:n,n:O.sizes.length,at:Date.now()}; store("kc-lib-pos",all); libPosPush();
 }
 function libZoomBtns(){
   if(!LIB.open) return; var z=LIB.zoom;
@@ -6373,7 +6406,7 @@ function libClose(quiet){
   var O=LIB.open; if(!O) return;
   if(O.sizes) libSavePos();
   if(LIB.turn){ cancelAnimationFrame(LIB.turn.raf); LIB.turn=null; }
-  libMarksFlush(); libCardClose(true); libNoteClose();
+  libMarksFlush(); libPosFlush(); libCardClose(true); libNoteClose();
   clearTimeout(O.st); if(O.io) O.io.disconnect();
   if(O.doc){ try{ O.doc.destroy(); }catch(e){} }
   O.el.remove(); LIB.open=null; LIB.drag=null; if(!LIB.sheet) document.body.classList.remove("lib-open"); libSelHide();
