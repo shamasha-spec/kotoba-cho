@@ -2002,6 +2002,11 @@ body.lib-open{overflow:hidden}
 .lr-gph{display:grid;gap:1px;width:100%;padding:8px 2px;border:0;background:none;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
 .lr-gph b{font-family:var(--serif);font-size:1.02rem}.lr-gph span{font-size:.84rem;color:var(--muted)}
 .lr-gpb{display:grid;gap:4px;padding:0 2px 10px}
+/* Pitch sliders (Nov 13) */
+.snd-pt{display:grid;grid-template-columns:5.2em 1fr 2.6em;align-items:center;gap:8px;padding:6px 12px;font-size:.9rem;margin:0}
+.snd-pt input{width:100%;accent-color:var(--ai);margin:0}
+.snd-pt b{font-weight:500;font-size:.8rem;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.snd-cap .snd-reset{float:right;border:0;background:none;color:var(--ai);font:inherit;font-size:.78rem;cursor:pointer;padding:0;text-transform:none;letter-spacing:0}
 /* Next story (Nov 12) */
 .lr-end{position:absolute;inset:0;z-index:10;display:grid;place-items:center;padding:16px 16px 120px;background:var(--paper);animation:leIn .42s cubic-bezier(.22,.9,.24,1)}
 .lib-reader.desk .lr-end{padding-bottom:16px}
@@ -2791,7 +2796,8 @@ function speakerOf(t){ var m=String(t||"").match(SPEAKER_RE); return m?{who:m[1]
 function chatVoice(who){
   var byName=function(n){ return n&&n!=="auto"?jaVoices.find(function(v){return v.name===n;})||null:null; };
   var an=byName(S.cv.an)||voiceJa, me=byName(S.cv.me)||jaVoices.find(function(v){return v!==an;})||an;
-  return {v:who==="me"?me:an,pitch:an===me?(who==="me"?0.8:1.25):1};
+  var k=who==="me"?"pm":"pa", def=an===me?(who==="me"?0.8:1.25):1, p=+S.cv[k];
+  return {v:who==="me"?me:an,pitch:p>=0.5&&p<=2?p:def};
 }
 function voiceFor(u,who){ if(who){ var c=chatVoice(who); if(c.v) u.voice=c.v; u.pitch=c.pitch; } else if(voiceJa) u.voice=voiceJa; }
 function chatVoiceHtml(){
@@ -2806,6 +2812,15 @@ function chatVoiceHtml(){
 }
 document.addEventListener("change",function(e){ var m=e.target.id&&e.target.id.match(/^cv-(an|me)$/); if(!m) return; S.cv[m[1]]=e.target.value; store("kc-chatvoice",S.cv); document.querySelectorAll(".cv-box").forEach(function(b){ var n=b.querySelector(".hint"), t=document.createElement("div"); t.innerHTML=chatVoiceHtml(); var n2=t.querySelector(".hint"); if(n&&n2) n.innerHTML=n2.innerHTML; }); speak(m[1]==="an"?"アンちゃん：こんにちは！今日(きょう)もがんばろうね。":"Me：こんにちは。よろしくお願(ねが)いします。"); });
 document.addEventListener("click",function(e){ var b=e.target.closest('[data-act="cv-try"]'); if(!b) return; e.stopPropagation(); speak(b.dataset.who==="an"?"アンちゃん：こんにちは！今日(きょう)もがんばろうね。":"Me：こんにちは。よろしくお願(ねが)いします。"); },true);
+/* Nov 13: pitch per role, saved on this device in kc-chatvoice (pa for アンちゃん, pm for you). Reset goes back to the
+   automatic pitches. Letting go of a slider plays that role's sample. */
+document.addEventListener("input",function(e){ var t=e.target; if(!t.dataset||!t.dataset.sndPitch) return; var b=t.parentNode.querySelector("b"); if(b) b.textContent=(+t.value).toFixed(2); });
+document.addEventListener("change",function(e){
+  var t=e.target; if(!t.dataset||!t.dataset.sndPitch) return;
+  S.cv[t.dataset.sndPitch]=Math.round(+t.value*100)/100; store("kc-chatvoice",S.cv);
+  if(S.play) playStop(); try{ speechSynthesis.cancel(); }catch(err){} speak(SND_SAMPLE[t.dataset.who]);
+  if(!SND.el.querySelector("[data-snd-reset]")) sndRender();
+});
 /* ---------- sound menu (Oct 2026): chat voices, opened from the sliders icon on the Journal heading and in the Home chat header ---------- */
 var SND_ICO='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>';
 var SND_PERSON='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>';
@@ -2826,9 +2841,12 @@ function sndVoices(jr){
   if(!TTS||!voiceJa) return '<div class="snd-cap">Chat voices</div><div class="snd-note">No Japanese voice found on this device. Add one in your device’s speech settings.</div>';
   var a=chatVoice("an"), m=chatVoice("me");
   function row(who,label){ var cur=S.cv[who]&&S.cv[who]!=="auto"?vShort(S.cv[who]):"Auto"; return '<button type="button" class="snd-mi'+(SND.sub===who?' on':'')+'" data-snd-sub="'+who+'" role="menuitem" aria-haspopup="menu" aria-expanded="'+(SND.sub===who)+'">'+SND_PERSON+'<span lang="ja">'+label+'</span><span class="snd-v">'+esc(cur)+' ›</span></button>'; }
+  function pt(who,label){ var k=who==="me"?"pm":"pa", v=chatVoice(who).pitch; return '<label class="snd-pt"><span lang="ja">'+label+'</span><input type="range" min="0.5" max="2" step="0.05" value="'+v+'" data-snd-pitch="'+k+'" data-who="'+who+'" aria-label="Pitch for '+label+'"><b>'+v.toFixed(2)+'</b></label>'; }
+  var custom=S.cv.pa!=null||S.cv.pm!=null;
   return '<div class="snd-cap">Chat voices</div>'+row("an","アンちゃん")+row("me","You")+'<div class="snd-sep"></div>'+
+    '<div class="snd-cap">Pitch'+(custom?'<button type="button" class="snd-reset" data-snd-reset>Reset</button>':'')+'</div>'+pt("an","アンちゃん")+pt("me","You")+'<div class="snd-sep"></div>'+
     '<button type="button" class="snd-mi" data-snd-both role="menuitem">'+ICO_PLAY+'<span>Hear both voices</span></button><div class="snd-sep"></div>'+
-    (jr&&a.v!==m.v?'':'<div class="snd-note">'+(a.v===m.v?(jaVoices.length<2?'One Japanese voice on this device, so ':'Same voice for both, so ')+'アンちゃん speaks higher and you lower. ':'')+(jr?'':'Saved on this device.')+'</div>');
+    (jr&&(a.v!==m.v||custom)?'':'<div class="snd-note">'+(a.v===m.v&&!custom?(jaVoices.length<2?'One Japanese voice on this device, so ':'Same voice for both, so ')+'アンちゃん speaks higher and you lower. ':'')+(jr?'':'Saved on this device.')+'</div>');
 }
 function sndSub(who){
   var cur=S.cv[who]||"auto", items=[{v:"auto",n:"Auto"}].concat(jaVoices.map(function(v){return {v:v.name,n:vShort(v.name)};}));
@@ -2868,6 +2886,7 @@ document.addEventListener("click",function(e){
   else if(e.target.closest("[data-snd-back]")){ SND.sub=null; sndRender(); }
   else if((t=e.target.closest("[data-snd-pick]"))){ var who=t.dataset.who; S.cv[who]=t.dataset.sndPick; store("kc-chatvoice",S.cv); if(S.play) playStop(); speak(SND_SAMPLE[who]); sndRender(); }
   else if(e.target.closest("[data-snd-both]")){ sndBoth(); }
+  else if(e.target.closest("[data-snd-reset]")){ delete S.cv.pa; delete S.cv.pm; store("kc-chatvoice",S.cv); sndRender(); sndBoth(); }
   else if((t=e.target.closest("[data-jset]"))){ var k=t.dataset.jset; if(k==="focus"){ jfToggle(!S.js.focus); sndRender(); return; } S.js[k]=!S.js[k]; store("kc-jset",S.js); jsetApply(); sndRender(); }
 },true);
 document.addEventListener("keydown",function(e){ if(e.key==="Escape"&&SND.el){ var a=SND.anchor; sndClose(); if(a) a.focus(); } });
