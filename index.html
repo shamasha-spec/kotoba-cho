@@ -2126,6 +2126,81 @@ body.lib-open{overflow:hidden}
 .lc-hb span{color:var(--muted);font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lc-hit .stamp{width:24px;height:24px;font-size:.7rem;flex:none}
 .lr-prog{height:4px;border-radius:2px;background:var(--line);overflow:hidden;margin-top:14px}.lr-prog i{display:block;height:100%;width:0;background:var(--matcha);transition:width .25s}
+/* Phase 7 (Nov 2026): Ara's JLPT N3 reviewer (Home for learners with jlpt). Flat, matches the app's cards. */
+.jx{--jx-mid:#7A5B12;--jx-mid-soft:#F3EAD0;--jx-r:#56467A;--jx-r-soft:#E8E4EF;--jx-q:#7A5B12;--jx-q-soft:#F1E9D2}
+@media (prefers-color-scheme:dark){.jx{--jx-mid:#E2C77A;--jx-mid-soft:#352D18;--jx-r:#C3B6E4;--jx-r-soft:#2A2536;--jx-q:#E2C77A;--jx-q-soft:#352D18}}
+html[data-theme="dark"] .jx{--jx-mid:#E2C77A;--jx-mid-soft:#352D18;--jx-r:#C3B6E4;--jx-r-soft:#2A2536;--jx-q:#E2C77A;--jx-q-soft:#352D18}
+html[data-theme="light"] .jx,html[data-theme="reading"] .jx{--jx-mid:#7A5B12;--jx-mid-soft:#F3EAD0;--jx-r:#56467A;--jx-r-soft:#E8E4EF;--jx-q:#7A5B12;--jx-q-soft:#F1E9D2}
+.jx-greet{margin:26px 0 16px}
+.jx-count{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;background:var(--ink);color:var(--paper);border-radius:18px;padding:18px 20px;margin-bottom:22px}
+.jx-count>div{display:flex;flex-direction:column;gap:2px}
+.jx-cl{font-size:.82rem;opacity:.8}
+.jx-cl ruby rt{font-size:.5em}
+.jx-cd{font-family:var(--serif);line-height:1.05}.jx-cd b{font-size:2.4rem}.jx-cd span{font-size:1.1rem;margin-left:4px}
+.jx-today{display:flex;flex-direction:column;align-items:flex-start;gap:2px;background:var(--paper);color:var(--ink);border:0;border-radius:14px;padding:12px 16px;min-height:52px;cursor:pointer;font:inherit;font-weight:700;text-align:left}
+.jx-today small{font-weight:400;color:var(--muted);font-size:.78rem}
+.jx-today:hover{filter:brightness(.97)}
+.jx-h{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;font-weight:700}
+.jx-sets{display:grid;gap:10px;margin-bottom:22px}
+@media (min-width:760px){.jx-sets{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}}
+.jx-set,.jx-grp{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;color:var(--ink);font:inherit;cursor:pointer;min-height:44px}
+.jx-set:hover,.jx-grp:hover{border-color:var(--muted)}
+.jx-set.soon{cursor:default;opacity:.62}.jx-set.soon:hover{border-color:var(--line)}
+.jx-seal{width:50px;height:50px;flex-shrink:0;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;font-size:1.45rem}
+.jx-seal.t-v{background:var(--matcha-soft);color:var(--matcha)}
+.jx-seal.t-g{background:var(--warn-soft);color:var(--warn)}
+.jx-seal.t-k{background:var(--ai-soft);color:var(--ai)}
+.jx-seal.t-q{background:var(--jx-q-soft);color:var(--jx-q)}
+.jx-seal.t-r{background:var(--jx-r-soft);color:var(--jx-r)}
+.jx-st,.jx-gt{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.jx-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.jx-row b{font-size:1rem}.jx-row small,.jx-sub{color:var(--muted);font-size:.8rem}
+.jx-weak{color:var(--warn);font-weight:700}
+.jx-bar{display:block;height:5px;border-radius:3px;background:var(--line);overflow:hidden}.jx-bar i{display:block;height:100%;background:var(--matcha);border-radius:3px;transition:width .3s}
+.jx-chev{flex-shrink:0;color:var(--muted)}
+.jx-back{display:inline-flex;align-items:center;gap:4px;background:none;border:0;color:var(--muted);font:inherit;font-size:.9rem;cursor:pointer;min-height:44px;padding:0 8px 0 0;margin-top:14px}
+.jx-back:hover{color:var(--ink)}
+.jx-head{display:flex;align-items:center;gap:14px;margin:6px 0 16px}
+.jx-head h2{margin:0;font-family:var(--serif);font-size:1.5rem}.jx-head h2 span{font-family:var(--sans);font-weight:500;font-size:1rem;color:var(--muted)}
+.jx-head p{margin:2px 0 0;color:var(--muted);font-size:.88rem}
+.jx-all{width:100%;justify-content:center;display:flex;align-items:center;gap:10px;min-height:48px;margin-bottom:14px}
+.jx-all small{font-weight:400;opacity:.85}
+.jx-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.jx-chip{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 14px;min-height:36px;font:inherit;font-size:.85rem;cursor:pointer}
+.jx-chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.jx-key{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;color:var(--muted);font-size:.76rem;margin:0 0 12px}
+.jx-key>span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.jx-key .jx-b{width:20px;height:20px;font-size:.7rem;border-radius:5px}
+.jx-gt .jx-row{flex-direction:column;align-items:flex-start;gap:1px}
+.jx-groups{display:grid;gap:8px;margin-bottom:28px}
+.jx-grp{padding:11px 14px;gap:12px}
+.jx-b{width:32px;height:32px;flex-shrink:0;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;font-size:.92rem}
+.jx-b.weak{background:var(--warn-soft);color:var(--warn)}
+.jx-b.mid{background:var(--jx-mid-soft);color:var(--jx-mid)}
+.jx-b.strong{background:var(--matcha-soft);color:var(--matcha)}
+.jx-b.none{background:var(--line);color:var(--muted)}
+.jx-n{display:flex;flex-direction:column;align-items:flex-end;font-size:.78rem;color:var(--muted);white-space:nowrap}.jx-n b{color:var(--ink);font-size:.85rem}
+.jx-deck .progress{margin-top:18px}
+.jx-card{min-height:360px;justify-content:space-between;gap:14px}
+.jx-card.flipped{justify-content:flex-start;cursor:default}
+.jx-tag{align-self:flex-start;font-size:.75rem;font-weight:700;color:var(--warn);background:var(--warn-soft);padding:3px 10px;border-radius:10px}
+.card .face.jx-pat{font-size:clamp(2rem,9vw,3rem);line-height:1.45}
+.card .face.jx-pat.l{font-size:clamp(1.6rem,6.6vw,2.4rem)}
+.card .face.jx-pat.xl{font-size:clamp(1.35rem,5.4vw,2rem)}
+.card .face.jx-pat ruby rt{font-size:.4em}
+.jx-ex{margin:0;font-size:1.15rem;line-height:2.1}
+.jx-ex ruby rt{font-size:.55em;color:var(--muted)}
+.jx-card .tap{position:static}
+.jx-ans{width:100%;text-align:left;gap:12px;margin-top:4px}
+.jx-ans .meaning{font-size:1.25rem}
+.jx-blk{display:flex;flex-direction:column;gap:4px}
+.jx-lab{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.jx-form{background:var(--paper);border-radius:10px;padding:9px 12px;font-size:.92rem;line-height:1.6}
+.jx-exrow{gap:6px;flex-wrap:nowrap;align-items:flex-start}.jx-exrow .jx-ex{flex:1}
+.jx-note{border-top:1px solid var(--line);padding-top:10px;color:var(--muted);font-size:.88rem}
+.jx-done{text-align:center;padding:40px 10px 30px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.jx-done>b{font-family:var(--serif);font-size:1.8rem}.jx-done p{margin:0;color:var(--muted)}
+.jx-tally{display:flex;gap:28px;margin:10px 0 18px}.jx-tally span{display:flex;flex-direction:column;align-items:center}.jx-tally b{font-size:2rem;font-family:var(--serif)}.jx-tally small{color:var(--muted)}
 </style>
 <script>
 /* Standalone adapter: sends the notebook's sheet calls to Pete's Apps Script instead of Claude. */
@@ -2552,8 +2627,11 @@ async function loadAll(){
   if(!mcp) return;
   S.loading=true; S.error=null; renderStatus();
   try{
-    var got=await Promise.all([getValues("Vocab Bank!A1:O5000"),getValues("Journal!A1:J1001"),getValues("Grammar!A1:G300").catch(function(){return null;})]);
+    var got=await Promise.all([getValues("Vocab Bank!A1:O5000"),getValues("Journal!A1:J1001"),getValues("Grammar!A1:G300").catch(function(){return null;}),
+      /* Phase 7: the JLPT reviewer's grammar cards. Only learners with jlpt can read this tab; for everyone else it fails quietly. */
+      window.KC_LEARNER?getValues("JLPT Grammar!A1:I1000").catch(function(e){return S.jlpt?{keep:1}:null;}):Promise.resolve(null)]);
     S.words=parseVocab(got[0]); S.entries=parseJournal(got[1]); S.loaded=true; S.lastSync=new Date();
+    if(got[3]&&!got[3].keep){ var jg=parseJxGrammar(got[3]); S.jlpt=jg.length?{g:jg}:null; }
     if(got[2]) S.sheetG=parseGrammarTab(got[2]); else S.sheetG=S.sheetG||[];
   }catch(e){ S.error=e; }
   S.loading=false; renderAll();
@@ -4209,6 +4287,7 @@ function renderHome(){
     else if(S.error&&!S.loading) el.innerHTML='<div class="loadfail"><b>Couldn’t open your notebook.</b><p>'+sheetErr(S.error)+'</p><div class="row"><button class="btn primary" data-act="retry-load">Try again</button><a class="btn" href="#setup">Sign in again</a></div></div>';
     else el.innerHTML=LOADER_HTML;
     return;}
+  if(S.jlpt){ if(parked) returnAddBox(); jxRender(); return; }
   var RI=rankInfo(), R=RI.L[RI.idx], NX=RI.L[RI.idx+1], inRank=RI.idx>=5?100:Math.round((RI.score-RI.lo)/(RI.hi-RI.lo)*100);
   rankUpCheck(RI);
   var t=today(), due=S.words.filter(function(w){return !w.next||w.next<=t;});
@@ -5156,6 +5235,177 @@ function qSave(){ store("kc-qset",S.qs); }
   },{passive:true});
   el.addEventListener("scroll",function(e){ if(e.target.id!=="gq-track") return; clearTimeout(t); t=setTimeout(function(){ gqSync(false); },90); },true);
 })();
+/* ---------- Phase 7 (Nov 2026): Ara's JLPT N3 reviewer. Learners whose account has jlpt (set in Code.gs) get this Home.
+   Content comes from the read-only tabs "JLPT Grammar" (and later Kanji, Quiz, Reading), which the script sends to e.g. "Ara Grammar".
+   Progress lives in App Data under the key "jlpt": {c:{cardId:[right, missed, streak, lastDay]}}. Strength per group:
+   弱 under 60% right, 中 60 to 84%, 強 85% and up, 未 not started. ---------- */
+var JX_DATE="2026-12-06";
+var JX_GROUPS=[["理由・原因","Cause and reason"],["時間・順序","Time and order"],["条件","Conditions"],["推量・伝聞","Guessing and hearsay"],["目的・変化","Purpose and change"],["逆接・対比","Contrast"],["比較・程度","Comparison and degree"],["気持ち・意志","Feelings and intention"],["義務・可能","Must, can and can't"],["受身・使役","Passive and causative"],["話題・引用","Topic, quoting and adding"],["敬語","Keigo"],["接続詞・縮約形","Connectors and casual forms"]];
+S.jx={v:"home",sort:recall("kc-jx-sort")||"order",deck:null};
+function parseJxGrammar(rows){
+  var out=[];
+  (rows||[]).forEach(function(r,i){
+    if(i===0||!r) return; var c=function(k){return String(r[k]==null?"":r[k]).trim();};
+    if(!c(0)||!c(2)) return;
+    out.push({id:c(0),grp:c(1)||"その他",p:c(2),m:c(3),f:c(4),ex:c(5),exEn:c(6),n:c(7),src:c(8)});
+  });
+  return out;
+}
+function jxGroups(){
+  var G=(S.jlpt&&S.jlpt.g)||[], order=JX_GROUPS.map(function(x){return x[0];}), map={};
+  G.forEach(function(it){ (map[it.grp]=map[it.grp]||[]).push(it); });
+  Object.keys(map).forEach(function(k){ if(order.indexOf(k)<0) order.push(k); });
+  return order.filter(function(k){return map[k];}).map(function(k,i){ var en=(JX_GROUPS.find(function(x){return x[0]===k;})||[k,""])[1]; return {ja:k,en:en,items:map[k],i:i}; });
+}
+function jxRec(id){ var r=(S.jxS&&S.jxS.c&&S.jxS.c[id])||null; return r?{r:+r[0]||0,m:+r[1]||0,s:+r[2]||0}:{r:0,m:0,s:0}; }
+function jxStrength(items){
+  var r=0,m=0; items.forEach(function(it){ var x=jxRec(it.id); r+=x.r; m+=x.m; });
+  var n=r+m; if(!n) return {k:"none",b:"未",pct:null};
+  var p=Math.round(r/n*100); return {k:p<60?"weak":p<85?"mid":"strong",b:p<60?"弱":p<85?"中":"強",pct:p};
+}
+function jxDone(items){ return items.filter(function(it){ return jxRec(it.id).s>0; }).length; }
+/* weakest first: last answer missed, then never seen, then lowest % right. Shuffled inside each step. */
+function jxOrder(items){
+  return shuffle(items).map(function(it){ var x=jxRec(it.id), n=x.r+x.m, k=!n?1:(x.s===0?0:2+x.r/n); return {it:it,k:k}; })
+    .sort(function(a,b){return a.k-b.k;}).map(function(o){return o.it;});
+}
+function jxLoadStats(){
+  if(S.jxSP) return S.jxSP;
+  S.jxSP=(async function(){
+    var d=null;
+    try{ if(db){ var s=await db.collection("data/users/"+uid).doc("jlpt").get(); if(s.exists) d=s.data(); } }catch(e){}
+    if(!d) d=recall("kc-marks-jlpt");
+    S.jxS=(d&&d.c)?d:{c:{}};
+    if(S.tab==="add"&&!(S.jx.deck&&S.jx.v==="deck")) renderHome();
+  })();
+  return S.jxSP;
+}
+function jxSave(){
+  S.jxS.updated=new Date().toISOString(); store("kc-marks-jlpt",S.jxS);
+  if(db) db.collection("data/users/"+uid).doc("jlpt").set(S.jxS).catch(function(){});
+}
+function jxMark(it,ok){
+  var c=S.jxS.c, x=c[it.id]||[0,0,0,""];
+  c[it.id]=ok?[(+x[0]||0)+1,+x[1]||0,(+x[2]||0)+1,today()]:[+x[0]||0,(+x[1]||0)+1,0,today()];
+}
+function jxDays(){ var a=new Date(JX_DATE+"T00:00:00"), b=new Date(today()+"T00:00:00"); return Math.round((a-b)/86400000); }
+function jxBar(pct){ return '<span class="jx-bar" aria-hidden="true"><i style="width:'+Math.max(0,Math.min(100,pct||0))+'%"></i></span>'; }
+var JX_CHEV='<svg class="jx-chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>';
+var JX_BACK='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>';
+function jxSet(o){
+  return '<button type="button" class="jx-set'+(o.soon?' soon':'')+'" data-jx="'+o.act+'"'+(o.soon?' aria-disabled="true"':'')+'><span class="jx-seal '+o.tone+'" lang="ja" aria-hidden="true">'+o.k+'</span>'+
+    '<span class="jx-st"><span class="jx-row"><b><span lang="ja">'+o.ja+'</span> '+o.en+'</b><small>'+o.count+'</small></span><small class="jx-sub">'+o.sub+'</small>'+(o.soon?'':jxBar(o.pct))+'</span>'+(o.soon?'':JX_CHEV)+'</button>';
+}
+function jxHome(){
+  var G=(S.jlpt&&S.jlpt.g)||[], gd=jxDone(G), days=jxDays(), Gr=greeting();
+  var vw=S.words.length, vk=S.words.filter(function(w){return w.mastery==="Reviewing"||w.mastery==="Mastered";}).length;
+  var weak=jxGroups().filter(function(g){return jxStrength(g.items).k==="weak";}).length;
+  var h='<div class="greet-wrap jx-greet"><h2 class="greet"><span lang="ja">'+Gr[0]+'</span><span>'+esc((window.KC_ME&&window.KC_ME.name)||"")+'</span></h2><p class="greet-sub">JLPT N3 reviewer</p></div>';
+  if(days>=0) h+='<section class="jx-count" aria-label="Days to the exam"><div><span class="jx-cl" lang="ja">'+rubyText(days?'試験(しけん)まで':'今日(きょう)は試験日(しけんび)')+'</span>'+(days?'<span class="jx-cd"><b>'+days+'</b><span lang="ja">日</span></span>':'<span class="jx-cd"><b lang="ja">がんばって！</b></span>')+'<span class="jx-cl">Sunday, December 6</span></div>'+
+    (G.length?'<button type="button" class="jx-today" data-jx="today"><span lang="ja">今日の復習</span><small>Mixed grammar, weakest first</small></button>':'')+'</section>';
+  h+='<h3 class="jx-h">Flashcard sets</h3><div class="jx-sets">'+
+    jxSet({act:"vocab",k:"語",tone:"t-v",ja:"語彙",en:"Vocabulary",count:vw.toLocaleString()+(vw===1?" word":" words"),sub:"Your word list, in Review",pct:vw?vk/vw*100:0})+
+    (G.length?jxSet({act:"grammar",k:"文",tone:"t-g",ja:"文法",en:"Grammar",count:G.length+" patterns",sub:gd+" right last time"+(weak?' · <span class="jx-weak">'+weak+(weak===1?' group needs':' groups need')+' work</span>':''),pct:gd/G.length*100}):'')+
+    jxSet({act:"",soon:1,k:"漢",tone:"t-k",ja:"漢字",en:"Kanji",count:"Coming next",sub:"Readings, meaning and common words"})+
+  '</div><h3 class="jx-h">Practice</h3><div class="jx-sets">'+
+    jxSet({act:"",soon:1,k:"問",tone:"t-q",ja:"模擬問題",en:"Quiz",count:"Coming soon",sub:"Multiple choice, like the real test"})+
+    jxSet({act:"",soon:1,k:"読",tone:"t-r",ja:"読解",en:"Reading",count:"Coming soon",sub:"Short texts with questions"})+
+  '</div>';
+  return h;
+}
+function jxGrammarView(){
+  var gs=jxGroups(), sort=S.jx.sort, rows=gs.map(function(g){ var st=jxStrength(g.items), d=jxDone(g.items); return {g:g,st:st,d:d}; });
+  var rank={weak:0,mid:1,strong:2,none:3};
+  if(sort==="weak") rows.sort(function(a,b){ return rank[a.st.k]-rank[b.st.k]||((a.st.pct||0)-(b.st.pct||0))||a.g.i-b.g.i; });
+  if(sort==="new") rows=rows.filter(function(r){return r.st.k==="none";});
+  var all=(S.jlpt&&S.jlpt.g)||[];
+  var chips=[["order","All"],["weak","Weakest first"],["new","Not started"]].map(function(c){ return '<button type="button" class="jx-chip" data-jx="sort" data-v="'+c[0]+'" aria-pressed="'+(sort===c[0])+'">'+c[1]+'</button>'; }).join("");
+  var h='<button type="button" class="jx-back" data-jx="home">'+JX_BACK+'<span>Home</span></button>'+
+    '<div class="jx-head"><span class="jx-seal t-g" lang="ja" aria-hidden="true">文</span><div><h2 lang="ja">文法 <span>Grammar</span></h2><p>Pick a group. One card is one pattern.</p></div></div>'+
+    '<button type="button" class="btn primary jx-all" data-jx="all">Review all grammar <small>'+jxDone(all)+' / '+all.length+'</small></button>'+
+    '<div class="jx-chips" role="group" aria-label="Sort groups">'+chips+'</div>'+
+    '<p class="jx-key"><span><span class="jx-b weak" lang="ja">弱</span>under 60% right</span><span><span class="jx-b mid" lang="ja">中</span>60 to 84%</span><span><span class="jx-b strong" lang="ja">強</span>85%+</span><span><span class="jx-b none" lang="ja">未</span>not started</span></p>'+
+    '<div class="jx-groups">'+(rows.length?rows.map(function(r){
+      return '<button type="button" class="jx-grp" data-jx="grp" data-g="'+esc(r.g.ja)+'"><span class="jx-b '+r.st.k+'" lang="ja" title="'+(r.st.pct==null?'Not started':r.st.pct+'% right')+'">'+r.st.b+'</span>'+
+        '<span class="jx-gt"><span class="jx-row"><b lang="ja">'+esc(r.g.ja)+'</b><small>'+esc(r.g.en)+'</small></span>'+jxBar(r.d/r.g.items.length*100)+'</span>'+
+        '<span class="jx-n">'+(r.st.pct!=null?'<b>'+r.st.pct+'%</b>':'')+r.d+' / '+r.g.items.length+'</span>'+JX_CHEV+'</button>';
+    }).join(""):'<p class="hint">Every group has been started. Nice.</p>')+'</div>';
+  return h;
+}
+function jxStart(items,label,back,limit){
+  var cards=jxOrder(items); if(limit) cards=cards.slice(0,limit);
+  if(!cards.length) return;
+  S.jx.deck={label:label,back:back,cards:cards,i:0,flipped:false,good:0,again:0,missed:[]};
+  S.jx.v="deck"; renderHome(); window.scrollTo(0,0);
+}
+function jxFace(t,flip){ return (S.furi==="always"||flip)?rubyText(t):esc(stripFuri(t)); }
+function jxDeckView(){
+  var D=S.jx.deck, n=D.cards.length;
+  if(D.i>=n){
+    return '<button type="button" class="jx-back" data-jx="close">'+JX_BACK+'<span>'+(D.back==="grammar"?"Grammar":"Home")+'</span></button>'+
+      '<div class="jx-done"><b lang="ja">おつかれさま！</b><p>'+esc(D.label)+'</p><div class="jx-tally"><span><b>'+D.good+'</b><small lang="ja">できた</small></span><span><b>'+D.again+'</b><small lang="ja">もう一回</small></span></div>'+
+      '<div class="row" style="justify-content:center;gap:10px;flex-wrap:wrap">'+(D.missed.length?'<button type="button" class="btn primary" data-jx="redo">Review the '+D.missed.length+' missed</button>':'')+'<button type="button" class="btn" data-jx="close">Done</button></div></div>';
+  }
+  var it=D.cards[D.i], f=D.flipped, say=stripFuri(it.ex);
+  var furiBtn='<button class="autoplay furi-tg" data-jx="furi" aria-pressed="'+(S.furi==="always")+'" title="Furigana '+(S.furi==="always"?"on":"off")+'"><span class="furi-ico" lang="ja" aria-hidden="true"><ruby>漢<rt>かん</rt></ruby></span><span>Furigana '+(S.furi==="always"?"on":"off")+'</span></button>';
+  var plen=stripFuri(it.p).length;
+  var body=(D.label!==it.grp?'<span class="jx-tag" lang="ja">'+esc(it.grp)+'</span>':'<span></span>')+'<div class="face jx-pat'+(plen>12?' xl':plen>7?' l':'')+'" lang="ja">'+jxFace(it.p,f)+'</div>';
+  if(!f) body+=(it.ex?'<p class="jx-ex" lang="ja">'+jxFace(it.ex,false)+'</p>':'')+'<span class="tap">Tap to show the answer</span>';
+  else body+='<div class="back jx-ans"><div class="meaning">'+esc(it.m)+'</div>'+
+    (it.f?'<div class="jx-blk"><span class="jx-lab">How to form</span><div class="jx-form" lang="ja">'+esc(it.f)+'</div></div>':'')+
+    (it.ex?'<div class="jx-blk"><span class="jx-lab">Example</span><div class="row jx-exrow"><p class="jx-ex" lang="ja">'+rubyText(it.ex)+'</p>'+(TTS&&S.voice!=="off"?sayBtn(say,"Play the example"):"")+'</div>'+(it.exEn?'<div class="sub">'+esc(it.exEn)+'</div>':'')+'</div>':'')+
+    (it.n?'<div class="jx-note">'+esc(it.n)+'</div>':'')+'</div>';
+  return '<div class="progress"><span lang="ja">'+esc(D.label)+'</span>'+furiBtn+'<span>'+(D.i+1)+' of '+n+'</span></div>'+
+    '<div class="bar"><i style="width:'+(D.i/n*100)+'%"></i></div>'+
+    '<div class="card jx-card'+(f?' flipped':'')+'" data-jx="flip" role="button" tabindex="0" aria-label="'+(f?"Card answer":"Show answer")+'">'+body+'</div>'+
+    (f?'<div class="grade"><button class="btn again" data-jx="again">Again</button><button class="btn good" data-jx="good">Got it</button></div>'
+      :'<div class="grade"><button class="btn" data-jx="flip" style="grid-column:1/-1">Show answer</button></div>')+
+    '<div class="row" style="margin-top:14px"><button class="btn ghost" data-jx="end"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>End review</button></div>';
+}
+function jxRender(){
+  var el=$("#home-tiles"); if(!el) return;
+  if(!S.jxS){ jxLoadStats(); el.innerHTML=LOADER_HTML; return; }
+  var v=S.jx.v; if(v==="deck"&&!S.jx.deck) v=S.jx.v="home";
+  el.innerHTML='<div class="jx jx-'+v+'">'+(v==="grammar"?jxGrammarView():v==="deck"?jxDeckView():jxHome())+'</div>';
+}
+function jxGo(v){ S.jx.v=v; renderHome(); window.scrollTo(0,0); }
+function jxClose(){ var D=S.jx.deck; S.jx.deck=null; jxGo(D&&D.back==="grammar"?"grammar":"home"); }
+/* back button: closes a session (asks first if it isn't finished), then Grammar, then the tabs as before */
+function jxBackStep(){
+  if(S.jx.v==="deck"&&S.jx.deck){ var D=S.jx.deck; if(D.i>=D.cards.length||D.i===0&&!D.flipped) jxClose(); else leaveAsk("review",jxClose); return true; }
+  if(S.jx.v==="grammar"){ jxGo("home"); return true; }
+  return false;
+}
+function jxGrade(ok){
+  var D=S.jx.deck, it=D.cards[D.i]; if(!it||!D.flipped) return;
+  jxMark(it,ok); if(ok) D.good++; else { D.again++; D.missed.push(it); }
+  D.i++; D.flipped=false; jxSave(); renderHome();
+}
+$("#home-tiles").addEventListener("click",function(e){
+  if(!S.jlpt) return;
+  var b=e.target.closest("[data-jx]"); if(!b||e.target.closest('[data-act="say"]')) return;
+  var a=b.dataset.jx, all=(S.jlpt&&S.jlpt.g)||[];
+  if(a==="vocab"){ setTab("review"); window.scrollTo(0,0); }
+  else if(a==="grammar") jxGo("grammar");
+  else if(a==="home") jxGo("home");
+  else if(a==="today") jxStart(all,"今日の復習","home",S.size==="all"?20:+S.size||10);
+  else if(a==="all") jxStart(all,"文法 · All grammar","grammar",S.size==="all"?all.length:+S.size||10);
+  else if(a==="grp"){ var g=jxGroups().find(function(x){return x.ja===b.dataset.g;}); if(g) jxStart(g.items,g.ja,"grammar"); }
+  else if(a==="sort"){ S.jx.sort=b.dataset.v; store("kc-jx-sort",S.jx.sort); renderHome(); }
+  else if(a==="flip"){ var D=S.jx.deck; if(D&&!D.flipped){ D.flipped=true; renderHome(); } }
+  else if(a==="good"||a==="again") jxGrade(a==="good");
+  else if(a==="furi"){ S.furi=S.furi==="always"?"flip":"always"; store("kc-furi",S.furi); renderHome(); }
+  else if(a==="end"){ var D2=S.jx.deck; if(D2&&D2.i>0) D2.cards=D2.cards.slice(0,D2.i); else jxClose(); renderHome(); }
+  else if(a==="redo"){ var D3=S.jx.deck; jxStart(D3.missed,D3.label,D3.back); }
+  else if(a==="close") jxClose();
+});
+document.addEventListener("keydown",function(e){
+  if(!S.jlpt||S.tab!=="add"||S.jx.v!=="deck"||!S.jx.deck||e.target.closest("input,textarea,select,button")||document.querySelector(".kc-leave")) return;
+  var D=S.jx.deck; if(D.i>=D.cards.length) return;
+  if((e.key===" "||e.key==="Enter")&&!D.flipped){ e.preventDefault(); D.flipped=true; renderHome(); }
+  else if(D.flipped&&(e.key==="1"||e.key==="ArrowLeft")) jxGrade(false);
+  else if(D.flipped&&(e.key==="2"||e.key==="ArrowRight"||e.key===" "||e.key==="Enter")){ e.preventDefault(); jxGrade(true); }
+});
 /* ---------- back button (Oct 2026): back closes what's open, steps back through the tabs you visited, and asks before leaving a quiz.
    One "guard" history entry sits on top; each back press pops it, the app handles it, then puts the guard back. ---------- */
 S.nav=S.nav||[];
@@ -5182,6 +5432,7 @@ window.addEventListener("popstate",function(){
   if(S.quiz){ if(S.quiz.done) quitQuiz(); else leaveAsk("quiz",quitQuiz); navGuard(); return; }
   if(S.drill){ if(S.drill.i>=S.drill.items.length) quitDrill(); else leaveAsk("drill",quitDrill); navGuard(); return; }
   if(S.deck){ if(S.deck.i>=S.deck.cards.length) quitDeck(); else leaveAsk("review",quitDeck); navGuard(); return; }
+  if(S.jlpt&&S.tab==="add"&&jxBackStep()){ navGuard(); return; }
   if(S.tab==="journal"&&anyOpen()){ jfExit(jfCloseEntry); navGuard(); return; }
   if(S.tab==="journal"&&S.composerOpen){ S.composerOpen=false; S.confirmDiscard=false; S.jClosed=true; renderComposer(); navGuard(); return; }
   if(S.nav.length){ setTab(S.nav.pop(),{fromBack:true}); window.scrollTo(0,0); navGuard(); return; }
@@ -5590,6 +5841,11 @@ function mergeData(key,a,b){
   function mx(x,y){return Math.max(+x||0,+y||0);}
   var o;
   if(key==="lib-pos"){ o={p:{}}; [b,a].forEach(function(s){ var P=(s&&s.p)||{}; Object.keys(P).forEach(function(id){ var x=P[id]; if(x&&(!o.p[id]||(+x.at||0)>(+o.p[id].at||0))) o.p[id]=x; }); }); return o; }
+  /* Phase 7: JLPT reviewer progress. Right and missed: the higher count wins; streak and day come from the copy with more answers. */
+  if(key==="jlpt"){ o={c:{}};
+    [a,b].forEach(function(s){ var C=(s&&s.c)||{}; Object.keys(C).forEach(function(id){ var p=o.c[id], q=C[id]||[0,0,0,""]; if(!p){ o.c[id]=q.slice(); return; }
+      var newer=((+p[0]||0)+(+p[1]||0))>=((+q[0]||0)+(+q[1]||0))?p:q; o.c[id]=[mx(p[0],q[0]),mx(p[1],q[1]),+newer[2]||0,newer[3]||""]; }); });
+    return o; }
   if(key==="review-stats"){ o={w:{},m:{}};
     [a,b].forEach(function(s){ ["w","m"].forEach(function(f){ var src=(s&&s[f])||{}; Object.keys(src).forEach(function(k){ var p=o[f][k]||[0,0], q=src[k]||[0,0]; var newer=((p[0]||0)+(p[1]||0))>=((q[0]||0)+(q[1]||0))?p:q; o[f][k]=[mx(p[0],q[0]),mx(p[1],q[1]),+(newer[2]||0)]; }); }); });
     return o; }
@@ -5621,6 +5877,7 @@ function sheetDb(){
     else if(key==="grammar"){ S.gram={st:obj.st||{},mine:obj.mine||{},custom:Array.isArray(obj.custom)?obj.custom:[],xp:obj.xp||{},cov3:!!obj.cov3}; }
     else if(/^e-/.test(key)&&S.marks[key]){ S.marks[key]={hl:obj.hl||[],ink:obj.ink||{}}; }
     else if(key==="lib-pos"){ libPosApply(obj); return; }
+    else if(key==="jlpt"){ S.jxS=obj&&obj.c?obj:{c:{}}; }
     else if(/^lib-/.test(key)){ if(LIB.open&&key==="lib-"+LIB.open.b.id){ LIB.marks=obj.m||{}; libRepaintAll(); var np=document.getElementById("lr-npad"); if(typeof obj.notes==="string"&&(!np||document.activeElement!==np)){ LIB.bookNotes=obj.notes; if(np) np.value=obj.notes; } libHlRefresh(); } return; }
     setTimeout(function(){
       if(S.tab==="grammar"&&!S.drill&&!S.quiz&&!S.gex) renderGrammar();
@@ -5700,8 +5957,8 @@ function sheetDb(){
     collection:function(){return {doc:function(k){return {get:function(){return get(k);},set:function(b){return set(k,b);}};}};}};
 }
 document.addEventListener("visibilitychange",function(){
-  if(document.visibilityState!=="visible"||!db||!db.reset||db.age()<30000||S.deck||S.drill||S.quiz) return;
-  db.reset(); S.marks={};
+  if(document.visibilityState!=="visible"||!db||!db.reset||db.age()<30000||S.deck||S.drill||S.quiz||(S.jx&&S.jx.deck)) return;
+  db.reset(); S.marks={}; S.jxSP=null; if(S.jlpt) jxLoadStats();
   Promise.all([loadStats(),loadGrammar()]).then(function(){ if(S.tab==="review") renderReview(); if(S.tab==="grammar") renderGrammar(); if(S.tab==="journal") renderEntries(); });
   loadAll();
 });
