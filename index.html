@@ -2180,7 +2180,7 @@ html[data-theme="light"] .jx,html[data-theme="reading"] .jx{--jx-mid:#7A5B12;--j
 .jx-b.strong{background:var(--matcha-soft);color:var(--matcha)}
 .jx-b.none{background:var(--line);color:var(--muted)}
 .jx-n{display:flex;flex-direction:column;align-items:flex-end;font-size:.78rem;color:var(--muted);white-space:nowrap}.jx-n b{color:var(--ink);font-size:.85rem}
-.jx-deck .progress{margin-top:18px}
+.jx-v-deck .progress{margin-top:18px}
 .jx-card{min-height:360px;justify-content:space-between;gap:14px}
 .jx-card.flipped{justify-content:flex-start;cursor:default}
 .jx-tag{align-self:flex-start;font-size:.75rem;font-weight:700;color:var(--warn);background:var(--warn-soft);padding:3px 10px;border-radius:10px}
@@ -2198,6 +2198,24 @@ html[data-theme="light"] .jx,html[data-theme="reading"] .jx{--jx-mid:#7A5B12;--j
 .jx-form{background:var(--paper);border-radius:10px;padding:9px 12px;font-size:.92rem;line-height:1.6}
 .jx-exrow{gap:6px;flex-wrap:nowrap;align-items:flex-start}.jx-exrow .jx-ex{flex:1}
 .jx-note{border-top:1px solid var(--line);padding-top:10px;color:var(--muted);font-size:.88rem}
+.kc-jlpt .tab[data-tab="review"],.kc-jlpt #v-review{display:none!important}
+.jx{max-width:780px;margin:0 auto}
+.card .face.jx-kj{font-size:clamp(5rem,26vw,8rem);line-height:1.1}
+.card .face.jx-vw{font-size:clamp(2.4rem,11vw,3.6rem);line-height:1.5}
+.card .face.jx-vw.l{font-size:clamp(1.9rem,8vw,2.8rem)}
+.card .face.jx-vw.xl{font-size:clamp(1.5rem,6vw,2.2rem)}
+.card .face.jx-vw ruby rt{font-size:.36em}
+.jx-tag.t-k{color:var(--ai);background:var(--ai-soft)}
+.jx-tag.t-v{color:var(--matcha);background:var(--matcha-soft)}
+.jx-rds{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.jx-rd{background:var(--paper);border-radius:10px;padding:8px 12px;display:flex;flex-direction:column;gap:2px;font-size:1.05rem}
+.jx-words{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.jx-words li{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:6px}
+.jx-words li:last-child{border-bottom:0}
+.jx-w{font-size:1.1rem}.jx-w ruby rt{font-size:.55em;color:var(--muted)}
+.jx-we{color:var(--muted);font-size:.88rem;margin-left:auto;text-align:right}
+.jx-kp{letter-spacing:.12em;font-family:var(--serif)}
+.jx-ansv .jx-exrow{align-items:center}
 .jx-done{text-align:center;padding:40px 10px 30px;display:flex;flex-direction:column;align-items:center;gap:10px}
 .jx-done>b{font-family:var(--serif);font-size:1.8rem}.jx-done p{margin:0;color:var(--muted)}
 .jx-tally{display:flex;gap:28px;margin:10px 0 18px}.jx-tally span{display:flex;flex-direction:column;align-items:center}.jx-tally b{font-size:2rem;font-family:var(--serif)}.jx-tally small{color:var(--muted)}
@@ -2629,9 +2647,13 @@ async function loadAll(){
   try{
     var got=await Promise.all([getValues("Vocab Bank!A1:O5000"),getValues("Journal!A1:J1001"),getValues("Grammar!A1:G300").catch(function(){return null;}),
       /* Phase 7: the JLPT reviewer's grammar cards. Only learners with jlpt can read this tab; for everyone else it fails quietly. */
-      window.KC_LEARNER?getValues("JLPT Grammar!A1:I1000").catch(function(e){return S.jlpt?{keep:1}:null;}):Promise.resolve(null)]);
+      window.KC_LEARNER?getValues("JLPT Grammar!A1:I1000").catch(function(e){return S.jlpt?{keep:1}:null;}):Promise.resolve(null),
+      window.KC_LEARNER?getValues("JLPT Kanji!A1:I1000").catch(function(e){return S.jlpt?{keep:1}:null;}):Promise.resolve(null)]);
     S.words=parseVocab(got[0]); S.entries=parseJournal(got[1]); S.loaded=true; S.lastSync=new Date();
-    if(got[3]&&!got[3].keep){ var jg=parseJxGrammar(got[3]); S.jlpt=jg.length?{g:jg}:null; }
+    if(!(got[3]&&got[3].keep)){ var jg=got[3]?parseJxGrammar(got[3]):[], jk=got[4]&&!got[4].keep?parseJxKanji(got[4]):((S.jlpt&&S.jlpt.k)||[]); S.jlpt=(jg.length||jk.length)?{g:jg,k:jk}:null; }
+    else if(got[4]&&!got[4].keep&&S.jlpt) S.jlpt.k=parseJxKanji(got[4]);
+    /* Phase 7: the reviewer's Home covers Review, so the Review tab is hidden for these accounts */
+    document.documentElement.classList.toggle("kc-jlpt",!!S.jlpt); if(S.jlpt&&S.tab==="review") setTab("add",{noAnim:true});
     if(got[2]) S.sheetG=parseGrammarTab(got[2]); else S.sheetG=S.sheetG||[];
   }catch(e){ S.error=e; }
   S.loading=false; renderAll();
@@ -2679,6 +2701,7 @@ function setTab(t,opts){
   opts=opts||{};
   if(window.KC_LEARNER&&(t==="journal"||t==="grammar")) t="add";
   if(t==="library"&&!libOwner()) t="add";
+  if(t==="review"&&S.jlpt) t="add";
   S.nav=S.nav||[]; if(!opts.fromBack&&S.prevTab&&S.prevTab!==t){ S.nav.push(S.prevTab); if(S.nav.length>30) S.nav.shift(); }
   if(t!=="journal"&&S.play) playStop();
   S.tab=t; store("kc-tab",t); document.body.setAttribute("data-tab",t);
@@ -5235,27 +5258,60 @@ function qSave(){ store("kc-qset",S.qs); }
   },{passive:true});
   el.addEventListener("scroll",function(e){ if(e.target.id!=="gq-track") return; clearTimeout(t); t=setTimeout(function(){ gqSync(false); },90); },true);
 })();
-/* ---------- Phase 7 (Nov 2026): Ara's JLPT N3 reviewer. Learners whose account has jlpt (set in Code.gs) get this Home.
-   Content comes from the read-only tabs "JLPT Grammar" (and later Kanji, Quiz, Reading), which the script sends to e.g. "Ara Grammar".
-   Progress lives in App Data under the key "jlpt": {c:{cardId:[right, missed, streak, lastDay]}}. Strength per group:
-   弱 under 60% right, 中 60 to 84%, 強 85% and up, 未 not started. ---------- */
+/* ---------- Phase 7 (Nov 2026): Ara's JLPT N3 reviewer. Learners whose account has jlpt (set in Code.gs) get this Home,
+   and the Review tab is hidden for them (Home covers it). Three flashcard sets share one flow:
+   語彙 Vocabulary = the learner's own word tab (S.words), grouped by its Tags column (the textbook themes);
+   文法 Grammar = "JLPT Grammar" tab; 漢字 Kanji = "JLPT Kanji" tab. The script sends both to e.g. "Ara Grammar", "Ara Kanji".
+   Progress lives in App Data under the key "jlpt": {c:{cardId:[right, missed, streak, lastDay]}}. Card ids: g001, k001, v:<word>.
+   Strength per group: 弱 under 60% right, 中 60 to 84%, 強 85% and up, 未 not started. ---------- */
 var JX_DATE="2026-12-06";
 var JX_GROUPS=[["理由・原因","Cause and reason"],["時間・順序","Time and order"],["条件","Conditions"],["推量・伝聞","Guessing and hearsay"],["目的・変化","Purpose and change"],["逆接・対比","Contrast"],["比較・程度","Comparison and degree"],["気持ち・意志","Feelings and intention"],["義務・可能","Must, can and can't"],["受身・使役","Passive and causative"],["話題・引用","Topic, quoting and adding"],["敬語","Keigo"],["接続詞・縮約形","Connectors and casual forms"]];
-S.jx={v:"home",sort:recall("kc-jx-sort")||"order",deck:null};
+var JX_SETS={
+  v:{k:"語",tone:"t-v",ja:"語彙",en:"Vocabulary",unit:["word","words"],sub:"Pick a theme. One card is one word.",all:"Review all vocabulary"},
+  g:{k:"文",tone:"t-g",ja:"文法",en:"Grammar",unit:["pattern","patterns"],sub:"Pick a group. One card is one pattern.",all:"Review all grammar"},
+  k:{k:"漢",tone:"t-k",ja:"漢字",en:"Kanji",unit:["kanji","kanji"],sub:"20 kanji per set, most common first.",all:"Review all kanji"}
+};
+S.jx={v:"home",set:"g",sort:recall("kc-jx-sort")||"order",deck:null};
 function parseJxGrammar(rows){
   var out=[];
   (rows||[]).forEach(function(r,i){
     if(i===0||!r) return; var c=function(k){return String(r[k]==null?"":r[k]).trim();};
     if(!c(0)||!c(2)) return;
-    out.push({id:c(0),grp:c(1)||"その他",p:c(2),m:c(3),f:c(4),ex:c(5),exEn:c(6),n:c(7),src:c(8)});
+    out.push({t:"g",id:c(0),grp:c(1)||"その他",p:c(2),m:c(3),f:c(4),ex:c(5),exEn:c(6),n:c(7),src:c(8)});
   });
   return out;
 }
-function jxGroups(){
-  var G=(S.jlpt&&S.jlpt.g)||[], order=JX_GROUPS.map(function(x){return x[0];}), map={};
-  G.forEach(function(it){ (map[it.grp]=map[it.grp]||[]).push(it); });
-  Object.keys(map).forEach(function(k){ if(order.indexOf(k)<0) order.push(k); });
-  return order.filter(function(k){return map[k];}).map(function(k,i){ var en=(JX_GROUPS.find(function(x){return x[0]===k;})||[k,""])[1]; return {ja:k,en:en,items:map[k],i:i}; });
+function parseJxKanji(rows){
+  var out=[];
+  (rows||[]).forEach(function(r,i){
+    if(i===0||!r) return; var c=function(k){return String(r[k]==null?"":r[k]).trim();};
+    if(!c(0)||!c(2)) return;
+    var words=c(6)?c(6).split(/\s*;\s*(?=[^|;]+\|)/).map(function(w){ var p=w.split("|"); return {jp:(p[0]||"").trim(),kana:(p[1]||"").trim(),en:(p[2]||"").trim()}; }).filter(function(w){return w.jp;}):[];
+    out.push({t:"k",id:c(0),grp:c(1)||"Set",kj:c(2),m:c(3),on:c(4),kun:c(5),words:words,st:c(7)});
+  });
+  return out;
+}
+/* vocabulary cards come from the learner's own word list, so new words show up here without extra work */
+function jxVocab(){
+  if(S.jxVC&&S.jxVC.src===S.words) return S.jxVC.items;
+  var seen={}, items=[];
+  S.words.forEach(function(w){ if(!w.jp||seen[w.jp]) return; seen[w.jp]=1;
+    var tag=(String(w.tags||"").split(",")[0]||"").trim()||"Other";
+    items.push({t:"v",id:"v:"+w.jp,grp:tag,jp:w.jp,kana:w.kana,en:w.en,type:w.type,exJp:w.exJp,exEn:w.exEn}); });
+  S.jxVC={src:S.words,items:items}; return items;
+}
+function jxItems(set){ return set==="v"?jxVocab():((S.jlpt&&S.jlpt[set])||[]); }
+function jxGroups(set){
+  var G=jxItems(set), map={}, order=[];
+  if(set==="g") order=JX_GROUPS.map(function(x){return x[0];});
+  G.forEach(function(it){ if(!map[it.grp]){ map[it.grp]=[]; if(order.indexOf(it.grp)<0) order.push(it.grp); } map[it.grp].push(it); });
+  return order.filter(function(k){return map[k];}).map(function(k,i){
+    var items=map[k], ja=k, en="";
+    if(set==="g") en=(JX_GROUPS.find(function(x){return x[0]===k;})||[k,""])[1];
+    if(set==="k"){ ja=k.replace(/^Set\s*/i,"セット "); en=items.slice(0,8).map(function(x){return x.kj;}).join(""); }
+    if(set==="v"){ ja=k; en=""; }
+    return {key:k,ja:ja,en:en,items:items,i:i};
+  });
 }
 function jxRec(id){ var r=(S.jxS&&S.jxS.c&&S.jxS.c[id])||null; return r?{r:+r[0]||0,m:+r[1]||0,s:+r[2]||0}:{r:0,m:0,s:0}; }
 function jxStrength(items){
@@ -5292,72 +5348,101 @@ function jxDays(){ var a=new Date(JX_DATE+"T00:00:00"), b=new Date(today()+"T00:
 function jxBar(pct){ return '<span class="jx-bar" aria-hidden="true"><i style="width:'+Math.max(0,Math.min(100,pct||0))+'%"></i></span>'; }
 var JX_CHEV='<svg class="jx-chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>';
 var JX_BACK='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>';
-function jxSet(o){
-  return '<button type="button" class="jx-set'+(o.soon?' soon':'')+'" data-jx="'+o.act+'"'+(o.soon?' aria-disabled="true"':'')+'><span class="jx-seal '+o.tone+'" lang="ja" aria-hidden="true">'+o.k+'</span>'+
+function jxSetCard(o){
+  return '<button type="button" class="jx-set'+(o.soon?' soon':'')+'" data-jx="'+o.act+'"'+(o.set?' data-s="'+o.set+'"':'')+(o.soon?' aria-disabled="true"':'')+'><span class="jx-seal '+o.tone+'" lang="ja" aria-hidden="true">'+o.k+'</span>'+
     '<span class="jx-st"><span class="jx-row"><b><span lang="ja">'+o.ja+'</span> '+o.en+'</b><small>'+o.count+'</small></span><small class="jx-sub">'+o.sub+'</small>'+(o.soon?'':jxBar(o.pct))+'</span>'+(o.soon?'':JX_CHEV)+'</button>';
 }
+function jxSetSummary(set){
+  var D=JX_SETS[set], items=jxItems(set), n=items.length, d=jxDone(items);
+  var weak=jxGroups(set).filter(function(g){return jxStrength(g.items).k==="weak";}).length;
+  return jxSetCard({act:"set",set:set,k:D.k,tone:D.tone,ja:D.ja,en:D.en,count:n.toLocaleString()+" "+D.unit[n===1?0:1],
+    sub:d+" right last time"+(weak?' · <span class="jx-weak">'+weak+(weak===1?' group needs':' groups need')+' work</span>':''),pct:n?d/n*100:0});
+}
+function jxAll(){ return jxItems("v").concat(jxItems("g"),jxItems("k")); }
 function jxHome(){
-  var G=(S.jlpt&&S.jlpt.g)||[], gd=jxDone(G), days=jxDays(), Gr=greeting();
-  var vw=S.words.length, vk=S.words.filter(function(w){return w.mastery==="Reviewing"||w.mastery==="Mastered";}).length;
-  var weak=jxGroups().filter(function(g){return jxStrength(g.items).k==="weak";}).length;
+  var days=jxDays(), Gr=greeting();
   var h='<div class="greet-wrap jx-greet"><h2 class="greet"><span lang="ja">'+Gr[0]+'</span><span>'+esc((window.KC_ME&&window.KC_ME.name)||"")+'</span></h2><p class="greet-sub">JLPT N3 reviewer</p></div>';
   if(days>=0) h+='<section class="jx-count" aria-label="Days to the exam"><div><span class="jx-cl" lang="ja">'+rubyText(days?'試験(しけん)まで':'今日(きょう)は試験日(しけんび)')+'</span>'+(days?'<span class="jx-cd"><b>'+days+'</b><span lang="ja">日</span></span>':'<span class="jx-cd"><b lang="ja">がんばって！</b></span>')+'<span class="jx-cl">Sunday, December 6</span></div>'+
-    (G.length?'<button type="button" class="jx-today" data-jx="today"><span lang="ja">今日の復習</span><small>Mixed grammar, weakest first</small></button>':'')+'</section>';
+    (jxAll().length?'<button type="button" class="jx-today" data-jx="today"><span lang="ja">今日の復習</span><small>Words, grammar and kanji, weakest first</small></button>':'')+'</section>';
   h+='<h3 class="jx-h">Flashcard sets</h3><div class="jx-sets">'+
-    jxSet({act:"vocab",k:"語",tone:"t-v",ja:"語彙",en:"Vocabulary",count:vw.toLocaleString()+(vw===1?" word":" words"),sub:"Your word list, in Review",pct:vw?vk/vw*100:0})+
-    (G.length?jxSet({act:"grammar",k:"文",tone:"t-g",ja:"文法",en:"Grammar",count:G.length+" patterns",sub:gd+" right last time"+(weak?' · <span class="jx-weak">'+weak+(weak===1?' group needs':' groups need')+' work</span>':''),pct:gd/G.length*100}):'')+
-    jxSet({act:"",soon:1,k:"漢",tone:"t-k",ja:"漢字",en:"Kanji",count:"Coming next",sub:"Readings, meaning and common words"})+
+    (jxItems("v").length?jxSetSummary("v"):'')+
+    (jxItems("g").length?jxSetSummary("g"):'')+
+    (jxItems("k").length?jxSetSummary("k"):jxSetCard({act:"",soon:1,k:"漢",tone:"t-k",ja:"漢字",en:"Kanji",count:"Coming next",sub:"Readings, meaning and common words"}))+
   '</div><h3 class="jx-h">Practice</h3><div class="jx-sets">'+
-    jxSet({act:"",soon:1,k:"問",tone:"t-q",ja:"模擬問題",en:"Quiz",count:"Coming soon",sub:"Multiple choice, like the real test"})+
-    jxSet({act:"",soon:1,k:"読",tone:"t-r",ja:"読解",en:"Reading",count:"Coming soon",sub:"Short texts with questions"})+
+    jxSetCard({act:"",soon:1,k:"問",tone:"t-q",ja:"模擬問題",en:"Quiz",count:"Coming soon",sub:"Multiple choice, like the real test"})+
+    jxSetCard({act:"",soon:1,k:"読",tone:"t-r",ja:"読解",en:"Reading",count:"Coming soon",sub:"Short texts with questions"})+
   '</div>';
   return h;
 }
-function jxGrammarView(){
-  var gs=jxGroups(), sort=S.jx.sort, rows=gs.map(function(g){ var st=jxStrength(g.items), d=jxDone(g.items); return {g:g,st:st,d:d}; });
+function jxSetView(){
+  var set=S.jx.set, D=JX_SETS[set], gs=jxGroups(set), sort=S.jx.sort, rows=gs.map(function(g){ return {g:g,st:jxStrength(g.items),d:jxDone(g.items)}; });
   var rank={weak:0,mid:1,strong:2,none:3};
   if(sort==="weak") rows.sort(function(a,b){ return rank[a.st.k]-rank[b.st.k]||((a.st.pct||0)-(b.st.pct||0))||a.g.i-b.g.i; });
   if(sort==="new") rows=rows.filter(function(r){return r.st.k==="none";});
-  var all=(S.jlpt&&S.jlpt.g)||[];
+  var all=jxItems(set);
   var chips=[["order","All"],["weak","Weakest first"],["new","Not started"]].map(function(c){ return '<button type="button" class="jx-chip" data-jx="sort" data-v="'+c[0]+'" aria-pressed="'+(sort===c[0])+'">'+c[1]+'</button>'; }).join("");
-  var h='<button type="button" class="jx-back" data-jx="home">'+JX_BACK+'<span>Home</span></button>'+
-    '<div class="jx-head"><span class="jx-seal t-g" lang="ja" aria-hidden="true">文</span><div><h2 lang="ja">文法 <span>Grammar</span></h2><p>Pick a group. One card is one pattern.</p></div></div>'+
-    '<button type="button" class="btn primary jx-all" data-jx="all">Review all grammar <small>'+jxDone(all)+' / '+all.length+'</small></button>'+
+  return '<button type="button" class="jx-back" data-jx="home">'+JX_BACK+'<span>Home</span></button>'+
+    '<div class="jx-head"><span class="jx-seal '+D.tone+'" lang="ja" aria-hidden="true">'+D.k+'</span><div><h2 lang="ja">'+D.ja+' <span>'+D.en+'</span></h2><p>'+D.sub+'</p></div></div>'+
+    '<button type="button" class="btn primary jx-all" data-jx="all">'+D.all+' <small>'+jxDone(all)+' / '+all.length+'</small></button>'+
     '<div class="jx-chips" role="group" aria-label="Sort groups">'+chips+'</div>'+
     '<p class="jx-key"><span><span class="jx-b weak" lang="ja">弱</span>under 60% right</span><span><span class="jx-b mid" lang="ja">中</span>60 to 84%</span><span><span class="jx-b strong" lang="ja">強</span>85%+</span><span><span class="jx-b none" lang="ja">未</span>not started</span></p>'+
     '<div class="jx-groups">'+(rows.length?rows.map(function(r){
-      return '<button type="button" class="jx-grp" data-jx="grp" data-g="'+esc(r.g.ja)+'"><span class="jx-b '+r.st.k+'" lang="ja" title="'+(r.st.pct==null?'Not started':r.st.pct+'% right')+'">'+r.st.b+'</span>'+
-        '<span class="jx-gt"><span class="jx-row"><b lang="ja">'+esc(r.g.ja)+'</b><small>'+esc(r.g.en)+'</small></span>'+jxBar(r.d/r.g.items.length*100)+'</span>'+
+      return '<button type="button" class="jx-grp" data-jx="grp" data-g="'+esc(r.g.key)+'"><span class="jx-b '+r.st.k+'" lang="ja" title="'+(r.st.pct==null?'Not started':r.st.pct+'% right')+'">'+r.st.b+'</span>'+
+        '<span class="jx-gt"><span class="jx-row"><b lang="ja">'+esc(r.g.ja)+'</b>'+(r.g.en?'<small'+(set==="k"?' lang="ja" class="jx-kp"':'')+'>'+esc(r.g.en)+'</small>':'')+'</span>'+jxBar(r.d/r.g.items.length*100)+'</span>'+
         '<span class="jx-n">'+(r.st.pct!=null?'<b>'+r.st.pct+'%</b>':'')+r.d+' / '+r.g.items.length+'</span>'+JX_CHEV+'</button>';
     }).join(""):'<p class="hint">Every group has been started. Nice.</p>')+'</div>';
-  return h;
 }
-function jxStart(items,label,back,limit){
+function jxStart(items,label,back,limit,key){
   var cards=jxOrder(items); if(limit) cards=cards.slice(0,limit);
   if(!cards.length) return;
-  S.jx.deck={label:label,back:back,cards:cards,i:0,flipped:false,good:0,again:0,missed:[]};
+  S.jx.deck={label:label,key:key||"",back:back,cards:cards,i:0,flipped:false,good:0,again:0,missed:[]};
   S.jx.v="deck"; renderHome(); window.scrollTo(0,0);
 }
 function jxFace(t,flip){ return (S.furi==="always"||flip)?rubyText(t):esc(stripFuri(t)); }
+function jxWordFace(jp,kana,flip){ return (S.furi==="always"||flip)?rubyWord(jp,kana):esc(jp); }
+function jxTag(it){ return it.t==="k"?it.grp.replace(/^Set\s*/i,"漢字 · セット "):it.t==="v"?"語彙 · "+it.grp:it.grp; }
+var JX_HINT={g:"What does it mean? How is it formed?",k:"Readings and meaning?",v:"Reading and meaning?"};
+function jxCardBody(it,f,D){
+  var tag=(D.key!==it.grp?'<span class="jx-tag t-'+it.t+'" lang="ja">'+esc(jxTag(it))+'</span>':'<span></span>');
+  var tts=TTS&&S.voice!=="off";
+  if(it.t==="k"){
+    var b=tag+'<div class="face jx-kj" lang="ja">'+esc(it.kj)+'</div>';
+    if(!f) return b+'<span class="tap">'+JX_HINT.k+'</span>';
+    var kn=it.kun?'<div class="jx-rd"><span class="jx-lab">訓 Kun</span><span lang="ja">'+esc(it.kun)+'</span></div>':'';
+    return b+'<div class="back jx-ans"><div class="meaning">'+esc(it.m)+'</div>'+
+      '<div class="jx-rds">'+(it.on?'<div class="jx-rd"><span class="jx-lab">音 On</span><span lang="ja">'+esc(it.on)+'</span></div>':'')+kn+'</div>'+
+      (it.words.length?'<div class="jx-blk"><span class="jx-lab">Common words</span><ul class="jx-words">'+it.words.map(function(w){
+        return '<li><span class="jx-w" lang="ja">'+rubyWord(w.jp,w.kana)+'</span>'+(tts?sayBtn(w.kana||w.jp,"Play "+w.jp):'')+'<span class="jx-we">'+esc(w.en)+'</span></li>'; }).join("")+'</ul></div>':'')+
+      (it.st?'<div class="jx-note">'+esc(it.st)+' strokes</div>':'')+'</div>';
+  }
+  if(it.t==="v"){
+    var plv=it.jp.length;
+    var bv=tag+'<div class="face jx-vw'+(plv>8?' xl':plv>5?' l':'')+'" lang="ja">'+jxWordFace(it.jp,it.kana,f)+'</div>';
+    if(!f) return bv+'<span class="tap">'+JX_HINT.v+'</span>';
+    return bv+'<div class="back jx-ans jx-ansv"><div class="jx-exrow row"><div class="meaning">'+esc(it.en)+'</div>'+(tts?sayBtn(it.kana||it.jp,"Play the word"):"")+'</div>'+
+      '<div class="sub" lang="ja">'+(it.kana&&it.kana!==it.jp?esc(it.kana)+(it.type?' · ':''):'')+(it.type?'<span lang="en">'+esc(it.type)+'</span>':'')+'</div>'+
+      (it.exJp?'<div class="jx-blk"><span class="jx-lab">Example</span><p class="jx-ex" lang="ja">'+rubyText(it.exJp)+'</p>'+(it.exEn?'<div class="sub">'+esc(it.exEn)+'</div>':'')+'</div>':'')+'</div>';
+  }
+  var plen=stripFuri(it.p).length;
+  var body=tag+'<div class="face jx-pat'+(plen>12?' xl':plen>7?' l':'')+'" lang="ja">'+jxFace(it.p,f)+'</div>';
+  if(!f) return body+(it.ex?'<p class="jx-ex" lang="ja">'+jxFace(it.ex,false)+'</p>':'')+'<span class="tap">'+JX_HINT.g+'</span>';
+  return body+'<div class="back jx-ans"><div class="meaning">'+esc(it.m)+'</div>'+
+    (it.f?'<div class="jx-blk"><span class="jx-lab">How to form</span><div class="jx-form" lang="ja">'+esc(it.f)+'</div></div>':'')+
+    (it.ex?'<div class="jx-blk"><span class="jx-lab">Example</span><div class="row jx-exrow"><p class="jx-ex" lang="ja">'+rubyText(it.ex)+'</p>'+(tts?sayBtn(stripFuri(it.ex),"Play the example"):"")+'</div>'+(it.exEn?'<div class="sub">'+esc(it.exEn)+'</div>':'')+'</div>':'')+
+    (it.n?'<div class="jx-note">'+esc(it.n)+'</div>':'')+'</div>';
+}
 function jxDeckView(){
   var D=S.jx.deck, n=D.cards.length;
   if(D.i>=n){
-    return '<button type="button" class="jx-back" data-jx="close">'+JX_BACK+'<span>'+(D.back==="grammar"?"Grammar":"Home")+'</span></button>'+
-      '<div class="jx-done"><b lang="ja">おつかれさま！</b><p>'+esc(D.label)+'</p><div class="jx-tally"><span><b>'+D.good+'</b><small lang="ja">できた</small></span><span><b>'+D.again+'</b><small lang="ja">もう一回</small></span></div>'+
+    return '<button type="button" class="jx-back" data-jx="close">'+JX_BACK+'<span>'+(D.back==="set"?JX_SETS[S.jx.set].en:"Home")+'</span></button>'+
+      '<div class="jx-done"><b lang="ja">おつかれさま！</b><p lang="ja">'+esc(D.label)+'</p><div class="jx-tally"><span><b>'+D.good+'</b><small lang="ja">できた</small></span><span><b>'+D.again+'</b><small lang="ja">もう一回</small></span></div>'+
       '<div class="row" style="justify-content:center;gap:10px;flex-wrap:wrap">'+(D.missed.length?'<button type="button" class="btn primary" data-jx="redo">Review the '+D.missed.length+' missed</button>':'')+'<button type="button" class="btn" data-jx="close">Done</button></div></div>';
   }
-  var it=D.cards[D.i], f=D.flipped, say=stripFuri(it.ex);
+  var it=D.cards[D.i], f=D.flipped;
   var furiBtn='<button class="autoplay furi-tg" data-jx="furi" aria-pressed="'+(S.furi==="always")+'" title="Furigana '+(S.furi==="always"?"on":"off")+'"><span class="furi-ico" lang="ja" aria-hidden="true"><ruby>漢<rt>かん</rt></ruby></span><span>Furigana '+(S.furi==="always"?"on":"off")+'</span></button>';
-  var plen=stripFuri(it.p).length;
-  var body=(D.label!==it.grp?'<span class="jx-tag" lang="ja">'+esc(it.grp)+'</span>':'<span></span>')+'<div class="face jx-pat'+(plen>12?' xl':plen>7?' l':'')+'" lang="ja">'+jxFace(it.p,f)+'</div>';
-  if(!f) body+=(it.ex?'<p class="jx-ex" lang="ja">'+jxFace(it.ex,false)+'</p>':'')+'<span class="tap">Tap to show the answer</span>';
-  else body+='<div class="back jx-ans"><div class="meaning">'+esc(it.m)+'</div>'+
-    (it.f?'<div class="jx-blk"><span class="jx-lab">How to form</span><div class="jx-form" lang="ja">'+esc(it.f)+'</div></div>':'')+
-    (it.ex?'<div class="jx-blk"><span class="jx-lab">Example</span><div class="row jx-exrow"><p class="jx-ex" lang="ja">'+rubyText(it.ex)+'</p>'+(TTS&&S.voice!=="off"?sayBtn(say,"Play the example"):"")+'</div>'+(it.exEn?'<div class="sub">'+esc(it.exEn)+'</div>':'')+'</div>':'')+
-    (it.n?'<div class="jx-note">'+esc(it.n)+'</div>':'')+'</div>';
   return '<div class="progress"><span lang="ja">'+esc(D.label)+'</span>'+furiBtn+'<span>'+(D.i+1)+' of '+n+'</span></div>'+
     '<div class="bar"><i style="width:'+(D.i/n*100)+'%"></i></div>'+
-    '<div class="card jx-card'+(f?' flipped':'')+'" data-jx="flip" role="button" tabindex="0" aria-label="'+(f?"Card answer":"Show answer")+'">'+body+'</div>'+
+    '<div class="card jx-card'+(f?' flipped':'')+'" data-jx="flip" role="button" tabindex="0" aria-label="'+(f?"Card answer":"Show answer")+'">'+jxCardBody(it,f,D)+'</div>'+
     (f?'<div class="grade"><button class="btn again" data-jx="again">Again</button><button class="btn good" data-jx="good">Got it</button></div>'
       :'<div class="grade"><button class="btn" data-jx="flip" style="grid-column:1/-1">Show answer</button></div>')+
     '<div class="row" style="margin-top:14px"><button class="btn ghost" data-jx="end"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>End review</button></div>';
@@ -5366,14 +5451,15 @@ function jxRender(){
   var el=$("#home-tiles"); if(!el) return;
   if(!S.jxS){ jxLoadStats(); el.innerHTML=LOADER_HTML; return; }
   var v=S.jx.v; if(v==="deck"&&!S.jx.deck) v=S.jx.v="home";
-  el.innerHTML='<div class="jx jx-'+v+'">'+(v==="grammar"?jxGrammarView():v==="deck"?jxDeckView():jxHome())+'</div>';
+  if(v==="set"&&!jxItems(S.jx.set).length) v=S.jx.v="home";
+  el.innerHTML='<div class="jx jx-v-'+v+'">'+(v==="set"?jxSetView():v==="deck"?jxDeckView():jxHome())+'</div>';
 }
 function jxGo(v){ S.jx.v=v; renderHome(); window.scrollTo(0,0); }
-function jxClose(){ var D=S.jx.deck; S.jx.deck=null; jxGo(D&&D.back==="grammar"?"grammar":"home"); }
-/* back button: closes a session (asks first if it isn't finished), then Grammar, then the tabs as before */
+function jxClose(){ var D=S.jx.deck; S.jx.deck=null; jxGo(D&&D.back==="set"?"set":"home"); }
+/* back button: closes a session (asks first if it isn't finished), then the set page, then the tabs as before */
 function jxBackStep(){
   if(S.jx.v==="deck"&&S.jx.deck){ var D=S.jx.deck; if(D.i>=D.cards.length||D.i===0&&!D.flipped) jxClose(); else leaveAsk("review",jxClose); return true; }
-  if(S.jx.v==="grammar"){ jxGo("home"); return true; }
+  if(S.jx.v==="set"){ jxGo("home"); return true; }
   return false;
 }
 function jxGrade(ok){
@@ -5381,22 +5467,27 @@ function jxGrade(ok){
   jxMark(it,ok); if(ok) D.good++; else { D.again++; D.missed.push(it); }
   D.i++; D.flipped=false; jxSave(); renderHome();
 }
+function jxLimit(n){ return S.size==="all"?n:(+S.size||10); }
 $("#home-tiles").addEventListener("click",function(e){
   if(!S.jlpt) return;
   var b=e.target.closest("[data-jx]"); if(!b||e.target.closest('[data-act="say"]')) return;
-  var a=b.dataset.jx, all=(S.jlpt&&S.jlpt.g)||[];
-  if(a==="vocab"){ setTab("review"); window.scrollTo(0,0); }
-  else if(a==="grammar") jxGo("grammar");
+  var a=b.dataset.jx, set=S.jx.set;
+  if(a==="set"){ S.jx.set=b.dataset.s; jxGo("set"); }
   else if(a==="home") jxGo("home");
-  else if(a==="today") jxStart(all,"今日の復習","home",S.size==="all"?20:+S.size||10);
-  else if(a==="all") jxStart(all,"文法 · All grammar","grammar",S.size==="all"?all.length:+S.size||10);
-  else if(a==="grp"){ var g=jxGroups().find(function(x){return x.ja===b.dataset.g;}); if(g) jxStart(g.items,g.ja,"grammar"); }
+  else if(a==="today"){
+    /* an even share from each set, weakest first in each, then mixed together */
+    var N=S.size==="all"?21:Math.max(3,+S.size||10), parts=["v","g","k"].map(jxItems).filter(function(x){return x.length;}), per=Math.ceil(N/Math.max(1,parts.length)), pick=[];
+    parts.forEach(function(x){ pick=pick.concat(jxOrder(x).slice(0,per)); });
+    if(pick.length){ S.jx.deck={label:"今日の復習",key:"",back:"home",cards:shuffle(pick).slice(0,N),i:0,flipped:false,good:0,again:0,missed:[]}; S.jx.v="deck"; renderHome(); window.scrollTo(0,0); }
+  }
+  else if(a==="all"){ var it=jxItems(set); jxStart(it,JX_SETS[set].ja+" · All","set",jxLimit(it.length)); }
+  else if(a==="grp"){ var g=jxGroups(set).find(function(x){return x.key===b.dataset.g;}); if(g) jxStart(g.items,g.ja,"set",set==="v"?Math.max(20,jxLimit(20)):0,g.key); }
   else if(a==="sort"){ S.jx.sort=b.dataset.v; store("kc-jx-sort",S.jx.sort); renderHome(); }
   else if(a==="flip"){ var D=S.jx.deck; if(D&&!D.flipped){ D.flipped=true; renderHome(); } }
   else if(a==="good"||a==="again") jxGrade(a==="good");
   else if(a==="furi"){ S.furi=S.furi==="always"?"flip":"always"; store("kc-furi",S.furi); renderHome(); }
   else if(a==="end"){ var D2=S.jx.deck; if(D2&&D2.i>0) D2.cards=D2.cards.slice(0,D2.i); else jxClose(); renderHome(); }
-  else if(a==="redo"){ var D3=S.jx.deck; jxStart(D3.missed,D3.label,D3.back); }
+  else if(a==="redo"){ var D3=S.jx.deck; jxStart(D3.missed,D3.label,D3.back,0,D3.key); }
   else if(a==="close") jxClose();
 });
 document.addEventListener("keydown",function(e){
