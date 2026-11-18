@@ -2244,6 +2244,9 @@ html[data-theme="light"] .jx,html[data-theme="reading"] .jx{--jx-mid:#7A5B12;--j
 .jxr-p{margin:0;text-indent:1em}
 .jxr-note{margin:0;font-size:.88rem;color:var(--muted);font-family:inherit;line-height:1.8}
 .jxr-gap{height:8px}
+.jxr-img{margin:10px 0;text-align:center}.jxr-img img{display:block;width:100%;height:auto;background:#fff;border-radius:8px;border:1px solid var(--line)}
+.jxr-img img{cursor:zoom-in}.jxr-img.zoom{overflow-x:auto}.jxr-img.zoom img{width:220%;max-width:none;cursor:zoom-out}
+.jxr-img .hint{display:block;padding:24px 8px;color:var(--muted);font-family:inherit;font-size:.9rem}
 .jxr-grid{border-collapse:collapse;margin:6px 0;font-size:1rem}.jxr-grid td{border:1px solid var(--line);padding:2px 8px;text-align:center;white-space:nowrap}
 .jxr-q{display:flex;flex-direction:column;gap:8px;padding-top:6px}
 .jxr-q+.jxr-q{border-top:1px solid var(--line);padding-top:14px}
@@ -2322,6 +2325,8 @@ html[data-theme="light"] .jx,html[data-theme="reading"] .jx{--jx-mid:#7A5B12;--j
   function aiCheck(){ if(!aiReady) aiReady=call({action:"ai_status"}).then(function(j){return !!j.ai;}).catch(function(){return false;}); return aiReady; }
   /* Phase 6: PDF library, owner only. The script checks this too. */
   window.kcLib={list:function(){return call({action:"lib_list"});},part:function(id,i){return call({action:"lib_get",id:id,part:i});}};
+  /* Nov 18: reading-passage pictures, kept in a private Drive folder and sent by the script */
+  window.kcJxImg=function(n){return call({action:"jlpt_img",name:n});};
   window.claude={use:async function(n){
     if(!conf()) return null;
     if(n==="mcp") return mcp;
@@ -5503,7 +5508,7 @@ function jxRender(){
   var v=S.jx.v; if(v==="deck"&&!S.jx.deck) v=S.jx.v="home";
   if(v==="set"&&!jxItems(S.jx.set).length) v=S.jx.v="home";
   el.innerHTML='<div class="jx jx-v-'+v+'">'+(v==="set"?jxSetView():v==="deck"?jxDeckView():jxHome())+'</div>';
-  S.jx.anim=null;
+  S.jx.anim=null; if(v==="deck") jxImgFill();
 }
 function jxGo(v){ S.jx.v=v; renderHome(); window.scrollTo(0,0); }
 function jxClose(){ var D=S.jx.deck; S.jx.deck=null; jxGo(D&&D.back==="set"?"set":"home"); }
@@ -5538,6 +5543,8 @@ $("#home-tiles").addEventListener("click",function(e){
   else if(a==="pick") jxPick(+b.dataset.i);
   else if(a==="rpick") jxRPick(+b.dataset.q,+b.dataset.i);
   else if(a==="next") jxNext();
+  else if(a==="imgretry"){ delete S.jxImg[b.dataset.n]; jxImgFill(); }
+  else if(a==="imgzoom") b.parentNode.classList.toggle("zoom");
   else if(a==="good"||a==="again") jxGrade(a==="good");
   else if(a==="furi"){ S.furi=S.furi==="always"?"flip":"always"; store("kc-furi",S.furi); renderHome(); }
   else if(a==="end"){ var D2=S.jx.deck; if(D2&&D2.i>0) D2.cards=D2.cards.slice(0,D2.i); else jxClose(); renderHome(); }
@@ -5684,10 +5691,24 @@ function jxrText(t){
     if(tk.length>=3&&l.indexOf("。")<0&&tk.every(function(x){return x.length<=4;})){ grid.push(tk); return; }
     flush();
     if(!l.trim()){ h+='<div class="jxr-gap"></div>'; return; }
+    var im=l.trim().match(/^\{\{img:([a-z0-9]+)\}\}$/);
+    if(im){ var ci=S.jxImg[im[1]]; h+=ci&&ci.src?'<div class="jxr-img"><img src="'+ci.src+'" alt="" data-jx="imgzoom" title="Tap to zoom"></div>':'<div class="jxr-img" data-img="'+im[1]+'"><span class="hint">Loading the picture…</span></div>'; return; }
     var note=/^(※|本の 問題)/.test(l.trim());
     h+='<p class="'+(note?'jxr-note':'jxr-p')+'">'+jxrLine(l)+'</p>';
   });
   flush(); return h;
+}
+/* pictures load once per visit and stay in memory, so going back and forth doesn't fetch them again */
+S.jxImg=S.jxImg||{};
+function jxImgFill(){
+  document.querySelectorAll(".jxr-img[data-img]").forEach(function(el){
+    var n=el.dataset.img, c=S.jxImg[n];
+    if(c&&c.src){ el.innerHTML='<img src="'+c.src+'" alt="" data-jx="imgzoom" title="Tap to zoom">'; el.removeAttribute("data-img"); return; }
+    if(c&&c.err){ el.innerHTML='<span class="hint">Couldn’t load the picture. <button type="button" class="btn ghost" data-jx="imgretry" data-n="'+n+'">Try again</button></span>'; return; }
+    if(c&&c.p) return;
+    if(!window.kcJxImg){ el.innerHTML='<span class="hint">The picture isn’t available here.</span>'; return; }
+    S.jxImg[n]={p:window.kcJxImg(n).then(function(j){ S.jxImg[n]={src:"data:"+(j.mime||"image/jpeg")+";base64,"+j.data}; },function(){ S.jxImg[n]={err:1}; }).then(jxImgFill)};
+  });
 }
 function jxrBody(it,D){
   var ra=D.ra||[];
