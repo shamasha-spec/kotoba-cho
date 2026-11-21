@@ -2042,6 +2042,8 @@ body.lib-open{overflow:hidden}
 .st-body{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:24px 22px;overflow:auto;touch-action:pan-y;cursor:default}
 .st-page{width:min(640px,100%);margin:auto 0;font-family:var(--serif);font-size:clamp(1.3rem,4.4vw,1.7rem);line-height:2.35;color:var(--ink)}
 .st-ln{margin:0 0 .5em;word-break:keep-all;overflow-wrap:anywhere}
+.st-pic{display:block;width:min(560px,100%);aspect-ratio:400/250;height:auto;margin:0 auto 22px;border-radius:18px;background:#DDE9EF}
+@media (min-width:900px) and (orientation:landscape){.st-page.has-pic{width:min(1120px,100%);display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:44px;align-items:center}.st-page.has-pic .st-pic{margin:0;width:100%}}
 .st-page.in-n{animation:stInN .38s cubic-bezier(.22,.9,.24,1)}
 .st-page.in-p{animation:stInP .38s cubic-bezier(.22,.9,.24,1)}
 .st-page.bump-n{animation:stBumpN .3s ease}
@@ -6532,9 +6534,11 @@ function stClick(e){
 function stShow(dir){
   var O=ST.open; if(!O) return;
   var pg=O.el.querySelector("#st-page"), last=O.p===O.n-1;
-  pg.innerHTML=O.s.pages[O.p].map(function(l){ return '<p class="st-ln" lang="ja">'+rubyText(l)+'</p>'; }).join("")+
-    (last?'<div class="st-end"><b lang="ja">おわり</b><span>'+esc(O.s.en||"")+(O.s.from?' · '+esc(O.s.from):'')+'</span><div class="row" style="justify-content:center;gap:8px"><button class="btn small" data-act="st-again">Read again</button><button class="btn primary small" data-act="st-close">Back to the shelf</button></div></div>':'');
-  pg.className="st-page"; if(dir){ void pg.offsetWidth; pg.classList.add(dir>0?"in-n":"in-p"); }
+  var pic=O.s.img?O.s.img+String(O.p+1).padStart(2,"0")+".svg":"";
+  if(O.s.img&&O.p+1<O.n){ var nx=new Image(); nx.src=O.s.img+String(O.p+2).padStart(2,"0")+".svg"; }
+  pg.innerHTML=(pic?'<img class="st-pic" src="'+esc(pic)+'" alt="" draggable="false">':'')+'<div class="st-tx">'+O.s.pages[O.p].map(function(l){ return '<p class="st-ln" lang="ja">'+rubyText(l)+'</p>'; }).join("")+
+    (last?'<div class="st-end"><b lang="ja">おわり</b><span>'+esc(O.s.en||"")+(O.s.from?' · '+esc(O.s.from):'')+'</span><div class="row" style="justify-content:center;gap:8px"><button class="btn small" data-act="st-again">Read again</button><button class="btn primary small" data-act="st-close">Back to the shelf</button></div></div>':'')+'</div>';
+  pg.className="st-page"+(pic?" has-pic":""); if(dir){ void pg.offsetWidth; pg.classList.add(dir>0?"in-n":"in-p"); }
   O.el.querySelector("#st-body").scrollTop=0;
   O.el.querySelector("#st-pg").textContent=(O.p+1)+" / "+O.n;
   O.el.querySelector("#st-bar").style.width=Math.round((O.p+1)/O.n*100)+"%";
@@ -6544,7 +6548,7 @@ function stShow(dir){
 }
 function stGo(d){
   var O=ST.open; if(!O) return; var np=O.p+d;
-  if(np<0||np>=O.n){ var pg=O.el.querySelector("#st-page"); pg.className="st-page"; void pg.offsetWidth; pg.classList.add(d>0?"bump-n":"bump-p"); return; }
+  if(np<0||np>=O.n){ var pg=O.el.querySelector("#st-page"); pg.className="st-page"+(O.s.img?" has-pic":""); void pg.offsetWidth; pg.classList.add(d>0?"bump-n":"bump-p"); return; }
   O.p=np; stShow(d);
 }
 function stClose(quiet){
