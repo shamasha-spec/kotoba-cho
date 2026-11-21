@@ -2028,6 +2028,34 @@ body.lib-open{overflow:hidden}
 .le-last{margin:0;font-size:1rem;line-height:2}
 .lib-reader.cont{animation:lrCont .35s ease}
 @keyframes lrCont{from{opacity:.4}to{opacity:1}}
+/* Nov 21: graded stories (よみもの shelf and story reader) */
+.st-shelf{margin:0 0 26px}
+.st-hd{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;margin:0 0 14px}
+.st-hd h3{margin:0;font-family:var(--serif);font-size:1.2rem;color:var(--ink)}
+.st-hd span{color:var(--muted);font-size:.85rem}
+.st-shelf+.lib-top{border-top:1px solid var(--line);padding-top:18px}
+.lib-book .st-done{color:var(--matcha);font-weight:700}
+.st-reader{position:fixed;inset:0;z-index:250;background:var(--paper);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);animation:lrIn .3s cubic-bezier(.22,.9,.24,1)}
+.st-reader.out{animation:stOut .22s ease forwards}
+@keyframes stOut{to{opacity:0;transform:translateY(12px)}}
+.st-reader .lr-t ruby rt{font-weight:500}
+.st-body{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:24px 22px;overflow:auto;touch-action:pan-y;cursor:default}
+.st-page{width:min(640px,100%);margin:auto 0;font-family:var(--serif);font-size:clamp(1.3rem,4.4vw,1.7rem);line-height:2.35;color:var(--ink)}
+.st-ln{margin:0 0 .5em;word-break:keep-all;overflow-wrap:anywhere}
+.st-page.in-n{animation:stInN .38s cubic-bezier(.22,.9,.24,1)}
+.st-page.in-p{animation:stInP .38s cubic-bezier(.22,.9,.24,1)}
+.st-page.bump-n{animation:stBumpN .3s ease}
+.st-page.bump-p{animation:stBumpP .3s ease}
+@keyframes stInN{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+@keyframes stInP{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}
+@keyframes stBumpN{40%{transform:translateX(-10px)}}
+@keyframes stBumpP{40%{transform:translateX(10px)}}
+.st-end{display:grid;justify-items:center;gap:12px;margin-top:30px;font-family:var(--sans);line-height:1.4}
+.st-end b{font-family:var(--serif);font-size:2.2rem}
+.st-end span{color:var(--muted);font-size:.88rem}
+.st-foot{display:flex;align-items:center;gap:10px;width:min(760px,100%);margin:0 auto;padding:8px 12px calc(10px + env(safe-area-inset-bottom,0px));flex:none}
+.st-foot .lib-bar{flex:1;margin:0}
+@media (prefers-reduced-motion: reduce){.st-reader,.st-reader.out,.st-page.in-n,.st-page.in-p,.st-page.bump-n,.st-page.bump-p{animation:none}}
 /* Offline books (Nov 12) */
 .lib-book{position:relative}
 .lib-ok{position:absolute;top:6px;right:6px;z-index:3;min-width:22px;height:22px;padding:0 6px;box-sizing:border-box;border-radius:11px;background:var(--matcha);color:#fff;font-size:.72rem;font-weight:700;display:grid;place-items:center;box-shadow:0 2px 6px -2px rgba(0,0,0,.35)}
@@ -5770,6 +5798,7 @@ function quitDeck(){ S.deck=null; renderReview(); renderHome(); }
 window.addEventListener("popstate",function(){
   var lv=document.querySelector(".kc-leave"); if(lv){ lv.remove(); navGuard(); return; }
   if((LIB.card&&!LIB.card.idle)||LIB.note){ if(LIB.card&&!LIB.card.idle) libCardClose(); libNoteClose(); navGuard(); return; }
+  if(ST.open){ stClose(); navGuard(); return; }
   if(LIB.open){ libClose(); navGuard(); return; }
   if(LIB.sheet){ libSeriesClose(); navGuard(); return; }
   var pop=document.querySelector(".tea-pop,.sage-cel"); if(pop){ pop.click(); navGuard(); return; }
@@ -6413,6 +6442,7 @@ function renderLibrary(){
   if(!B) h+=LIB.loading?'<p class="lib-meta">Opening your shelf…</p>':'';
   else if(!B.length) h+='<div class="lib-empty"><b>Your shelf is empty</b>Put a PDF in the <i>Kotoba-chō Library</i> folder in your Google Drive, then tap refresh.</div>';
   else h+='<div class="lib-grid">'+B.map(function(b){ return libBookHtml(b,pos[b.id]); }).join("")+'</div>';
+  stLoad(); h=stShelfHtml()+h;
   el.innerHTML=h;
 }
 $("#library").addEventListener("click",function(e){
@@ -6421,6 +6451,7 @@ $("#library").addEventListener("click",function(e){
   if(a.dataset.act==="lib-refresh") libLoad(true);
   else if(a.dataset.act==="lib-open") libOpen(a.dataset.id);
   else if(a.dataset.act==="lib-series") libSeries(a.dataset.id);
+  else if(a.dataset.act==="st-open") stOpen(a.dataset.id);
 });
 /* the chapter list for a series. It stays open under the reader, so closing a chapter brings you back here. */
 function libSeriesHtml(b){
@@ -6441,6 +6472,94 @@ function libSeries(id){
 }
 function libSeriesClose(){ if(!LIB.sheet) return; LIB.sheet.el.remove(); LIB.sheet=null; if(!LIB.open) document.body.classList.remove("lib-open"); }
 
+/* Nov 21: graded stories. Kept in stories.json in the repo (no Drive, no Code.gs), shown as a よみもの shelf at the top of
+   the Library and read one page at a time. Your place is saved on this device in kc-story-pos ({id:{p,n,at,done}}, p from 0). */
+var ST={list:recall("kc-stories"),loading:false,asked:false,open:null};
+function stPos(){ return recall("kc-story-pos")||{}; }
+function stLoad(force){
+  if(ST.loading||(ST.asked&&!force)) return; ST.asked=true; ST.loading=true;
+  fetch("stories.json",{cache:"no-cache"}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }).then(function(j){
+    var L=(j&&j.stories)||[]; var ch=JSON.stringify(L)!==JSON.stringify(ST.list||[]); ST.list=L; store("kc-stories",L);
+    if(ch&&S.tab==="library"&&!LIB.open) renderLibrary();
+  }).catch(function(){}).then(function(){ ST.loading=false; });
+}
+function stFind(id){ return (ST.list||[]).find(function(x){ return x.id===id; })||null; }
+function stCover(s){
+  var k=esc(s.k||"本");
+  return '<span class="lib-cover" style="--cv:'+esc(s.c||"#2C4870")+'" aria-hidden="true"><b lang="ja">'+esc(stripFuri(s.t))+'</b>'+(s.en?'<span class="lc-sub">'+esc(s.en)+'</span>':'')+'<span class="lc-band"></span><span class="lc-seal">'+k+'</span><span class="lc-mk">'+k+'</span></span>';
+}
+function stShelfHtml(){
+  var L=ST.list; if(!L||!L.length) return "";
+  var pos=stPos();
+  return '<section class="st-shelf"><div class="st-hd"><h3 lang="ja">'+rubyText("読(よ)み物(もの)")+'</h3><span>Graded stories · Level 0 · '+L.length+' books</span></div><div class="lib-grid">'+L.map(function(s){
+    var n=(s.pages||[]).length, p=pos[s.id], meta;
+    if(p&&p.done&&p.p>=n-1) meta='<span class="lib-meta"><span class="st-done">✓ Read</span> · '+n+' pages</span>';
+    else if(p) meta='<span class="lib-bar"><i style="width:'+Math.round((p.p+1)/n*100)+'%"></i></span><span class="lib-meta">p. '+(p.p+1)+' of '+n+'</span>';
+    else meta='<span class="lib-meta">'+n+' pages · '+esc(s.from||"")+'</span>';
+    return '<button type="button" class="lib-book" data-act="st-open" data-id="'+esc(s.id)+'">'+stCover(s)+'<span class="lib-name" lang="ja">'+rubyText(s.t)+'</span>'+meta+'</button>';
+  }).join("")+'</div></section>';
+}
+function stOpen(id){
+  var s=stFind(id); if(!s||!(s.pages||[]).length) return;
+  if(ST.open) stClose(true);
+  var n=s.pages.length, q=stPos()[id], p=q&&q.p>=0&&q.p<n?q.p:0;
+  if(q&&q.done&&p>=n-1) p=0;
+  var d=document.createElement("div"); d.className="st-reader"; d.setAttribute("role","dialog"); d.setAttribute("aria-modal","true"); d.setAttribute("aria-label",stripFuri(s.t));
+  d.innerHTML='<div class="lr-bar"><button class="lr-btn" data-act="st-close" aria-label="Close" title="Close">‹</button><div class="lr-t" lang="ja">'+rubyText(s.t)+'</div><span class="lr-pg" id="st-pg"></span></div>'+
+    '<div class="st-body" id="st-body"><div class="st-page" id="st-page"></div></div>'+
+    '<div class="st-foot"><button class="lr-btn" data-act="st-prev" aria-label="Previous page" title="Previous page">‹</button><span class="lib-bar"><i id="st-bar"></i></span><button class="lr-btn" data-act="st-next" aria-label="Next page" title="Next page">›</button></div>';
+  document.body.appendChild(d); document.body.classList.add("lib-open");
+  ST.open={s:s,p:p,n:n,el:d,back:document.activeElement};
+  d.addEventListener("click",stClick);
+  var B=d.querySelector("#st-body");
+  B.addEventListener("pointerdown",function(e){ if(e.pointerType==="mouse") return; ST.open.sw={x:e.clientX,y:e.clientY}; });
+  B.addEventListener("pointerup",function(e){ var O=ST.open, w=O&&O.sw; if(!w) return; O.sw=null;
+    var dx=e.clientX-w.x, dy=e.clientY-w.y; if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.4){ O.swiped=Date.now(); stGo(dx<0?1:-1); } });
+  B.addEventListener("pointercancel",function(){ if(ST.open) ST.open.sw=null; });
+  stShow(0);
+  setTimeout(function(){ try{ d.querySelector('[data-act="st-next"]').focus({preventScroll:true}); }catch(e){} },50);
+}
+function stClick(e){
+  var O=ST.open; if(!O) return;
+  var a=e.target.closest("[data-act]");
+  if(a){ if(a.dataset.act==="st-close") stClose(); else if(a.dataset.act==="st-prev") stGo(-1); else if(a.dataset.act==="st-next") stGo(1); else if(a.dataset.act==="st-again"){ O.p=0; stShow(-1); } return; }
+  if(O.swiped&&Date.now()-O.swiped<400) return;
+  var sel=window.getSelection&&String(window.getSelection()); if(sel) return;
+  var B=e.target.closest("#st-body"); if(!B) return;
+  var r=B.getBoundingClientRect(), x=(e.clientX-r.left)/r.width;
+  if(x>0.75) stGo(1); else if(x<0.25) stGo(-1);
+}
+function stShow(dir){
+  var O=ST.open; if(!O) return;
+  var pg=O.el.querySelector("#st-page"), last=O.p===O.n-1;
+  pg.innerHTML=O.s.pages[O.p].map(function(l){ return '<p class="st-ln" lang="ja">'+rubyText(l)+'</p>'; }).join("")+
+    (last?'<div class="st-end"><b lang="ja">おわり</b><span>'+esc(O.s.en||"")+(O.s.from?' · '+esc(O.s.from):'')+'</span><div class="row" style="justify-content:center;gap:8px"><button class="btn small" data-act="st-again">Read again</button><button class="btn primary small" data-act="st-close">Back to the shelf</button></div></div>':'');
+  pg.className="st-page"; if(dir){ void pg.offsetWidth; pg.classList.add(dir>0?"in-n":"in-p"); }
+  O.el.querySelector("#st-body").scrollTop=0;
+  O.el.querySelector("#st-pg").textContent=(O.p+1)+" / "+O.n;
+  O.el.querySelector("#st-bar").style.width=Math.round((O.p+1)/O.n*100)+"%";
+  O.el.querySelector('[data-act="st-prev"]').disabled=O.p===0;
+  O.el.querySelector('[data-act="st-next"]').disabled=last;
+  var all=stPos(), was=all[O.s.id]; all[O.s.id]={p:O.p,n:O.n,at:Date.now(),done:last||!!(was&&was.done)}; store("kc-story-pos",all);
+}
+function stGo(d){
+  var O=ST.open; if(!O) return; var np=O.p+d;
+  if(np<0||np>=O.n){ var pg=O.el.querySelector("#st-page"); pg.className="st-page"; void pg.offsetWidth; pg.classList.add(d>0?"bump-n":"bump-p"); return; }
+  O.p=np; stShow(d);
+}
+function stClose(quiet){
+  var O=ST.open; if(!O) return; ST.open=null;
+  if(!LIB.open&&!LIB.sheet) document.body.classList.remove("lib-open");
+  if(quiet||libReduced()) O.el.remove(); else { O.el.classList.add("out"); setTimeout(function(){ O.el.remove(); },230); }
+  if(!quiet){ if(S.tab==="library") renderLibrary(); if(O.back&&O.back.isConnected){ try{ O.back.focus({preventScroll:true}); }catch(e){} } }
+}
+document.addEventListener("keydown",function(e){
+  if(!ST.open||e.altKey||e.ctrlKey||e.metaKey) return; var a=document.activeElement; if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;
+  var k=e.key;
+  if(k==="ArrowRight"||k==="PageDown"||(k===" "&&!(a&&a.tagName==="BUTTON"))){ e.preventDefault(); e.stopImmediatePropagation(); stGo(1); }
+  else if(k==="ArrowLeft"||k==="PageUp"){ e.preventDefault(); e.stopImmediatePropagation(); stGo(-1); }
+  else if(k==="Escape"){ e.preventDefault(); e.stopImmediatePropagation(); stClose(); }
+},true);
 /* Nov 13: reading positions sync across devices through App Data (key lib-pos, {p:{fileId:{p,n,at}}}). For each book the
    newest reading wins. Saved on this device first (kc-lib-pos); sent 5 seconds after you stop turning pages, when a book
    closes or the app goes to the background; read again when the Library or Home opens and when you come back to the app. */
